@@ -78,22 +78,79 @@ A little centralization [@tsitsiklis_power_2011]
 2. **Fast queries on many MinHashes using MinHash Bloom Trees**
    A MinHash Bloom Tree (MHBT) is similar to a Sequence Bloom Tree (SBT),
    but using a MinHash to represent a dataset instead of Bloom Filters containing the full $k$-mer spectrum.
-   Datasets are still present only in the leaves,
-   with internal nodes representing the union of all hashes presents in the MinHashes below it.
+   Leaves are still datasets,
+   with internal nodes representing the union of all hashes present in the MinHashes below it.
+   The preliminary implementation already support searching and insertion of new datasets,
+   but insertion is naive (add to the next available space).
+   I propose to implement insertion based on maximizing shared hashes under an internal node,
+   since this allows faster pruning in the search space when querying.
+
+     While the SBT still adheres to presence filtering like Bloofi
+     (using Bloom Filters for internal nodes)
+     there are other useful data structures that can be used instead and allow a wider range of operations.
+     Multiset representations allow keeping track of the hashes abundances,
+     so using a Count-Min Sketch or a Counting Quotient Filter to represent internal nodes allow other useful queries in the tree.
+     But there is an additional consideration in this case:
+     how to calculate the union of these data structures.
+     Usually the union of two multisets is defined as the sum of abundances of each multiset for a specific element,
+     but in the hierachical index this leads to not-so-useful queries
+     (the root node would have an abundance count of how many times a hash happened in all datasets).
+     We can use other definitions of the union to create more useful queries:
 
        Similarity: with Bloom Filters;
        Abundance: using max Count-Min Sketch;
        Occurrence: Using "Counting" CMS / CQF
 
-3. **Decentralized indices for genomic data.**
-   The structure of a Sequence Bloom Tree can be thought of as a persistent data structure,
-   where adding nodes to a tree 
+     Since these new definitions for the union maintain the hashes untouched,
+     this means that an optimal tree structure can be shared among all trees,
+     independent of what kind of internal node is used.
+     This leads to the result that a bare tree
+     (containing only the leaves and the a representation of the tree structure,
+     but not the content of the internal nodes)
+     is enough to build all the other variations of the index.
+     In network-restricted environments
+     (where it is cheaper to rerun the creation of internal nodes data instead of transferring it)
+     this can also lead to more efficient use of resources without loosing generality.
+     Also,
+     if no additional insertions to the index are expected,
+     this can also serve as the backbone for more efficient representations
+     (in a sense this is what the SSBT is to a SBT).
 
-       - Encoding SBT in the Merkle-Dag
-        - Persistent Data Structure
+3. **Decentralized indices for genomic data.**
+   The structure of a MinHash Bloom Tree can be thought of as a persistent data structure:
+   each leaf in the tree never change,
+   and for each insertion $O(log n)$ internal nodes
+   (the internal nodes between the leaf and the root)
+   need to be updated.
+   Since all the other internal nodes (and the leaves) will still be the same as the tree before the update,
+   this view of the MHBT as a persistent data structure makes it a very good fit for storing it in a Merkle Tree.
+
+     I'll explore two different decentralized data storage systems
+     (`IPFS` and `Dat`) as ways of storing and interacting with MHBT indices.
+       - Popular indices benefit from increase bandwidth for downloading data
+       - Derived indices still benefit from nodes shared with the original index
+
+     On top the data storage aspects,
+     another important point is how researchers can interact with these indices
+     (both querying and updating it)
+     in a way that a central authority is not essential
+     (but operations are optimized if it is).
+     This is important in the context of long term sustainability of the system,
+     ~~since I hope to graduate one day and I can't promise I will maintain the system~~
+     something often overlooked in bioinformatics systems.
+<!--
        - CRDT for updating
-       - Linking with other datasets/metadata
-        - Using IPLD (similar to JSON-LD)
-          - Taxonomy
-          - Metaseek
        - Submission/query system (soursigs)
+-->
+
+   Because these systems are content-aware,
+   modifying a signature (the JSON file containing the MinHash + metadata)
+   leads to different addresses on the network,
+   which is suboptimal for data sharing.
+   I also plan to explore how to use other systems to link back and provide additional metadata
+   (for example: taxonomy records)
+   using IPLD
+   (Interplanetary Linked Data,
+   a format similar to JSON-LD but focusing on IPFS)
+   and also Hypothesis,
+   a web annotation tool.

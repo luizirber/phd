@@ -18,16 +18,41 @@ biblio-style: 'abbrvnat'
 
 ## Background
 
-
 ### Problem Description
+
+Public sequence databases 
+For example, the NCBI Sequence Read Archive (SRA) contain more than 6 Petabases,
+but tools like MegaBLAST can only search a subset of all the experiments.
+Queries are also limited in size,
+since MegaBLAST is an alignment-based algorithm.
+Question like "What experiments are similar to mine?" are hard to answer in this context,
+
+
+
 
 ### Scaled MinHashes
 
+The Jaccard similarity of two sets is defined as $$J(A, B) = \frac{\left| A \cap B \right|}{\left| A \cup B \right|}$$.
+
+The MinHash [@broder_resemblance_1997] sketch was developed at Altavista in the context of document clustering and deduplication.
+It provides an estimate of the Jaccard similarity (called **resemblance** by [@broder_resemblance_1997]) by applying a hash function $h(x)$ to the *$w$-shingling* of a document $D$,
+where a *shingling* is a continuous subsequence of words contained in $D$,
+and keeping the $n$ smallest hash values as a representative sketch of the original document.
+The article also defines the **containment** of two documents as $$C(A, B) = \frac{\left| A \cap B \right|}{\left| A \right|}$$,
+which measures how much of 
 
 
-MinHash [@broder_resemblance_1997],
-Mash [@ondov_mash:_2016],
-sourmash [@titus_brown_sourmash:_2016],
+
+
+Mash [@ondov_mash:_2016] was the first implementation of MinHashes in the genomic context.
+Mash needs extra information (the genome size for the organism being queried) to account for genomic complexity in datasets.
+This is necessary because 
+
+sourmash [@titus_brown_sourmash:_2016] is another implementation of MinHashes in genomic contexts,
+adding mainly two variations to the basic method:
+scaled (or banded) minhashes,
+and keeping track of hash abundances.
+
 
 Frequency moments [@alon_space_1996]
 
@@ -138,10 +163,14 @@ A little centralization [@tsitsiklis_power_2011]
      This is important in the context of long term sustainability of the system,
      ~~since I hope to graduate one day and I can't promise I will maintain the system~~
      something often overlooked in bioinformatics systems.
-<!--
-       - CRDT for updating
-       - Submission/query system (soursigs)
--->
+     The initial implementation will be centralized for simplicity and prototyping the user interaction,
+     supporting data submission and querying,
+     with a data pipeline based on the experience downloading 400k+ microbial datasets from NCBI SRA
+     and also the preparation of indices for the IMG database from JGI (60k+ datasets).
+     Once this prototype is functional and we find what features are desirable,
+     I plan to start decentralizing this process by defining updates in terms of CRDT operations,
+     publishing a feed of these changes and moving to PubSub messaging between remote sites,
+     allowing them to update their indices and keep them consistent with ours.
 
    Because these systems are content-aware,
    modifying a signature (the JSON file containing the MinHash + metadata)

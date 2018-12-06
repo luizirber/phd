@@ -8,7 +8,7 @@ authors:
 affiliations:
  - name: University of California, Davis
    index: 1
-date: 19 January 2018
+date: 04 December 2018
 bibliography: 'minhash'
 biblio-style: 'abbrvnat'
 ...
@@ -20,8 +20,12 @@ biblio-style: 'abbrvnat'
 
 ### Problem Description
 
-Public sequence databases 
-For example, the NCBI Sequence Read Archive (SRA) contain more than 6 Petabases,
+Biological journals require data to be deposited in public sequence databases.
+Initially they were published in Genbank,
+but with NGS the volume of data increased and NCBI created the Sequence Read Archive was created to serve as initial stop for archival,
+with other databases deriving and processing the data more.
+
+Currently , the NCBI Sequence Read Archive (SRA) contain more than 6 Petabases,
 but tools like MegaBLAST can only search a subset of all the experiments.
 Queries are also limited in size,
 since MegaBLAST is an alignment-based algorithm.
@@ -46,7 +50,10 @@ which measures how much of
 
 Mash [@ondov_mash:_2016] was the first implementation of MinHashes in the genomic context.
 Mash needs extra information (the genome size for the organism being queried) to account for genomic complexity in datasets.
-This is necessary because 
+This extra information is required because using a fixed size minhash leads to
+different degrees of accuracy when comparing across highly-diverged organisms
+(bacteria to animals, for example), and it is even more extreme when taking more
+complex datasets into account (like metagenomes).
 
 sourmash [@titus_brown_sourmash:_2016] is another implementation of MinHashes in genomic contexts,
 adding mainly two variations to the basic method:
@@ -63,7 +70,10 @@ ntCard [@mohamadi_ntcard:_nodate]
 
 HyperMinHash [@yu_hyperminhash:_2017]
 
-### Hierarchical index structure
+HistoSketch [@yang_histosketch:_2018]
+HULK [@rowe_streaming_2018]
+
+### Hierarchical index structures
 
 Linear searching of MinHashes is not practical well when hundreds of thousands of datasets are available.
 One solution to this problem is to use an hierarchical index structure like Bloofi [@crainiceanu_bloofi:_2015],
@@ -72,8 +82,21 @@ Sequence Bloom Tree [@solomon_fast_2016],
 Split Sequence Bloom Trees [@solomon_improved_2017]
 AllSome Sequence Bloom Trees [@sun_allsome_2017]
 
-BIGSI [@bradley_real-time_2017]
-Mantis [@pandey_mantis:_2017]
+### $k$-mer mapping index structures
+
+Other approaches for indexing include 
+BIGSI [@bradley_real-time_2017] and
+Mantis [@pandey_mantis:_2017],
+which avoid the data duplication in SBTs by storing mappings of $k$-mers to
+specific datasets directly.
+In the case of Mantis updating the index leads to more colors (experiments
+containing the specific $k$-mer) being tracked, 
+and it is still not clear how that would scale for very large databases.
+<!--
+check the new mantis paper, where they discuss scalability of the colors
+-->
+Both approaches still focus on indexing the full k-mer set,
+but can be adapted to work with MinHash too.
 
 ### Decentralized querying
 
@@ -140,6 +163,14 @@ A little centralization [@tsitsiklis_power_2011]
      if no additional insertions to the index are expected,
      this can also serve as the backbone for more efficient representations
      (in a sense this is what the SSBT is to a SBT).
+
+     OTHER IDEAS: MHBT <-> RevIndex (dual), establish conversions between
+     indexes.
+     SSBT and AllSome are specializations of MHBT,
+     Mantis and BIGSI are specializations of RevIndex.
+     Support a basic Index API for them, let the user optimize depending on the
+     application.
+
 
 3. **Decentralized indices for genomic data.**
    The structure of a MinHash Bloom Tree can be thought of as a persistent data structure:

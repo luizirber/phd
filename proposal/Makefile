@@ -1,5 +1,6 @@
 MD=$(wildcard *.md)
-PDF=$(patsubst %.md, %.pdf, $(MD))
+#PDF=$(patsubst %.md, %.pdf, $(MD))
+PDF=Proposal.pdf
 FORMAT=markdown+yaml_metadata_block+startnum+fancy_lists+definition_lists+link_attributes+inline_notes+implicit_figures+smart
 GEOM=geometry:margin=1in
 TEX=xelatex

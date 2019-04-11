@@ -1,5 +1,5 @@
 ---
-title: 'Research Proposal: *Decentralized indexes for genomic data*'
+title: 'Research Proposal: *Decentralized indices for genomic data*'
 subtitle: 'Research Proposal'
 authors:
  - name: Luiz Irber
@@ -8,209 +8,282 @@ authors:
 affiliations:
  - name: University of California, Davis
    index: 1
-date: 04 December 2018
+date: 11 April 2019
 bibliography: 'minhash'
 biblio-style: 'abbrvnat'
 ...
 
 # Introduction
 
+<!--
+Problems:
+ - data generation rate increasing, cheaper sequencing and real-time sequencers
+ - memory consumption of traditional approaches is prohibitive for data scale
+ - exact answers are expensive, approximate answers are a viable trade-off in
+     many situations
+ - once data resources are generated, bioinformatics databases demand
+     maintenance and don't benefit from local caches
+ - when a bioinformatics database goes away, tools that depended on it stop
+     working ("the grad student graduated" problem).
 
-## Background
+Last paragraph:
 
-### Problem Description
+This proposal describe methods for working with large scale sequencing datasets
+and databases,
+considering data acquisition, analysis and distribution solutions for problems
+encountered by biologists during their experiments.
+Special focus is given for searching for similar datasets in large sequence
+databases, and taxonomic classification of metagenomes.
+-->
 
-Biological journals require data to be deposited in public sequence databases.
-Initially they were published in Genbank,
-but with NGS the volume of data increased and NCBI created the Sequence Read Archive was created to serve as initial stop for archival,
-with other databases deriving and processing the data more.
+# Background
 
-Currently , the NCBI Sequence Read Archive (SRA) contain more than 6 Petabases,
-but tools like MegaBLAST can only search a subset of all the experiments.
-Queries are also limited in size,
-since MegaBLAST is an alignment-based algorithm.
-Question like "What experiments are similar to mine?" are hard to answer in this context,
+## Problem Description
 
+<!--
+- similarity search
+- taxonomic classification
+-->
 
+<!--
+At the most basic level genomic sequences are represented using an alphabet
+representing the 4 nitrogenous bases composing the DNA structure:
+Adenine, Cytosine, Guanine and Thymine.
+Computationally it is common to represent them as strings.
 
-
-### Scaled MinHashes
-
-The Jaccard similarity of two sets is defined as $$J(A, B) = \frac{\left| A \cap B \right|}{\left| A \cup B \right|}$$.
-
-The MinHash [@broder_resemblance_1997] sketch was developed at Altavista in the context of document clustering and deduplication.
-It provides an estimate of the Jaccard similarity (called **resemblance** by [@broder_resemblance_1997]) by applying a hash function $h(x)$ to the *$w$-shingling* of a document $D$,
-where a *shingling* is a continuous subsequence of words contained in $D$,
-and keeping the $n$ smallest hash values as a representative sketch of the original document.
-The article also defines the **containment** of two documents as $$C(A, B) = \frac{\left| A \cap B \right|}{\left| A \right|}$$,
-which measures how much of 
+Sequencers transform 
 
 
+The $k$-mer composition of a genomic sequence is a set of all $k$-length
+substrings,
+computed as a sliding window over the genomic sequence.
 
+For a genomic dataset the $k$-mer composition is the set of all $k$-length
+substrings for all sequences in it.
+-->
 
-Mash [@ondov_mash:_2016] was the first implementation of MinHashes in the genomic context.
+## Data sketches
+
+A data sketch is a representative proxy for the original data focused on queries
+for specific properties.
+It can also be viewed as a probabilistic data structure (in contrast with
+deterministic data structures),
+since it uses hashing techniques to provide statistical guarantees on the
+precision of the answer for a query.
+This allows a memory/accuracy trade-off:
+using more memory leads to more accurate results,
+but in memory-constrained situations it still bound results to an expected error rate.
+
+### MinHash sketch: similarity and containment
+
+The MinHash sketch [@broder_resemblance_1997] was developed at Altavista in the context of document clustering and deduplication.
+It provides an estimate of the Jaccard similarity $J(A, B) = \frac{\left| A \cap B \right|}{\left| A \cup B \right|}$
+(called **resemblance** in the original article) and the **containment** of two documents $C(A, B) = \frac{\left| A \cap B \right|}{\left| A \right|}$,
+estimating how much of document $A$ is contained in document $B$.
+These estimates depend on two processes:
+Converting documents to sets ("Shingling"),
+and transforming large sets into short signatures,
+while preserving similarity ("Min-Hashing").
+In the original use case the *$w$-shingling* $\Omega$ of a document $D$ is defined as the set of all
+continuous subsequence of $w$ words contained in $D$.
+*Min-hashing* is the process of creating $W = \{h(x) | \forall x \in \Omega\}$,
+where $h(x)$ is an uniform hash function,
+and then either
+
+   - keeping the $n$ smallest hash values as a representative sketch of the original document ($\mathbf{MIN}_n(W)$)
+   - keeping elements that are $0 \mod m$ ($\mathbf{MOD}_m(W)$).
+
+$\mathbf{MIN}_n(W)$ if fixed-sized (length $n$) and supports similarity estimation,
+but doesn't support containment.
+$\mathbf{MOD}_m(W)$ supports both similarity and containment,
+with the drawback of not being fixed-sized anymore,
+growing with the complexity of the document.
+
+Mash [@ondov_mash:_2016] was the first implementation of MinHash in the genomic context,
+relating the $w$-shingling of a document to the $k$-mer composition of a genomic sequence,
+and using the $\mathbf{MIN}_n(W)$ fixed-sized formulation for the signature.
 Mash needs extra information (the genome size for the organism being queried) to account for genomic complexity in datasets.
-This extra information is required because using a fixed size minhash leads to
+This extra information is required because using a fixed-size MinHash leads to
 different degrees of accuracy when comparing across highly-diverged organisms
 (bacteria to animals, for example), and it is even more extreme when taking more
 complex datasets into account (like metagenomes).
 
-sourmash [@titus_brown_sourmash:_2016] is another implementation of MinHashes in genomic contexts,
-adding mainly two variations to the basic method:
-scaled (or banded) minhashes,
-and keeping track of hash abundances.
+### Bloom Filter: Set membership
+
+The Bloom Filter [@bloom_space/time_1970] allows set membership queries.
+Inserting an element in a Bloom Filter is a two-step process: first use multiple
+hash functions on the element,
+and then for each bit set in the hashed value update the same position in the
+bit array.
+Querying an element involves calculating the multiple hash values for the
+element and then checking if the bits are set in the bit array.
+This guarantees that a false negative is impossible
+(if the element was inserted,
+a bit would be set),
+but can report false positives if there are collisions in the hash values.
+
+khmer [@crusoe_khmer_2015] implements a variation where longer (and multiple) bit arrays are used,
+and hash functions are derived from a composed hashing strategy $h_i(x) = h(x) \mod p_i$,
+where each bit array has a distinct length $p_i$ (and $p$ is a prime number),
+with $h(x)$ being a more CPU-intensive hash function.
+
+Bloom Filters are used extensively in bioinformatics,
+including lossy representation of assembly graphs [@pell_scaling_2012] and as
+a filtering step in processing pipelines [@ondov_mash:_2016].
+
+### HyperLogLog: Cardinality estimation
+
+The HyperLogLog sketch [@flajolet_hyperloglog:_2008] estimates the number of unique elements in a dataset.
+It is designed to lower the variability of a more basic estimator:
+given a run of $\rho$ zeros in a binary sequence,
+it estimates the cardinality of the dataset to be $2^{\rho}$.
+It achieves this by splitting the binary sequence in two:
+the lower bits define an index for $m$ registers,
+and each register contain the longest run of zeros seen for that index.
+The HyperLogLog estimator $E(D)$ is an harmonic mean of the registers $M$,
+with a correction factor $\alpha_m$ for the number of registers:
+$$E(D) = \alpha_m m^2 \left( \sum_{j=0}^{m-1} 2^{-M[j]} \right)^{-1}$$
+More recent methods [@heule_hyperloglog_2013] improve the cardinality estimator
+by further refining the estimate based on empirical data.
+
+In genomic contexts, the khmer [@crusoe_khmer_2015] implementation of HyperLogLog [@irber_junior_efficient_2016]
+uses the $k$-mer composition of a genomic dataset and the \emph{murmurhash3} hash function,
+together with the improved estimator from [@heule_hyperloglog_2013].
+Dashing [@baker_dashing:_2018] is a recent method that supports both similarity and cardinality estimation using HyperLogLog,
+based on a better estimator for union and intersection of HyperLogLog sketches by [@ertl_new_2017].
+
+## Hierarchical index
+
+Searching for matches in large collection of datasets is not viable when hundreds of thousands of
+them are available, 
+especially if they are partitioned and not all present at the same place.
+
+Bloofi [@crainiceanu_bloofi:_2015] is a hierarchical index structure that
+extends the Bloom Filter basic query to collections of Bloom Filters.
+Instead of calculating the union of all Bloom Filters in the collection
+(which would allow answering if an element is present in any of them)
+it defines a tree structure where the original Bloom Filters are leaves,
+and internal nodes are the union of all the Bloom Filters in their subtrees.
+Searching is based on a breadth-first search,
+with pruning when no matches are found at an internal level.
+Bloofi can also be partitioned in a network,
+with network nodes containing a subtree of the original tree and only being
+accessed if the search requires it.
+
+The Sequence Bloom Tree [@solomon_fast_2016] adapts Bloofi for genomic contexts,
+rephrasing the problem as experiment discovery:
+given a query sequence $Q$ and a threshold $\theta$,
+which experiments contain at least $\theta$ of the original query $Q$?
+Experiments are encoded in Bloom Filters containing the $k$-mer composition of transcriptomes,
+and queries are transcripts.
+
+Further developments focused on clustering similar datasets to prune search
+early [@sun_allsome_2017] and developing more efficient representations for the
+internal nodes [@solomon_improved_2017] [@harris_improved_2018] to use less
+storage space and memory.
+
+## Decentralized querying
 
 
-Frequency moments [@alon_space_1996]
-
-HyperLogLog [@flajolet_hyperloglog:_2008]
-HyperLogLog++ [@heule_hyperloglog_2013]
-KmerStream [@melsted_kmerstream:_2014]
-ntCard [@mohamadi_ntcard:_nodate]
-
-HyperMinHash [@yu_hyperminhash:_2017]
-
-HistoSketch [@yang_histosketch:_2018]
-HULK [@rowe_streaming_2018]
-
-### Hierarchical index structures
-
-Linear searching of MinHashes is not practical well when hundreds of thousands of datasets are available.
-One solution to this problem is to use an hierarchical index structure like Bloofi [@crainiceanu_bloofi:_2015],
-
-Sequence Bloom Tree [@solomon_fast_2016],
-Split Sequence Bloom Trees [@solomon_improved_2017]
-AllSome Sequence Bloom Trees [@sun_allsome_2017]
-
-### $k$-mer mapping index structures
-
-Other approaches for indexing include 
-BIGSI [@bradley_real-time_2017] and
-Mantis [@pandey_mantis:_2017],
-which avoid the data duplication in SBTs by storing mappings of $k$-mers to
-specific datasets directly.
-In the case of Mantis updating the index leads to more colors (experiments
-containing the specific $k$-mer) being tracked, 
-and it is still not clear how that would scale for very large databases.
-<!--
-check the new mantis paper, where they discuss scalability of the colors
--->
-Both approaches still focus on indexing the full k-mer set,
-but can be adapted to work with MinHash too.
-
-### Decentralized querying
+Persistent Data Structures [@driscoll_making_1989],
 
 IPFS [@benet_ipfs_2014],
-Persistent Data Structures [@driscoll_making_1989],
+
 SRA closure [@noauthor_closure_2011],
+
 A little centralization [@tsitsiklis_power_2011]
 
-## Aims
 
-1. **Using scaled MinHash for abundance distribution and cardinality estimation.**
-   The scaled MinHash already allows comparing datasets with distinct genomic
-   complexity,
-   but it is still limited to similarity operations.
-   I propose to extend it to support cardinality estimation using an approach
-   derived from the HyperLogLog cardinality estimator,
-   and also as an approximate abundance distribution estimator.
-   The goal is to have one sketch supporting these three operations,
-   even though other approaches
-   (like the HLL for cardinality estimation or ntCard for abundance distribution)
-   are more appropriate for a specific question.
+# Aims
 
-     Both operation leverage the existing support for tracking abundances for each value in the MinHash,
-	 and the scaled approach makes it easier to give better guarantees of the result because we know how 'full' the band is.
+1. **Adapting genomic MinHash for containment and cardinality estimation.**
+   The original MinHash article [@broder_resemblance_1997] defines two estimates for similarity
+   resemblance and containment,
+   with two variations of the MinHash sketch,
+   one with fixed length, but only supporting resemblance,
+   and another with variable length, supporting both resemblance and containment.
+   Mash [@ondov_mash:_2016] uses the fixed length sketch,
+   and defines a new distance metric called Mash distance to account for
+   the size of the genomes being compared.
+   The resemblance estimate works well for genomes of similar size,
+   but when dealing with datasets of highly-diverged organisms or even more complex
+   datasets (like metagenomes) the containment estimate is more appropriate and
+   closer to the sort of problems that biologists need to solve.
 
+     In sourmash [@titus_brown_sourmash:_2016] I implemented a variable length MinHash sketch
+     (with fallback to the fixed length case for compatibility with Mash)
+     called the scaled MinHash.
+     The scaled MinHash supports containment estimation,
+     allowing new applications not available on previous methods.
 
-2. **Fast queries on many MinHashes using MinHash Bloom Trees**
-   A MinHash Bloom Tree (MHBT) is similar to a Sequence Bloom Tree (SBT),
-   but using a MinHash to represent a dataset instead of Bloom Filters containing the full $k$-mer spectrum.
-   Leaves are still datasets,
-   with internal nodes representing the union of all hashes present in the MinHashes below it.
-   The preliminary implementation already support searching and insertion of new datasets,
-   but insertion is naive (add to the next available space).
-   I propose to implement insertion based on maximizing shared hashes under an internal node,
-   since this allows faster pruning in the search space when querying.
+     Sketches are data structures planned for specific classes of queries,
+     but it is possible to support additional use cases.
+     For example,
+     dashing [@baker_dashing:_2018] is a method that supports both similarity and cardinality estimation
+     using HyperLogLog sketches [@flajolet_hyperloglog:_2008],
+     a data structure initially derived for supporting cardinality estimation and later extended to similarity cases [@ertl_new_2017],
+     Even so, it doesn't support containment estimation.
 
-     While the SBT still adheres to presence filtering like Bloofi
-     (using Bloom Filters for internal nodes)
-     there are other useful data structures that can be used instead and allow a wider range of operations.
-     Multiset representations allow keeping track of the hashes abundances,
-     so using a Count-Min Sketch or a Counting Quotient Filter to represent internal nodes allow other useful queries in the tree.
-     But there is an additional consideration in this case:
-     how to calculate the union of these data structures.
-     Usually the union of two multisets is defined as the sum of abundances of each multiset for a specific element,
-     but in the hierachical index this leads to not-so-useful queries
-     (the root node would have an abundance count of how many times a hash happened in all datasets).
-     We can use other definitions of the union to create more useful queries:
+     Scaled MinHash can be adapted to also support cardinality estimation.
+     Due to how the scaled MinHash is constructed the same estimator from HyperLogLog can be used for it.
+     <!--
+     More generally, the scaled MinHash can be converted to a HyperLogLog,
+     bounded by the number of hashes present in the scaled MinHash.
+     -->
 
-       Similarity: with Bloom Filters;
-       Abundance: using max Count-Min Sketch;
-       Occurrence: Using "Counting" CMS / CQF
+     <!-- abundance tracking? -->
 
-     Since these new definitions for the union maintain the hashes untouched,
-     this means that an optimal tree structure can be shared among all trees,
-     independent of what kind of internal node is used.
-     This leads to the result that a bare tree
-     (containing only the leaves and the a representation of the tree structure,
-     but not the content of the internal nodes)
-     is enough to build all the other variations of the index.
-     In network-restricted environments
-     (where it is cheaper to rerun the creation of internal nodes data instead of transferring it)
-     this can also lead to more efficient use of resources without loosing generality.
-     Also,
-     if no additional insertions to the index are expected,
-     this can also serve as the backbone for more efficient representations
-     (in a sense this is what the SSBT is to a SBT).
+2. **Fast queries on many MinHash sketches using MinHash Bloom Trees**
+   [@solomon_fast_2016] introduces the Sequence Bloom Tree,
+   an hierarchical index data structure for finding a query sequence in large
+   dataset collections.
+   It represents the $k$-mer composition of a dataset using a Bloom Filter [@bloom_space/time_1970],
+   and the hierarchical aspect comes from organizing multiple dataset Bloom Filters into a tree structure, 
+   where the leaves are the dataset Bloom Filters and the internal nodes are Bloom Filters containing all $k$-mers 
+   below it. A query is evaluated by doing a breadth-first search of the tree,
+   and truncating the search when the query is not present over a pre-determined
+   threshold.
 
-     OTHER IDEAS: MHBT <-> RevIndex (dual), establish conversions between
-     indexes.
-     SSBT and AllSome are specializations of MHBT,
-     Mantis and BIGSI are specializations of RevIndex.
-     Support a basic Index API for them, let the user optimize depending on the
-     application.
+   I adapted the Sequence Bloom Tree to use MinHash sketches as dataset representations,
+   referred as MinHash Bloom Tree from now on to highlight how they are
+   distinct.
+   Since a MinHash is a subset of the $k$-mer composition of a dataset,
+   internal nodes are still Bloom Filters,
+   but this time containing all the $k$-mers present in the MinHash.
 
+   On top of supporting the search method defined by the Sequence Bloom Tree
+   (a breadth-first search with early truncating on a similarity or containment
+   threshold),
+   the MinHash Bloom Tree index also supports another search method called `gather`, 
+   a variation of Best-First search using containment estimation.
+   `gather` can be used for doing taxonomic classification of genomic datasets,
+   finding all organisms present in a sample and how abundant they are.
+   This is especially important when working with metagenomes,
+   a dataset containing sequenced genomic data from an environmental sample
+   (be it soil, ocean or human gut, for example) representing a community of organisms.
+   `gather` does iterative Best-First searches,
+   at each step removing matches from the original query,
+   until there are no more hashes to search or a detection threshold is reached.
 
 3. **Decentralized indices for genomic data.**
-   The structure of a MinHash Bloom Tree can be thought of as a persistent data structure:
-   each leaf in the tree never change,
-   and for each insertion $O(log n)$ internal nodes
-   (the internal nodes between the leaf and the root)
-   need to be updated.
-   Since all the other internal nodes (and the leaves) will still be the same as the tree before the update,
-   this view of the MHBT as a persistent data structure makes it a very good fit for storing it in a Merkle Tree.
+   The MinHash Bloom Tree can be viewed as a persistent data structure,
+   since leaves never change once added and internal nodes only change if a new leaf is added to its subtree.
+   This makes it a very good fit for content-addressable storage
+   methods, and I'm exploring two different decentralized data storage systems
+   (IPFS and dat) as ways of storing and interacting with MinHash Bloom Tree indices.
 
-     I'll explore two different decentralized data storage systems
-     (`IPFS` and `Dat`) as ways of storing and interacting with MHBT indices.
-       - Popular indices benefit from increase bandwidth for downloading data
-       - Derived indices still benefit from nodes shared with the original index
+   On top the data storage aspects,
+   another important point is how researchers can interact with these indices
+   (both querying and updating it) in a way that centralized storage is not essential
+   (but operations are optimized if it is).
+   This is important in the context of long term sustainability of projects,
+   something often overlooked in bioinformatics systems.
+   The initial implementation is centralized for simplicity and prototyping the user interaction,
+   supporting data submission and querying,
+   with a data pipeline based on the experience downloading 800k+ microbial datasets from NCBI SRA
+   and also the preparation of indices for the IMG database from JGI (60k+ datasets).
 
-     On top the data storage aspects,
-     another important point is how researchers can interact with these indices
-     (both querying and updating it)
-     in a way that a central authority is not essential
-     (but operations are optimized if it is).
-     This is important in the context of long term sustainability of the system,
-     ~~since I hope to graduate one day and I can't promise I will maintain the system~~
-     something often overlooked in bioinformatics systems.
-     The initial implementation will be centralized for simplicity and prototyping the user interaction,
-     supporting data submission and querying,
-     with a data pipeline based on the experience downloading 400k+ microbial datasets from NCBI SRA
-     and also the preparation of indices for the IMG database from JGI (60k+ datasets).
-     Once this prototype is functional and we find what features are desirable,
-     I plan to start decentralizing this process by defining updates in terms of CRDT operations,
-     publishing a feed of these changes and moving to PubSub messaging between remote sites,
-     allowing them to update their indices and keep them consistent with ours.
-
-   Because these systems are content-aware,
-   modifying a signature (the JSON file containing the MinHash + metadata)
-   leads to different addresses on the network,
-   which is suboptimal for data sharing.
-   I also plan to explore how to use other systems to link back and provide additional metadata
-   (for example: taxonomy records)
-   using IPLD
-   (Interplanetary Linked Data,
-   a format similar to JSON-LD but focusing on IPFS)
-   and also Hypothesis,
-   a web annotation tool.
+   Once this prototype is functional and we find what features are desirable,
+   I plan to start decentralizing this process by defining updates in terms of CRDT operations,
+   publishing a feed of these changes and moving to PubSub messaging between remote sites,
+   allowing them to update their indices and keep them consistent with ours.

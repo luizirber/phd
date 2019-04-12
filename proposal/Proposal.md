@@ -15,52 +15,95 @@ biblio-style: 'abbrvnat'
 
 # Introduction
 
-<!--
-Problems:
- - data generation rate increasing, cheaper sequencing and real-time sequencers
- - memory consumption of traditional approaches is prohibitive for data scale
- - exact answers are expensive, approximate answers are a viable trade-off in
-     many situations
- - once data resources are generated, bioinformatics databases demand
-     maintenance and don't benefit from local caches
- - when a bioinformatics database goes away, tools that depended on it stop
-     working ("the grad student graduated" problem).
+Since the announcement of the sequencing of the human genome in 2001,
+technological breakthroughs in sequencing lowered the cost per megabase from
+thousands of dollars to fractions of cents,
+opening the way to new classes of experiments and deeper exploration of biological fields,
+from studying diseases to crop improvements.
+The data generation rate increased with lower costs and public data repositories
+for genomic data are reaching multiple petabytes of data,
+leading to discussions on how to search them and allow exploratory analysis and
+hypothesis generation from these resources.
 
-Last paragraph:
+Bioinformatics methods that once were viable for the available data don't scale to this new situation,
+creating new challenges both for method developers as well as scientists doing data analysis.
+Analysis that was once possible in a workstation now demand clusters and
+increasingly access to data in many different locations.
+Storing and transferring this data is an additional burden,
+especially since most resources are maintained in centralized locations and made
+available in ways that don't explore local caches in the network,
+leading to congestion and low transfer speeds.
+The centralization aspect also lead to resources disappearing when funding for maintaining it ends,
+since most of this resources were not developed with resilience and federation in mind,
+making them harder or impossible to deploy without access to the original location.
 
-This proposal describe methods for working with large scale sequencing datasets
-and databases,
-considering data acquisition, analysis and distribution solutions for problems
-encountered by biologists during their experiments.
-Special focus is given for searching for similar datasets in large sequence
-databases, and taxonomic classification of metagenomes.
--->
+This proposal describe methods for working with large scale sequencing datasets and databases,
+considering data acquisition, analysis and distribution solutions for problems encountered by biologists during their experiments.
+Special focus is given for searching for similar datasets in large sequence databases,
+and taxonomic profiling of metagenomes.
 
 # Background
 
 ## Problem Description
 
-<!--
-- similarity search
-- taxonomic classification
--->
+### Searching biological databases
 
-<!--
-At the most basic level genomic sequences are represented using an alphabet
-representing the 4 nitrogenous bases composing the DNA structure:
-Adenine, Cytosine, Guanine and Thymine.
-Computationally it is common to represent them as strings.
+The quintessential bioinformatics tool is BLAST [@altschul_basic_1990],
+a method that performs local alignment between sequences and supports building a database for searching multiple datasets.
+NCBI offers a web portal to search some public databases,
+but it is a subset of all the data available.
+For very large databases like the Sequence Read Archive [@kodama_sequence_2011] it is only possible to search in specific experiments,
+especially considering that even a subset like the microbial datasets contains more than 800 thousand experiments,
+making the full resource opaque for discovery and exploratory analysis.
 
-Sequencers transform 
+For tools that support building local databases,
+the main issue is downloading the required data.
+Going back to the microbial subset of the SRA,
+the 800 thousand experiments need more than 400 TB of data transferring,
+and storing it is also a non-trivial problem.
 
+### Taxonomic profiling
 
+Metagenomics is the study of the community from an environmental sample.
+This has applications both in many contexts,
+with special interest in health and clinical areas,
+where it is more commonly referred as the microbiome
+(the microorganisms composing the microbial community inside a person).
+
+Taxonomic profiling is the characterization of the organisms present in a metagenomics sample,
+including their relative abundance.
+Methods for taxonomic profiling can be divided in three groups: marker genes,
+alignment and $k$-mer composition.
+
+Marker genes methods use specific genes (like the 16S ribosomal RNA gene for the microbial case)
+or a combination of them [@segata_metagenomic_2012] to classify reads and
+aggregate it to create a summary of the relative abundance in the sample.
+Drawbacks include throwing out information from reads that don't align to the marker gene,
+and by focusing on one or a small set of genes it discards relevant information
+from all the other genes.
+This approach also doesn't work across long evolutionary distances,
+since marker genes diverged too much to be comparable.
+
+Alignment methods are not limited to specific genes [@huson_megan_2007],
+but are computationally more expensive due to use of larger sequence reference
+databases and more traditional local alignment methods (like BLAST).
+Finally,
+$k$-mer composition methods work by preparing a database with assignments from a
+$k$-mer to a specific taxon in a phylogenetic tree [@wood_kraken:_2014],
+and then using all $k$-mer assignments for a read to decide from what taxon the
+read came.
 The $k$-mer composition of a genomic sequence is a set of all $k$-length
 substrings,
 computed as a sliding window over the genomic sequence.
-
 For a genomic dataset the $k$-mer composition is the set of all $k$-length
 substrings for all sequences in it.
--->
+Further aggregation is also possible by combining information from each read to
+do the taxonomic profiling of the full sample.
+Profiling is very fast compared to other methods,
+but building the database involves more preprocessing.
+Another drawback is $k$-mer composition methods do exact matching,
+while other methods (being based on alignment) can account for mutation and
+other relevant biological processes.
 
 ## Data sketches
 
@@ -182,17 +225,28 @@ early [@sun_allsome_2017] and developing more efficient representations for the
 internal nodes [@solomon_improved_2017] [@harris_improved_2018] to use less
 storage space and memory.
 
-## Decentralized querying
+## Decentralized data access
 
+Public genomic databases are traditionally maintained by governmental agencies,
+including international consortiums with public funding.
+The Sequence Read Archive [@kodama_sequence_2011] is mirrored in Europe (the
+European Nucleotide Archive) and Japan (the DNA Data Bank of Japan),
+but they are not connected:
+if one resource is down,
+there is no fallback to the other mirrors.
+They also support processed data formats which might not be available in the
+other mirrors,
+despite being derived from the same original data.
+Similar architectural decisions are common in other public genomic databases.
 
-Persistent Data Structures [@driscoll_making_1989],
-
-IPFS [@benet_ipfs_2014],
-
-SRA closure [@noauthor_closure_2011],
-
-A little centralization [@tsitsiklis_power_2011]
-
+Despite some discussions [@noauthor_closure_2011] of alternatives in case funding or support
+for the SRA or similar large archives is cancelled,
+they usually don't take into account decentralized solutions for data access.
+IPFS [@benet_ipfs_2014] is one such system,
+based on the idea of locating resources in the network based on their content
+and not a specific location (like URLs).
+This allows querying peers for a specific object based on its content hash instead of depending on a specific URL,
+making it a good solution for mirrored data and local caches.
 
 # Aims
 
@@ -256,7 +310,7 @@ A little centralization [@tsitsiklis_power_2011]
    threshold),
    the MinHash Bloom Tree index also supports another search method called `gather`, 
    a variation of Best-First search using containment estimation.
-   `gather` can be used for doing taxonomic classification of genomic datasets,
+   `gather` can be used for doing taxonomic profiling of genomic datasets,
    finding all organisms present in a sample and how abundant they are.
    This is especially important when working with metagenomes,
    a dataset containing sequenced genomic data from an environmental sample
@@ -266,7 +320,7 @@ A little centralization [@tsitsiklis_power_2011]
    until there are no more hashes to search or a detection threshold is reached.
 
 3. **Decentralized indices for genomic data.**
-   The MinHash Bloom Tree can be viewed as a persistent data structure,
+   The MinHash Bloom Tree can be viewed as a persistent data structure [@driscoll_making_1989],
    since leaves never change once added and internal nodes only change if a new leaf is added to its subtree.
    This makes it a very good fit for content-addressable storage
    methods, and I'm exploring two different decentralized data storage systems
@@ -275,7 +329,8 @@ A little centralization [@tsitsiklis_power_2011]
    On top the data storage aspects,
    another important point is how researchers can interact with these indices
    (both querying and updating it) in a way that centralized storage is not essential
-   (but operations are optimized if it is).
+   (but operations are optimized if it is [@tsitsiklis_power_2011]).
+
    This is important in the context of long term sustainability of projects,
    something often overlooked in bioinformatics systems.
    The initial implementation is centralized for simplicity and prototyping the user interaction,

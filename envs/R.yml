@@ -1,0 +1,13 @@
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - R=3.5
+  - r-bookdown=0.9
+  - r-devtools=2.0.2
+  - r-ggplot2=3.1.1
+  - r-dplyr=0.8.0
+  - r-tinytex=0.12
+  - r-catools=1.17.1.2
+  - r-bitops=1.0

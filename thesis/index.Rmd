@@ -1,0 +1,67 @@
+---
+# UCD thesis fields
+title: "Population genetics of a frog you've never heard of"
+author: "Amp H. Ibian"
+year: "2018"
+month: "September"
+program: "ECOLOGY"
+uccampus: "DAVIS"
+report: "DISSERTATION"
+degree: "DOCTOR OF PHILOSOPHY"
+chair: "Chair Person 1"
+signature1: "Committee Member A"
+signature2: "Committe Member B"
+abstract: |
+  "Frogs are great. Ribbit Ribbit."
+acknowledgments: |
+  "My acknowledgments"
+dedication: |
+  "*One thing to remember is to talk to the animals. If you do, they will talk back to you. But if you don’t talk to them, they won’t talk back to you, then you won’t understand. And when you don’t understand, you will fear, and when you fear, you will destroy the animals, and if you destroy the animals, you will destroy yourself*"    
+  (Chief Dan George, Tseil-Waututh Nation, North Vancouver)"
+# End of UCD thesis fields
+knit: "bookdown::render_book"
+site: bookdown::bookdown_site
+output: 
+  aggiedown::thesis_pdf: 
+    latex_engine: xelatex
+#  aggiedown::thesis_gitbook: default
+#  aggiedown::thesis_word: default
+#  aggiedown::thesis_epub: default
+bibliography: bib/thesis.bib
+# Download your specific bibliography database file and refer to it in the line above.
+csl: csl/ecology.csl
+# Download your specific csl file and refer to it in the line above.
+link-citations: yes
+linkcolor: blue
+urlcolor: blue
+citecolor: blue
+lot: true
+lof: true
+#space_between_paragraphs: true
+# Delete the # at the beginning of the previous line if you'd like
+# to have a blank new line between each paragraph
+#header-includes:
+#- \usepackage{tikz}
+---
+
+<!--
+Above is the YAML (YAML Ain't Markup Language) header that includes a lot of metadata used to produce the document.  Be careful with spacing in this header!
+
+If you'd like to include a comment that won't be produced in your resulting file enclose it in a block like this.
+-->
+
+<!--
+If you receive a duplicate label error after knitting, make sure to delete the index.Rmd file and then knit again.
+-->
+
+```{r include_packages, include = FALSE}
+# This chunk ensures that the aggiedown package is
+# installed and loaded. This aggiedown package includes
+# the template files for the thesis.
+if(!require(devtools))
+  install.packages("devtools", repos = "http://cran.rstudio.com")
+if(!require(aggiedown))
+  devtools::install_github("ryanpeek/aggiedown")
+library(aggiedown)
+```
+

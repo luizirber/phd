@@ -1,14 +1,14 @@
 ---
 # UCD thesis fields
-title: "Population genetics of a frog you've never heard of"
-author: "Amp H. Ibian"
-year: "2018"
+title: "Decentralized indices for genomic data"
+author: "Luiz Carlos Irber Junior"
+year: "2019"
 month: "September"
-program: "ECOLOGY"
+program: "COMPUTER SCIENCE"
 uccampus: "DAVIS"
 report: "DISSERTATION"
 degree: "DOCTOR OF PHILOSOPHY"
-chair: "Chair Person 1"
+chair: "C. Titus Brown"
 signature1: "Committee Member A"
 signature2: "Committe Member B"
 abstract: |

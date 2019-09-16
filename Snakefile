@@ -4,7 +4,7 @@ rule all:
 rule install_deps:
   conda: 'envs/R.yml'
   shell: """
-    TAR=/bin/tar R -e 'devtools::install_github("ryanpeek/aggiedown@ae99300d43bdccc16069efcc08198624c76eee0c")'
+    TAR=/bin/tar R -e 'devtools::install_github("ryanpeek/aggiedown@ae99300d43bdccc16069efcc08198624c76eee0c", upgrade = "never")'
   """
 
 rule start_thesis:
@@ -22,4 +22,5 @@ rule build_thesis:
   shell: """
       cd thesis
       R -e "bookdown::render_book('index.Rmd', aggiedown::thesis_pdf(latex_engine = 'xelatex'))"
+      mv _book/_main.pdf _book/thesis.pdf
   """

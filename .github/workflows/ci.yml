@@ -9,10 +9,17 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
+    - name: install xelatex
+      run: sudo apt install -y texlive-xetex
     - name: Update conda
       run: conda update -q conda
-    - name: Install dependencies
+    - name: Install conda dependencies
       run: conda env create --force --file environment.yml
+    - name: Install aggiedown in R environment
+      run: |
+          export PATH="/usr/share/miniconda/bin:$PATH"
+          source activate thesis
+          snakemake --use-conda install_deps
     - name: Run pipeline
       run: |
           export PATH="/usr/share/miniconda/bin:$PATH"

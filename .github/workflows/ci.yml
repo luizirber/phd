@@ -9,9 +9,12 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - name: Run a one-line script
-      run: echo Hello, world!
-    - name: Run a multi-line script
+    - name: Update conda
+      run: conda update -q conda
+    - name: Install dependencies
+      run: conda env create --force --file environment.yml
+    - name: Run pipeline
       run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
+          export PATH="/usr/share/miniconda/bin:$PATH"
+          source activate thesis
+          snakemake --use-conda

@@ -25,3 +25,9 @@ jobs:
           export PATH="/usr/share/miniconda/bin:$PATH"
           source activate thesis
           snakemake --use-conda
+    - name: Release
+      uses: fnkr/github-action-ghr@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      env:
+          GHR_PATH: thesis/_book/thesis.pdf
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

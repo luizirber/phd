@@ -2,6 +2,44 @@
 
 \chaptermark {wort}
 
+<!--
+
+Aims
+
+3. **Decentralized indices for genomic data.**
+   The MinHash Bloom Tree can be viewed as a persistent data structure [@driscoll_making_1989],
+   since leaves never change once added and internal nodes only change if a new leaf is added to its subtree.
+   This makes it a very good fit for content-addressable storage
+   methods, and I'm exploring two different decentralized data storage systems
+   (IPFS and dat) as ways of storing and interacting with MinHash Bloom Tree indices.
+
+   On top the data storage aspects,
+   another important point is how researchers can interact with these indices
+   (both querying and updating it) in a way that centralized storage is not essential
+   (but operations are optimized if it is [@tsitsiklis_power_2011]).
+
+   This is important in the context of long term sustainability of projects,
+   something often overlooked in bioinformatics systems.
+   The initial implementation is centralized for simplicity and prototyping the user interaction,
+   supporting data submission and querying,
+   with a data pipeline based on the experience downloading 800k+ microbial datasets from NCBI SRA
+   and also the preparation of indices for the IMG database from JGI (60k+ datasets).
+
+   Once this prototype is functional and we find what features are desirable,
+   I plan to start decentralizing this process by defining updates in terms of CRDT operations,
+   publishing a feed of these changes and moving to PubSub messaging between remote sites,
+   allowing them to update their indices and keep them consistent with ours.
+
 ## Outline
 
-- 
+--> 
+
+## Introduction
+
+## Methods
+
+## Results
+
+## Discussion
+
+## Conclusion

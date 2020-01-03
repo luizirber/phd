@@ -21,6 +21,7 @@ rule build_thesis:
     bibliography='thesis/bib/thesis.bib'
   shell: """
       cd thesis
+      rm -f _main.Rmd
       R -e "bookdown::render_book('index.Rmd', aggiedown::thesis_pdf(latex_engine = 'xelatex'))"
       mv _book/_main.pdf _book/thesis.pdf
   """

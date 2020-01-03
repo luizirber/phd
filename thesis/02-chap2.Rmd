@@ -2,6 +2,83 @@
 
 \chaptermark {MHBT}
 
+<!--
+
+Aims:
+
+2. **Fast queries on many MinHash sketches using MinHash Bloom Trees**
+   [@solomon_fast_2016] introduces the Sequence Bloom Tree,
+   an hierarchical index data structure for finding a query sequence in large
+   dataset collections.
+   It represents the $k$-mer composition of a dataset using a Bloom Filter [@bloom_space/time_1970],
+   and the hierarchical aspect comes from organizing multiple dataset Bloom Filters into a tree structure, 
+   where the leaves are the dataset Bloom Filters and the internal nodes are Bloom Filters containing all $k$-mers 
+   below it. A query is evaluated by doing a breadth-first search of the tree,
+   and truncating the search when the query is not present over a pre-determined
+   threshold.
+
+   I adapted the Sequence Bloom Tree to use MinHash sketches as dataset representations,
+   referred as MinHash Bloom Tree from now on to highlight how they are
+   distinct.
+   Since a MinHash is a subset of the $k$-mer composition of a dataset,
+   internal nodes are still Bloom Filters,
+   but this time containing all the $k$-mers present in the MinHash.
+
+   On top of supporting the search method defined by the Sequence Bloom Tree
+   (a breadth-first search with early truncating on a similarity or containment
+   threshold),
+   the MinHash Bloom Tree index also supports another search method called `gather`, 
+   a variation of Best-First search using containment estimation.
+   `gather` can be used for doing taxonomic profiling of genomic datasets,
+   finding all organisms present in a sample and how abundant they are.
+   This is especially important when working with metagenomes,
+   a dataset containing sequenced genomic data from an environmental sample
+   (be it soil, ocean or human gut, for example) representing a community of organisms.
+   `gather` does iterative Best-First searches,
+   at each step removing matches from the original query,
+   until there are no more hashes to search or a detection threshold is reached.
+
 ## Outline
 
 - 
+-->
+
+## Introduction
+
+### Hierarchical index
+
+Searching for matches in large collection of datasets is not viable when hundreds of thousands of
+them are available, 
+especially if they are partitioned and not all present at the same place.
+
+Bloofi [@crainiceanu_bloofi:_2015] is a hierarchical index structure that
+extends the Bloom Filter basic query to collections of Bloom Filters.
+Instead of calculating the union of all Bloom Filters in the collection
+(which would allow answering if an element is present in any of them)
+it defines a tree structure where the original Bloom Filters are leaves,
+and internal nodes are the union of all the Bloom Filters in their subtrees.
+Searching is based on a breadth-first search,
+with pruning when no matches are found at an internal level.
+Bloofi can also be partitioned in a network,
+with network nodes containing a subtree of the original tree and only being
+accessed if the search requires it.
+
+The Sequence Bloom Tree [@solomon_fast_2016] adapts Bloofi for genomic contexts,
+rephrasing the problem as experiment discovery:
+given a query sequence $Q$ and a threshold $\theta$,
+which experiments contain at least $\theta$ of the original query $Q$?
+Experiments are encoded in Bloom Filters containing the $k$-mer composition of transcriptomes,
+and queries are transcripts.
+
+Further developments focused on clustering similar datasets to prune search
+early [@sun_allsome_2017] and developing more efficient representations for the
+internal nodes [@solomon_improved_2017] [@harris_improved_2018] to use less
+storage space and memory.
+
+## Methods
+
+## Results
+
+## Discussion
+
+## Conclusion

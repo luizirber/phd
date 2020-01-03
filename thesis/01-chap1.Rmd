@@ -6,7 +6,141 @@ The {#rmd-basics} text after the chapter declaration will allow us to link throu
 
 \chaptermark{Scaled}
 
+<!--
 ## Outline
 
 - Compare with regular minhash, CMash
 - Synthetic benchmark?
+
+## Aims
+1. **Adapting genomic MinHash for containment and cardinality estimation.**
+   The original MinHash article [@broder_resemblance_1997] defines two estimates for similarity
+   resemblance and containment,
+   with two variations of the MinHash sketch,
+   one with fixed length, but only supporting resemblance,
+   and another with variable length, supporting both resemblance and containment.
+   Mash [@ondov_mash:_2016] uses the fixed length sketch,
+   and defines a new distance metric called Mash distance to account for
+   the size of the genomes being compared.
+   The resemblance estimate works well for genomes of similar size,
+   but when dealing with datasets of highly-diverged organisms or even more complex
+   datasets (like metagenomes) the containment estimate is more appropriate and
+   closer to the sort of problems that biologists need to solve.
+
+     In sourmash [@titus_brown_sourmash:_2016] I implemented a variable length MinHash sketch
+     (with fallback to the fixed length case for compatibility with Mash)
+     called the scaled MinHash.
+     The scaled MinHash supports containment estimation,
+     allowing new applications not available on previous methods.
+
+     Sketches are data structures planned for specific classes of queries,
+     but it is possible to support additional use cases.
+     For example,
+     dashing [@baker_dashing:_2018] is a method that supports both similarity and cardinality estimation
+     using HyperLogLog sketches [@flajolet_hyperloglog:_2008],
+     a data structure initially derived for supporting cardinality estimation and later extended to similarity cases [@ertl_new_2017],
+     Even so, it doesn't support containment estimation.
+
+     Scaled MinHash can be adapted to also support cardinality estimation.
+     Due to how the scaled MinHash is constructed the same estimator from HyperLogLog can be used for it.
+-->
+
+## Introduction
+
+### Data sketches
+
+A data sketch is a representative proxy for the original data focused on queries
+for specific properties.
+It can also be viewed as a probabilistic data structure (in contrast with
+deterministic data structures),
+since it uses hashing techniques to provide statistical guarantees on the
+precision of the answer for a query.
+This allows a memory/accuracy trade-off:
+using more memory leads to more accurate results,
+but in memory-constrained situations it still bound results to an expected error rate.
+
+#### MinHash sketch: similarity and containment
+
+The MinHash sketch [@broder_resemblance_1997] was developed at Altavista in the context of document clustering and deduplication.
+It provides an estimate of the Jaccard similarity $J(A, B) = \frac{\left| A \cap B \right|}{\left| A \cup B \right|}$
+(called **resemblance** in the original article) and the **containment** of two documents $C(A, B) = \frac{\left| A \cap B \right|}{\left| A \right|}$,
+estimating how much of document $A$ is contained in document $B$.
+These estimates depend on two processes:
+Converting documents to sets ("Shingling"),
+and transforming large sets into short signatures,
+while preserving similarity ("Min-Hashing").
+In the original use case the *$w$-shingling* $\Omega$ of a document $D$ is defined as the set of all
+continuous subsequence of $w$ words contained in $D$.
+*Min-hashing* is the process of creating $W = \{h(x) | \forall x \in \Omega\}$,
+where $h(x)$ is an uniform hash function,
+and then either
+
+   - keeping the $n$ smallest hash values as a representative sketch of the original document ($\mathbf{MIN}_n(W)$)
+   - keeping elements that are $0 \mod m$ ($\mathbf{MOD}_m(W)$).
+
+$\mathbf{MIN}_n(W)$ if fixed-sized (length $n$) and supports similarity estimation,
+but doesn't support containment.
+$\mathbf{MOD}_m(W)$ supports both similarity and containment,
+with the drawback of not being fixed-sized anymore,
+growing with the complexity of the document.
+
+Mash [@ondov_mash:_2016] was the first implementation of MinHash in the genomic context,
+relating the $w$-shingling of a document to the $k$-mer composition of a genomic sequence,
+and using the $\mathbf{MIN}_n(W)$ fixed-sized formulation for the signature.
+Mash needs extra information (the genome size for the organism being queried) to account for genomic complexity in datasets.
+This extra information is required because using a fixed-size MinHash leads to
+different degrees of accuracy when comparing across highly-diverged organisms
+(bacteria to animals, for example), and it is even more extreme when taking more
+complex datasets into account (like metagenomes).
+
+#### Bloom Filter: Set membership
+
+The Bloom Filter [@bloom_space/time_1970] allows set membership queries.
+Inserting an element in a Bloom Filter is a two-step process: first use multiple
+hash functions on the element,
+and then for each bit set in the hashed value update the same position in the
+bit array.
+Querying an element involves calculating the multiple hash values for the
+element and then checking if the bits are set in the bit array.
+This guarantees that a false negative is impossible
+(if the element was inserted,
+a bit would be set),
+but can report false positives if there are collisions in the hash values.
+
+khmer [@crusoe_khmer_2015] implements a variation where longer (and multiple) bit arrays are used,
+and hash functions are derived from a composed hashing strategy $h_i(x) = h(x) \mod p_i$,
+where each bit array has a distinct length $p_i$ (and $p$ is a prime number),
+with $h(x)$ being a more CPU-intensive hash function.
+
+Bloom Filters are used extensively in bioinformatics,
+including lossy representation of assembly graphs [@pell_scaling_2012] and as
+a filtering step in processing pipelines [@ondov_mash:_2016].
+
+#### HyperLogLog: Cardinality estimation
+
+The HyperLogLog sketch [@flajolet_hyperloglog:_2008] estimates the number of unique elements in a dataset.
+It is designed to lower the variability of a more basic estimator:
+given a run of $\rho$ zeros in a binary sequence,
+it estimates the cardinality of the dataset to be $2^{\rho}$.
+It achieves this by splitting the binary sequence in two:
+the lower bits define an index for $m$ registers,
+and each register contain the longest run of zeros seen for that index.
+The HyperLogLog estimator $E(D)$ is an harmonic mean of the registers $M$,
+with a correction factor $\alpha_m$ for the number of registers:
+$$E(D) = \alpha_m m^2 \left( \sum_{j=0}^{m-1} 2^{-M[j]} \right)^{-1}$$
+More recent methods [@heule_hyperloglog_2013] improve the cardinality estimator
+by further refining the estimate based on empirical data.
+
+In genomic contexts, the khmer [@crusoe_khmer_2015] implementation of HyperLogLog [@irber_junior_efficient_2016]
+uses the $k$-mer composition of a genomic dataset and the \emph{murmurhash3} hash function,
+together with the improved estimator from [@heule_hyperloglog_2013].
+Dashing [@baker_dashing:_2018] is a recent method that supports both similarity and cardinality estimation using HyperLogLog,
+based on a better estimator for union and intersection of HyperLogLog sketches by [@ertl_new_2017].
+
+## Methods
+
+## Results
+
+## Discussion
+
+## Conclusion

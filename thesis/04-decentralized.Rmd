@@ -1,0 +1,13 @@
+# Decentralized indices for public genomic data
+
+\chaptermark {wort}
+
+## Introduction
+
+## Methods
+
+## Results
+
+## Discussion
+
+## Conclusion

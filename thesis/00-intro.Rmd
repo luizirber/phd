@@ -1,3 +1,86 @@
 <!-- The {.unnumbered} option here means that the introduction will be "Chapter 0." You can also use {-} for no numbers on chapters. -->
 
 # Introduction {#intro}
+
+
+genome sequencing generates data at increasing rates with lower costs than
+before, and the amount of data available for analysis is requires new methods
+for storing, retrieving and processing it. One of the first large scale
+applications for large genomic databases is BLAST, which performs local
+alignment (smith-waterman algorithm) using a seed heuristic to lower tohe cost
+that has a lower amortize d cost for performing the dyanamic programming
+required by the oriinginal algoritgm. While BLAST allows great precision and
+recall , the requirements for having indexes with sizes of the same magnitude of
+the original data end up making it challenging to use with collections in the
+order of multiple terabytes ofr even petabytes of data. For example, NCBI
+provides BLAST search as a feature on their website, but it uses specially
+prepared databases with a subset of the data stored in genbank or similar
+databases, but not thfor the SRA (sequence read aqrchive), which is in the order
+of petabytes of data and growing exponentially.
+
+Approaches for indexing large collections of data instead focus on narrwoowing
+the problem os that BLAST slvees solves. with tradeoffs in precision and
+accuracy. The exeperimtetn discovery problem, as defined in Solomon and
+kingsford, is prhased in terms of finding an epxperiment in a collection that
+shares content with a query up to a-- over a certain threshold. The content is
+defined as the k-mer composition of the datasets and query, where individual --
+unique-- presence/absence of each k-mer in the query is checked, instead of
+performing local alignment like BLAST does. While this lowers the ability to
+deal with imorp-- important biological features-- processes like mutations, the
+exact nature of the k-mer comparisons allow many computational benefits: k-mers
+can be hashed and stored in integer datatypes, allowinf for fast comparison and
+many opportunities for compression. Solomon and Kingfsord solution for the
+problem, the Sequence Bloom Tree (and variants), use these propertie fto deinfe
+a store the k-mer composition of a dataset in a Boom Filter, a probabilistic
+data structure that allows insertion and checking if a value might be present,
+and stands for a probabilistic version of a set structure in this case. Bloom
+Filters can be tuned to reach a predefined false positive bound, trading off
+memory for accurracy (more more-- memry is more accurate, but lower memory can
+still have acceptable accuracy). While this solves the problem of reqpresint--
+representing datasets in lo-- a smaller representation than the original data,
+it still requires checking the query against all avalilable datasets : for each
+q k-mer in the query dataset, check if it is present in the-- each of the
+datasets. The linear nature of this approach is prohibitive for thousands and
+millions of datasets, so the SBT is organized as an hierarchical search index: a
+tree, where each internal node contains all the k-mer presence/absence data from
+un-- nodes under it. This was first explored in Bloofi, which is a hierarchy of
+bloom filters, and the SBT addapt-- adapts this idea for genomic datasets. Bloom
+filters are a-- also have the useful property of being easy and fast to merge:
+given two bloom filters, constructing a third one containing all the data from
+the first two can be done by doing element-wise OR on both bloom filters
+(usually represented as arrays). The downside is false positive increase-- rate
+increasing, especially oif both r-- origianl filters are already reaching
+saturation. To account for that, Bloom Filters in a SBT neet-- need to be
+initialized with a size proportional to the cardinality of the combined
+datasets, which can be quite large for big collections. But, since Bloom Filters
+only generate false positives, and not false negatives, in the worst case there
+is degratadion of performance computationally, but -- because more iner--
+internal nodes need to be checked, but the answer stays te same.
+
+While Bloom Filters can be used to calculate similarity of dataset, tehere--
+there are data structures more appropriate for this use case. A MinHash sketch
+(first defined by Broder 1997) is a representation thof-- of the -- of a dataset
+that allows estimating the Jaccard similarity of the original dataset with --
+without requiring the original data to be available. The Jaccard similarity of
+two datasets is the size of the intersection of elements in both datasets
+divided by the size of the union of elements in both datasets. The MinHash
+sketch uses a subset of the original data as a proxy for the -- in this case,
+hashing each element and taking the smallest values for each dataset. Broder
+fdefines two approaches for taking the smallest values: one genrerates a
+fixed-size collection, which is preferable when datasets have similar
+cardinalities (and properties). The other one takes instead a -- every hash that
+is mod M for --, with M used to control how many elements might be taken: large
+M leads to fewer elements being taken, with smaller M taiing more elements. The
+ModHash aproach also allows calculating the containment of two datasets, how
+much aof a dataset is present in another. It is defined as the size of the
+intersection divided byu the size of the dataset, and so is assymetrical (unlike
+the jaccard similarity). While the MinHash can also calculate containment, if
+the datasets are of distinct cardinalities there is an errorthat accumulates
+quickly. This is especially relevant for biological use cases, espcially
+compariosns accross large genomic distances. Mash is the first method to use
+MinHash for genomic data, and uses the k-mer composition to repesent the
+original data as a set. To account for genomic distances they define a new
+metric, the mash distance, that takes into account the size of the genome for
+each dataset.
+
+

@@ -2,47 +2,6 @@
 
 \chaptermark {MHBT}
 
-<!--
-
-Aims:
-
-2. **Fast queries on many MinHash sketches using MinHash Bloom Trees**
-   [@solomon_fast_2016] introduces the Sequence Bloom Tree,
-   an hierarchical index data structure for finding a query sequence in large
-   dataset collections.
-   It represents the $k$-mer composition of a dataset using a Bloom Filter [@bloom_space/time_1970],
-   and the hierarchical aspect comes from organizing multiple dataset Bloom Filters into a tree structure, 
-   where the leaves are the dataset Bloom Filters and the internal nodes are Bloom Filters containing all $k$-mers 
-   below it. A query is evaluated by doing a breadth-first search of the tree,
-   and truncating the search when the query is not present over a pre-determined
-   threshold.
-
-   I adapted the Sequence Bloom Tree to use MinHash sketches as dataset representations,
-   referred as MinHash Bloom Tree from now on to highlight how they are
-   distinct.
-   Since a MinHash is a subset of the $k$-mer composition of a dataset,
-   internal nodes are still Bloom Filters,
-   but this time containing all the $k$-mers present in the MinHash.
-
-   On top of supporting the search method defined by the Sequence Bloom Tree
-   (a breadth-first search with early truncating on a similarity or containment
-   threshold),
-   the MinHash Bloom Tree index also supports another search method called `gather`, 
-   a variation of Best-First search using containment estimation.
-   `gather` can be used for doing taxonomic profiling of genomic datasets,
-   finding all organisms present in a sample and how abundant they are.
-   This is especially important when working with metagenomes,
-   a dataset containing sequenced genomic data from an environmental sample
-   (be it soil, ocean or human gut, for example) representing a community of organisms.
-   `gather` does iterative Best-First searches,
-   at each step removing matches from the original query,
-   until there are no more hashes to search or a detection threshold is reached.
-
-## Outline
-
-- 
--->
-
 ## Introduction
 
 ### Hierarchical index

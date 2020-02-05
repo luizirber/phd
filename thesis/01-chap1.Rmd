@@ -6,45 +6,6 @@ The {#rmd-basics} text after the chapter declaration will allow us to link throu
 
 \chaptermark{Scaled}
 
-<!--
-## Outline
-
-- Compare with regular minhash, CMash
-- Synthetic benchmark?
-
-## Aims
-1. **Adapting genomic MinHash for containment and cardinality estimation.**
-   The original MinHash article [@broder_resemblance_1997] defines two estimates for similarity
-   resemblance and containment,
-   with two variations of the MinHash sketch,
-   one with fixed length, but only supporting resemblance,
-   and another with variable length, supporting both resemblance and containment.
-   Mash [@ondov_mash:_2016] uses the fixed length sketch,
-   and defines a new distance metric called Mash distance to account for
-   the size of the genomes being compared.
-   The resemblance estimate works well for genomes of similar size,
-   but when dealing with datasets of highly-diverged organisms or even more complex
-   datasets (like metagenomes) the containment estimate is more appropriate and
-   closer to the sort of problems that biologists need to solve.
-
-     In sourmash [@titus_brown_sourmash:_2016] I implemented a variable length MinHash sketch
-     (with fallback to the fixed length case for compatibility with Mash)
-     called the scaled MinHash.
-     The scaled MinHash supports containment estimation,
-     allowing new applications not available on previous methods.
-
-     Sketches are data structures planned for specific classes of queries,
-     but it is possible to support additional use cases.
-     For example,
-     dashing [@baker_dashing:_2018] is a method that supports both similarity and cardinality estimation
-     using HyperLogLog sketches [@flajolet_hyperloglog:_2008],
-     a data structure initially derived for supporting cardinality estimation and later extended to similarity cases [@ertl_new_2017],
-     Even so, it doesn't support containment estimation.
-
-     Scaled MinHash can be adapted to also support cardinality estimation.
-     Due to how the scaled MinHash is constructed the same estimator from HyperLogLog can be used for it.
--->
-
 ## Introduction
 
 ### Data sketches
@@ -62,8 +23,9 @@ but in memory-constrained situations it still bound results to an expected error
 #### MinHash sketch: similarity and containment
 
 The MinHash sketch [@broder_resemblance_1997] was developed at Altavista in the context of document clustering and deduplication.
-It provides an estimate of the Jaccard similarity $J(A, B) = \frac{\left| A \cap B \right|}{\left| A \cup B \right|}$
-(called **resemblance** in the original article) and the **containment** of two documents $C(A, B) = \frac{\left| A \cap B \right|}{\left| A \right|}$,
+It provides an estimate of the Jaccard similarity
+(called **resemblance** in the original article)
+and the **containment** of two documents,
 estimating how much of document $A$ is contained in document $B$.
 These estimates depend on two processes:
 Converting documents to sets ("Shingling"),
@@ -71,7 +33,7 @@ and transforming large sets into short signatures,
 while preserving similarity ("Min-Hashing").
 In the original use case the *$w$-shingling* $\Omega$ of a document $D$ is defined as the set of all
 continuous subsequence of $w$ words contained in $D$.
-*Min-hashing* is the process of creating $W = \{h(x) | \forall x \in \Omega\}$,
+*Min-hashing* is the process of creating <!--$W = \{h(x) | \forall x \in \Omega\}$,-->
 where $h(x)$ is an uniform hash function,
 and then either
 

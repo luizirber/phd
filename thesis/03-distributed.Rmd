@@ -4,9 +4,139 @@
 
 ## Introduction
 
+Signature calculation in sourmash is a low memory and streaming process.
+Low memory because a signature retains a subset of the original data,
+and streaming because once a chunk of the data is processed it is not necessary to keep it or refer to it again.
+The calculation process is frequently I/O bound,
+unless very fast access to the data is available.
+
+On top of fast access to one dataset,
+indexing large public genomic databases also requires considering another axis:
+since there are millions of datasets in these databases,
+embarrassingly parallel approaches to access the data are necessary too,
+because even with the fastest possible connection it would still take too long to process them all serially.
+Given that signatures are dataset-dependant,
+a system that can spawn a large number of jobs can potentially keep up with the rate of new dataset inclusion,
+and also make it feasible to calculate signatures for the current datasets.
+
+In this sense,
+getting access to the data and downloading it is the main bottleneck,
+especially considering that high-speed network connections are expensive.
+At the same time,
+given the embarrassingly parallel nature of signature calculation,
+multiple workers can be spawned in different computational infrastructure
+(academic clusters, public cloud instances, and even browsers)
+with potentially independent network connections.
+Then the limitation is how fast data can be served from the public genomic database being indexed.
+
 ## Methods
 
+(Explain SRA and IMG)
+
+(SRA -> public wort instance,
+ IMG -> use snakemake to coordinate)
+
+### Data selection
+
+#### Sequence Read Archive
+
+Given the large amount of data available and the biological diversity of the datasets,
+the initial prototype focused on single genome microbial datasets (excluding metagenomes).
+The datasets were selected with a query to the Sequence Read Archive to retrieve enough metadata for processing,
+but `wort` doesn't aim to store and provide this metadata explicitly,
+instead opting to point to the original database metadata for more information.
+
+#### IMG
+
+Through a FICUS grant we also had access to the JGI-IMG database,
+and access to the NERSC supercomputers to calculate signatures.
+<!-- size of IMG at that time
+ - 65k genomes
+ -->
+Metadata was provided independently of online access to IMG,
+and represented a snapshot of the data available on the database at that point. <!-- TODO: put date here? -->
+The sequencing data was available in a shared storage unit,
+and processing was done through NERSC's Cori scheduling system.
+
+<!-- Link IMG snakemake repo -->
+
+### The worker
+
+Based on the initially retrieved metadata,
+each dataset was processed by a worker.
+
+For IMG the data is available in a shared filesystem,
+so `sourmash compute` access it directly.
+
+For the SRA the worker uses `fastq-dump` (from the `sra toolkit`) to download the data and stream it through a UNIX pipe into a `sourmash compute` process.
+Since the data is being streamed,
+it is not being stored locally by the worker,
+so if a signature need to be recalculated the data needs to be downloaded again.
+Signatures would only need to be recalculated if the `sourmash compute` parameters are changed,
+so the initial parameters tried to accommodate for it and cover more use cases,
+which leads to a larger signature (but still a fraction of the size of the original data).
+
+### Coordination
+
+The first prototype (named `soursigs`) used `snakemake` to
+1) query metadata from SRA
+2) for each dataset, spawn a worker job to process it and generate a signature
+3) upload the signature to permanent storage
+<!-- Link soursigs repo for initial prototype -->
+
+This system was able to process 412k datasets over two weeks,
+...
+<!-- link to soursigs posts? -->
+but processing was still limited to one system executing all the workers jobs.
+Even with the system being a cluster and providing access to many compute nodes,
+the network connection was still shared between all nodes.
+
+### Storage
+
+Signatures were initially stored locally in the system where they were processed
+(NERSC Cori for IMG, MSU HPCC for SRA).
+None serve as permanent or public storage,
+since they are restricted systems and access can be revoked once projects are concluded.
+
+For convenience,
+data was uploaded to Amazon S3,
+which makes it easier to share the data but also has drawbacks:
+- Storage and data access incur additional costs,
+  especially if the data becomes a popular resource and used frequently.
+- Even with all the infrastructure and level of service that AWS provides,
+  it is a single point of failure and is not easy to mirror in other places without generating new URLs
+  or using some sort of load balancer.
+
+Other data repositories like Zenodo are better for archival purposes,
+but not as appropriate for a system that is frequently updated.
+
+<!-- data was also uploaded to IPFS, but maybe keep it to discuss in depth in the next section? -->
+
+## From soursigs to wort
+
+<!-- how and why did soursigs evolve into wort? -->
+<!-- mirror structure from previous section, showing how things changed? -->
+
+`wort` was created to overcome this limitation and allow more computational systems to participate in the process,
+building an heterogeneous system that doesn't depend on similar resources being available for each worker.
+Two major changes for this:
+1) encapsulate workers in a Docker container, which is also executable by Singularity.
+   Docker containers are useful for cloud instances,
+   but are usually not available in academic clusters.
+   Similarly, Singularity tends to be present in academic clusters,
+   but is not as convenient in cloud infrastructures.
+   <!-- encapsulation is also easier to do because all dependencies are available on conda channels,
+   especially bioconda and conda-forge -->
+2) Use a messaging queue for job submission that can be accessed by workers in any computational system.
+
+
+
+
+
 ## Results
+
+- 1M+ signatures
+- 2 TB compressed
 
 ## Discussion
 

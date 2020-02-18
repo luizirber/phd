@@ -7,15 +7,23 @@
 Signature calculation in sourmash is a low memory and streaming process.
 Low memory because a signature retains a subset of the original data,
 and streaming because once a chunk of the data is processed it is not necessary to keep it or refer to it again.
-The calculation process is frequently I/O bound,
+The calculation process is frequently I/O bound on reading data,
 unless very fast access to the data is available.
+
+CTB: here it is also important to note that sourmash signatures are typically
+quite small, and so the calculation process is inherently asymmetric in
+terms of communication: the input data is 1000-100000 times larger than the
+output data, which is what allows wort-like solutions to work in the first place.
+
+(Maybe throw in a comparison to folding@home, but differentiate because those require significant computation while wort requires significant data.)
 
 On top of fast access to one dataset,
 indexing large public genomic databases also requires considering another axis:
 since there are millions of datasets in these databases,
 embarrassingly parallel approaches to access the data are necessary too,
 because even with the fastest possible connection it would still take too long to process them all serially.
-Given that signatures are dataset-dependant,
+Given that processing a dataset into a signature can be done independently
+of other datasets,
 a system that can spawn a large number of jobs can potentially keep up with the rate of new dataset inclusion,
 and also make it feasible to calculate signatures for the current datasets.
 
@@ -27,7 +35,12 @@ given the embarrassingly parallel nature of signature calculation,
 multiple workers can be spawned in different computational infrastructure
 (academic clusters, public cloud instances, and even browsers)
 with potentially independent network connections.
-Then the limitation is how fast data can be served from the public genomic database being indexed.
+Then the limitation is how fast data can be served from the public genomic database being indexed; this is inherently a limitation of centralized data storage.
+
+CTB Q: How does this change if the datasets / genomic databases are in the cloud, and so are accessible from multiple independent compute servers? This is the "scale out" approach and avoids the 1000x slower speed of WAN access. Note data egress charges / zone specificity.
+
+Statement of what this chapter is about: soursigs and wort for exploring
+(crowdsourced?) ways of calculating signatures for large public databases.
 
 ## Methods
 
@@ -111,6 +124,8 @@ but processing was still limited to one system executing all the workers jobs.
 Even with the system being a cluster and providing access to many compute nodes,
 the external network connection was still shared between all nodes.
 
+Note: this initial prototype only read a small part of the stream. This was because our scientific goal was to identify novel data sets, and we could take advantage of the random nature of shotgun sequencing to yada yada. Ref syrah, scaled.
+
 ### Storage
 
 Signatures were initially stored locally in the system where they were processed
@@ -128,7 +143,7 @@ which makes it easier to share the data but also has drawbacks:
 		or using some sort of load balancer.
 
 Other data repositories like Zenodo are better for archival purposes,
-but not as appropriate for a system that is frequently updated.
+but not as appropriate for a system that is frequently updated. (=> IPFS chp 4 motivation)
 
 <!-- data was also uploaded to IPFS, but maybe keep it to discuss in depth in the next section? -->
 
@@ -137,7 +152,7 @@ but not as appropriate for a system that is frequently updated.
 <!-- how and why did soursigs evolve into wort? -->
 <!-- mirror structure from previous section, showing how things changed? -->
 
-`wort` was created to overcome this limitation and allow more computational systems to participate in the process,
+`wort` was created to overcome this (which??) limitation and allow more computational systems to participate in the process,
 building an heterogeneous system that doesn't depend on similar resources being available for each worker.
 Two major changes for this:
 	1) encapsulate workers in a Docker container, which is also executable by Singularity.
@@ -147,7 +162,7 @@ Two major changes for this:
 		 but is not as convenient in cloud infrastructures.
 		 <!-- encapsulation is also easier to do because all dependencies are available on conda channels,
 		 especially bioconda and conda-forge -->
-	2) Use a messaging queue for job submission that can be accessed by workers in any computational system.
+	2) Use a messaging queue for job submission that can be accessed by workers in any computational system.  (here note this is still centralized)
 
 Another goal for `wort` is creating a basic API for common tasks that allow external interactions without needing knowledge about internal implementation.
 Since the internal details are not exposed it allows refactoring and reimplementing the infrastructure with other technologies not used in the original version.
@@ -157,6 +172,7 @@ the original version is implemented in a more traditional (and centralized) appr
 with a web application written in Flask serving the API and sending job requests to an Amazon SQS queue.
 Workers connect to the queue and grab jobs for execution,
 and upload results to Amazon S3.
+(Diagram and/or process flow specified here?)
 <!-- drop the "a little centralization goes a long way" paper here -->
 The coordination of the system is still centralized,
 but this new infrastructure allows workers to be executed in any system that has Docker or Singularity support,
@@ -165,6 +181,8 @@ as well as local workstations and personal laptops.
 Since signature calculation is I/O bound,
 CPU resources consumption is proportional to how fast the network connection can provide data,
 and the CPU is idle waiting for data most of the time.
+
+(Use "asymmetric" for the way data behaves: lots goes in, little goes out, compute is not actually that significant)
 
 Since signature calculation jobs are independent of each other and don't have to communicate with each other,
 the single point of failure of this approach is the centralized coordination.
@@ -190,4 +208,32 @@ refactoring the internal implementation while keeping all tests working allow im
 
 ## Discussion
 
+We set out to solve a problem...
+
+We designed a system to take advantage of custom features of the task:
+asymmetric, etc.
+
+This system was centralized in the following way, but otherwise relied on independent workers.
+
+The system worked pretty well within its limitations. Processed XX YY ZZ etc etc.
+
+Challenges of centralization. Challenges of single database to
+access. Are there better solutions that rely on the central people to
+do things differently, e.g. allow docker containers running on their
+hardware? (Kind of what the cloud allows, sure. But you can make the
+point that no, not really, you're always limited by the centralized
+nature of the design.) So in chp4 we explore a different more
+decentralized approach.
+
+CTB: Attacks on this system by bad faith workers? Access restrictions on queue.
+
+Maybe reference "linda tuple space" in the paper somewhere?
+
 ## Conclusion
+
+Distributed workers can be an efficient and effective solution but only insofar as the centralized database can scale to hand data to them fast enough.
+
+TODO:
+* pull text down from above into discussion as you think it makes sense
+* smoothen out additional text from CTB discussion, with extra points
+* move on to chp4

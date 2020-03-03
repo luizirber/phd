@@ -38,6 +38,10 @@ storage space and memory.
 
 ## Results
 
+### sourmash is not a taxonomic profiler...
+
+### ... until it is.
+
 ## Discussion
 
 ## Conclusion

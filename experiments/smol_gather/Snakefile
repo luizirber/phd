@@ -1,0 +1,62 @@
+from glob import glob
+
+rule all:
+  input:
+    "outputs/gather_1000/SRR606249.csv",
+#    "outputs/gather_1/SRR606249.csv",
+    "outputs/mash_screen/SRR606249.tsv",
+
+rule download_mash_screen_db:
+  output: "data/mash/RefSeq88n.msh"
+  shell: """
+    wget -qO {output} https://obj.umiacs.umd.edu/mash/screen/RefSeq88n.msh.gz
+    gunzip data/mash/RefSeq88n.msh
+  """
+
+rule download_podar:
+  output: expand("data/refs/{i}.fa", i=range(0, 64))
+  shell: "curl -L https://osf.io/8uxj9/download | tar xzf - -C data/"
+
+rule compute_refs:
+  output: "outputs/scaled_{scaled}/refs/{sample}.sig"
+  input: "data/refs/{sample}.fa"
+  params:
+    scaled = "{scaled}"
+  conda: "envs/sourmash.yml"
+  shell: "sourmash compute -k 21 --name-from-first --scaled {params.scaled} -o {output} {input}"
+
+rule compute_reads:
+  output: "outputs/scaled_{scaled}/reads/{sample}.sig"
+#  input: expand("data/reads/{{sample}}_{i}.fastq.gz", i=(1,2))
+  input: "data/reads/{sample}_2.fastq.gz"
+  params:
+    scaled = "{scaled}"
+  conda: "envs/sourmash.yml"
+  shell: "sourmash compute -k 21 --name-from-first --scaled {params.scaled} -o {output} {input}"
+
+rule download_reads:
+  output: "data/reads/SRR606249_{i}.fastq.gz"
+  shell: """
+    wget -qO {output[0]} \
+      ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR606/SRR606249/SRR606249_{wildcards.i}.fastq.gz
+  """
+
+rule gather_sigs:
+  output: "outputs/gather_{scaled}/{sample}.csv"
+  input:
+    query = "outputs/scaled_{scaled}/reads/{sample}.sig",
+    sigs = expand("outputs/scaled_{{scaled}}/refs/{i}.sig", i=range(0, 64))
+  conda: "envs/sourmash.yml"
+  shell: """
+    sourmash gather -o {output} {input.query} {input.sigs}
+  """
+
+rule mash_screen:
+  output: "outputs/mash_screen/{sample}.tsv"
+  input:
+    query = "data/reads/{sample}_2.fastq.gz",
+    db = "data/mash/RefSeq88n.msh"
+  conda: "envs/mash.yml"
+  shell: """
+    mash screen -w {input.db} {input.query} > {output}
+  """

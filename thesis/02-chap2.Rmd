@@ -1,4 +1,4 @@
-# Indexing with MinHash Bloom Trees
+# Indexing collections of signatures with MinHash Bloom Trees and LCADB
 
 \chaptermark {MHBT}
 
@@ -41,6 +41,14 @@ storage space and memory.
 ### sourmash is not a taxonomic profiler...
 
 ### ... until it is.
+
+<!-- 
+compare with CAMI 2 mouse gut toy challenge set, because it has a gold standard
+
+if comparing with CAMI 1, use CAMI_1_HIGH, since it doesn't have viruses.
+CAMI 2 refseq database also doesn't have viruses...
+TODO: I have the data for building signatures for genbank viruses, 
+-->
 
 ## Discussion
 

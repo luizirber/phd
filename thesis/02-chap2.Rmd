@@ -81,7 +81,6 @@ Intro: what is CAMI, what it provides:
 - Already published, but results are for older/outdated tools
 - still a good benchmark (because gold standards are available)
 - low and medium datasets have viruses, which are not in sourmash indices
-
 -->
 
 #### CAMI 2 mouse gut toy challenge
@@ -90,6 +89,8 @@ Intro: what is CAMI, what it provides:
 - new CAMI challenges, with short and long reads (pacbio)
 - toy challenge is calibration: gold standard available
 - CAMI provides results for other tools
+
+CAMI 2 refseq database also doesn't have viruses...
 
 - sourmash gather:
 -->

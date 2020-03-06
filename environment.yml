@@ -7,3 +7,4 @@ dependencies:
   - python=3.7.3
   - snakemake-minimal=5.10.0
   - pandas=1.0.1
+  - matplotlib-base

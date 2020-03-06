@@ -2,37 +2,14 @@ from glob import glob
 
 rule all:
   input:
-    "outputs/gather_1000/SRR606249.csv",
-#    "outputs/gather_1/SRR606249.csv",
-    "outputs/mash_screen/SRR606249.tsv",
+    "outputs/scaled_1000/SRR606249.csv",
+#    "outputs/scaled_1/SRR606249.csv",
+#    "outputs/mash_screen/SRR606249.tsv",
+    "outputs/mash_screen/SRR606249-k21-s1000-m2.tsv",
+    "outputs/mash_screen/SRR606249-k21-s1000-m1.tsv",
+    "outputs/cmash/SRR606249.csv",
 
-rule download_mash_screen_db:
-  output: "data/mash/RefSeq88n.msh"
-  shell: """
-    wget -qO {output} https://obj.umiacs.umd.edu/mash/screen/RefSeq88n.msh.gz
-    gunzip data/mash/RefSeq88n.msh
-  """
-
-rule download_podar:
-  output: expand("data/refs/{i}.fa", i=range(0, 64))
-  shell: "curl -L https://osf.io/8uxj9/download | tar xzf - -C data/"
-
-rule compute_refs:
-  output: "outputs/scaled_{scaled}/refs/{sample}.sig"
-  input: "data/refs/{sample}.fa"
-  params:
-    scaled = "{scaled}"
-  conda: "envs/sourmash.yml"
-  shell: "sourmash compute -k 21 --name-from-first --scaled {params.scaled} -o {output} {input}"
-
-rule compute_reads:
-  output: "outputs/scaled_{scaled}/reads/{sample}.sig"
-#  input: expand("data/reads/{{sample}}_{i}.fastq.gz", i=(1,2))
-  input: "data/reads/{sample}_2.fastq.gz"
-  params:
-    scaled = "{scaled}"
-  conda: "envs/sourmash.yml"
-  shell: "sourmash compute -k 21 --name-from-first --scaled {params.scaled} -o {output} {input}"
+### Download the podar metagenome
 
 rule download_reads:
   output: "data/reads/SRR606249_{i}.fastq.gz"
@@ -41,8 +18,62 @@ rule download_reads:
       ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR606/SRR606249/SRR606249_{wildcards.i}.fastq.gz
   """
 
+### Download precomputed databases (might not need them)
+
+rule download_mash_screen_db:
+  output: "data/mash/RefSeq88n.msh"
+  shell: """
+    wget -qO {output}.gz https://obj.umiacs.umd.edu/mash/screen/RefSeq88n.msh.gz
+    gunzip data/mash/RefSeq88n.msh.gz
+  """
+
+rule download_cmash_db:
+  output: "data/cmash/cmash_db_n1000_k60.h5"
+  shell: "curl -L https://ucla.box.com/shared/static/27xulklfvo60g7heogvi2y43jti5tqxo.gz | tar xzf - -C data/cmash"
+
+### Download reference genomes present in podar
+
+rule download_podar:
+  output: expand("data/refs/{i}.fa", i=range(0, 64))
+  shell: "curl -L https://osf.io/8uxj9/download | tar xzf - -C data/"
+
+### Compute sourmash signatures for each reference genome and the reads
+
+rule compute_refs:
+  output: "outputs/scaled_{scaled}/refs/{sample}.sig"
+  input: "data/refs/{sample}.fa"
+  params:
+    scaled = "{scaled}"
+  conda: "envs/sourmash.yml"
+  shell: """
+    sourmash compute -k 21 \
+             --name-from-first \
+             --scaled {params.scaled} \
+             --track-abundance \
+             -o {output} \
+             {input}
+  """
+
+rule compute_reads:
+  output: "outputs/scaled_{scaled}/reads/{sample}.sig"
+#  input: expand("data/reads/{{sample}}_{i}.fastq.gz", i=(1,2))
+  input: "data/reads/{sample}_2.fastq.gz"
+  params:
+    scaled = "{scaled}"
+  conda: "envs/sourmash.yml"
+  shell: """
+    sourmash compute -k 21 \
+             --name-from-first \
+             --scaled {params.scaled} \
+             --track-abundance \
+             -o {output} \
+             {input}
+  """
+
+### Run gather
+
 rule gather_sigs:
-  output: "outputs/gather_{scaled}/{sample}.csv"
+  output: "outputs/scaled_{scaled}/{sample}.csv"
   input:
     query = "outputs/scaled_{scaled}/reads/{sample}.sig",
     sigs = expand("outputs/scaled_{{scaled}}/refs/{i}.sig", i=range(0, 64))
@@ -51,12 +82,65 @@ rule gather_sigs:
     sourmash gather -o {output} {input.query} {input.sigs}
   """
 
+### Build DB and run mash screen
+
+rule mash_sketch:
+  output: "outputs/mash_screen/refs/{sample}-k{ksize}-s{num}-m{cutoff}.msh"
+  input: "data/refs/{sample}.fa"
+  conda: "envs/mash.yml"
+  threads: 1
+  params:
+    ksize = "{ksize}",
+    num = "{num}",
+    cutoff = "{cutoff}",
+  shell: """
+    mash sketch -k {params.ksize} \
+                -s {params.num} \
+                -m {params.cutoff} \
+                -o {output} \
+                {input}
+  """
+
+rule build_mash_db:
+  output: "outputs/mash_screen/db-k{ksize}-s{num}-m{cutoff}.msh"
+  input: expand("outputs/mash_screen/refs/{i}-k{{ksize}}-s{{num}}-m{{cutoff}}.msh", i=range(0, 64))
+  conda: "envs/mash.yml"
+  threads: 1
+  shell: """
+    mash paste {output} {input}
+  """
+
 rule mash_screen:
-  output: "outputs/mash_screen/{sample}.tsv"
+  output: "outputs/mash_screen/{sample}-k{ksize}-s{num}-m{cutoff}.tsv"
   input:
     query = "data/reads/{sample}_2.fastq.gz",
-    db = "data/mash/RefSeq88n.msh"
+    db = "outputs/mash_screen/db-k{ksize}-s{num}-m{cutoff}.msh",
+#    db = "outputs/mash_screen/db.msh",
   conda: "envs/mash.yml"
+  threads: 1
   shell: """
-    mash screen -w {input.db} {input.query} > {output}
+    mash screen -p {threads} {input.db} {input.query} > {output}
+  """
+
+### Build DB and run cmash
+
+rule build_cmash_db:
+  output:
+    db = "outputs/cmash/db.h5",
+    tst = "outputs/cmash/db.tst",
+  input: expand("data/refs/{i}.fa", i=range(0, 64))
+  conda: "envs/cmash.yml"
+  shell: """
+    MakeStreamingDNADatabase.py -k 21 <(ls -1 data/refs/*.fa) {output.db}
+  """
+
+rule cmash:
+  output: "outputs/cmash/{sample}.csv"
+  input:
+    query = "data/reads/{sample}_2.fastq.gz",
+    db = "outputs/cmash/db.h5"
+  conda: "envs/cmash.yml"
+  threads: 1
+  shell: """
+     StreamingQueryDNADatabase.py -t {threads} {input.query} {input.db} {output} 21-21-21
   """

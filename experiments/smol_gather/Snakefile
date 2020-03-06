@@ -2,6 +2,7 @@ from glob import glob
 
 rule all:
   input:
+    "outputs/scaled_1000/containments_SRR606249.csv"
     "outputs/scaled_1000/SRR606249.csv",
 #    "outputs/scaled_1/SRR606249.csv",
 #    "outputs/mash_screen/SRR606249.tsv",
@@ -73,7 +74,7 @@ rule compute_reads:
 ### Run gather
 
 rule gather_sigs:
-  output: "outputs/scaled_{scaled}/{sample}.csv"
+  output: "outputs/scaled_{scaled,\d+}/{sample}.csv"
   input:
     query = "outputs/scaled_{scaled}/reads/{sample}.sig",
     sigs = expand("outputs/scaled_{{scaled}}/refs/{i}.sig", i=range(0, 64))
@@ -81,6 +82,30 @@ rule gather_sigs:
   shell: """
     sourmash gather -o {output} {input.query} {input.sigs}
   """
+
+rule containment_sigs:
+  output: "outputs/scaled_{scaled}/containments/{i}_{sample}.csv"
+  input:
+    sig = "outputs/scaled_{scaled}/refs/{i}.sig",
+    metagenome = "outputs/scaled_{scaled}/reads/{sample}.sig",
+  shell: """
+    sourmash search --containment -o {output} {input.sig} {input.metagenome}
+  """
+
+rule containment_sample:
+  output: "outputs/scaled_{scaled,\d+}/containments_{sample}.csv"
+  input: expand("outputs/scaled_{{scaled}}/containments/{i}_{{sample}}.csv", i=range(0, 64)),
+  run:
+    out = ['containment,filename']
+    for ref in input:
+      with open(ref, 'r') as f:
+        data = f.readlines()[-1]
+        containment = data.split(',')[0]
+        filename = os.path.basename(ref).split("_")[0]
+        out.append(f"{containment},{filename}.fa")
+
+    with open(output[0], 'w') as o:
+        o.write("\n".join(out))
 
 ### Build DB and run mash screen
 

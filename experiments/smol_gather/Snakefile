@@ -2,7 +2,7 @@ from glob import glob
 
 rule all:
   input:
-    "outputs/scaled_1000/containments_SRR606249.csv"
+    "outputs/scaled_1000/containments_SRR606249.csv",
     "outputs/scaled_1000/SRR606249.csv",
 #    "outputs/scaled_1/SRR606249.csv",
 #    "outputs/mash_screen/SRR606249.tsv",
@@ -168,4 +168,24 @@ rule cmash:
   threads: 1
   shell: """
      StreamingQueryDNADatabase.py -t {threads} {input.query} {input.db} {output} 21-21-21
+  """
+
+### Evaluating similarity and containment of the samples
+
+rule compare_sigs_similarity:
+  output: "outputs/scaled_{scaled,\d+}/similarity.dist"
+  input: expand("outputs/scaled_{{scaled}}/refs/{i}.sig", i=range(0, 64))
+  conda: "envs/sourmash.yml"
+  shell: """
+    sourmash compare -o {output} {input}
+  """
+
+rule plot_sigs_similarity:
+  output: "outputs/scaled_{scaled,\d+}/{metric}.matrix.png"
+  input: "outputs/scaled_{scaled,\d+}/{metric}"
+  params:
+    outdir = lambda w, output: os.path.dirname(output[0])
+  conda: "envs/sourmash.yml"
+  shell: """
+    sourmash plot --output-dir {params.outdir} --labels {input}
   """

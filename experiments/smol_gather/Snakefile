@@ -2,12 +2,12 @@ from glob import glob
 
 rule all:
   input:
-    "outputs/scaled_1000/containments_SRR606249.csv",
-    "outputs/scaled_1000/SRR606249.csv",
+    expand("outputs/scaled_1000/containments_SRR606249-k{k}.csv", k=[21,31,51]),
+    expand("outputs/scaled_1000/similarity-k{k}.matrix.png", k=[21,31,51]),
+    expand("outputs/scaled_1000/SRR606249-k{k}.csv", k=[21,31,51]),
 #    "outputs/scaled_1/SRR606249.csv",
-#    "outputs/mash_screen/SRR606249.tsv",
-    "outputs/mash_screen/SRR606249-k21-s1000-m2.tsv",
-    "outputs/mash_screen/SRR606249-k21-s1000-m1.tsv",
+    expand("outputs/mash_screen/SRR606249-k{k}-s{num}-m1.tsv", k=[21,31], num=[1000, 100000]),
+    expand("outputs/mash_screen/SRR606249-k{k}-s{num}-m2.tsv", k=[21,31], num=[1000, 100000]),
     "outputs/cmash/SRR606249.csv",
 
 ### Download the podar metagenome
@@ -47,7 +47,7 @@ rule compute_refs:
     scaled = "{scaled}"
   conda: "envs/sourmash.yml"
   shell: """
-    sourmash compute -k 21 \
+    sourmash compute -k 21,31,51 \
              --name-from-first \
              --scaled {params.scaled} \
              --track-abundance \
@@ -63,7 +63,7 @@ rule compute_reads:
     scaled = "{scaled}"
   conda: "envs/sourmash.yml"
   shell: """
-    sourmash compute -k 21 \
+    sourmash compute -k 21,31,51 \
              --name-from-first \
              --scaled {params.scaled} \
              --track-abundance \
@@ -74,27 +74,31 @@ rule compute_reads:
 ### Run gather
 
 rule gather_sigs:
-  output: "outputs/scaled_{scaled,\d+}/{sample}.csv"
+  output: "outputs/scaled_{scaled,\d+}/{sample}-k{ksize}.csv"
   input:
     query = "outputs/scaled_{scaled}/reads/{sample}.sig",
     sigs = expand("outputs/scaled_{{scaled}}/refs/{i}.sig", i=range(0, 64))
+  params:
+    ksize = "{ksize}"
   conda: "envs/sourmash.yml"
   shell: """
     sourmash gather -o {output} {input.query} {input.sigs}
   """
 
 rule containment_sigs:
-  output: "outputs/scaled_{scaled}/containments/{i}_{sample}.csv"
+  output: "outputs/scaled_{scaled}/containments/{i}_{sample}-k{ksize}.csv"
   input:
     sig = "outputs/scaled_{scaled}/refs/{i}.sig",
     metagenome = "outputs/scaled_{scaled}/reads/{sample}.sig",
+  params:
+    ksize = "{ksize}"
   shell: """
-    sourmash search --containment -o {output} {input.sig} {input.metagenome}
+    sourmash search --containment -k {params.ksize} -o {output} {input.sig} {input.metagenome}
   """
 
 rule containment_sample:
-  output: "outputs/scaled_{scaled,\d+}/containments_{sample}.csv"
-  input: expand("outputs/scaled_{{scaled}}/containments/{i}_{{sample}}.csv", i=range(0, 64)),
+  output: "outputs/scaled_{scaled,\d+}/containments_{sample}-k{ksize}.csv"
+  input: expand("outputs/scaled_{{scaled}}/containments/{i}_{{sample}}-k{{ksize}}.csv", i=range(0, 64)),
   run:
     out = ['containment,filename']
     for ref in input:
@@ -113,7 +117,6 @@ rule mash_sketch:
   output: "outputs/mash_screen/refs/{sample}-k{ksize}-s{num}-m{cutoff}.msh"
   input: "data/refs/{sample}.fa"
   conda: "envs/mash.yml"
-  threads: 1
   params:
     ksize = "{ksize}",
     num = "{num}",
@@ -130,7 +133,6 @@ rule build_mash_db:
   output: "outputs/mash_screen/db-k{ksize}-s{num}-m{cutoff}.msh"
   input: expand("outputs/mash_screen/refs/{i}-k{{ksize}}-s{{num}}-m{{cutoff}}.msh", i=range(0, 64))
   conda: "envs/mash.yml"
-  threads: 1
   shell: """
     mash paste {output} {input}
   """
@@ -142,9 +144,8 @@ rule mash_screen:
     db = "outputs/mash_screen/db-k{ksize}-s{num}-m{cutoff}.msh",
 #    db = "outputs/mash_screen/db.msh",
   conda: "envs/mash.yml"
-  threads: 1
   shell: """
-    mash screen -p {threads} {input.db} {input.query} > {output}
+    mash screen {input.db} {input.query} > {output}
   """
 
 ### Build DB and run cmash
@@ -156,7 +157,7 @@ rule build_cmash_db:
   input: expand("data/refs/{i}.fa", i=range(0, 64))
   conda: "envs/cmash.yml"
   shell: """
-    MakeStreamingDNADatabase.py -k 21 <(ls -1 data/refs/*.fa) {output.db}
+    MakeStreamingDNADatabase.py -k 51 <(ls -1 data/refs/*.fa) {output.db}
   """
 
 rule cmash:
@@ -165,19 +166,20 @@ rule cmash:
     query = "data/reads/{sample}_2.fastq.gz",
     db = "outputs/cmash/db.h5"
   conda: "envs/cmash.yml"
-  threads: 1
   shell: """
-     StreamingQueryDNADatabase.py -t {threads} {input.query} {input.db} {output} 21-21-21
+     StreamingQueryDNADatabase.py {input.query} {input.db} {output} 21-51-10
   """
 
 ### Evaluating similarity and containment of the samples
 
 rule compare_sigs_similarity:
-  output: "outputs/scaled_{scaled,\d+}/similarity.dist"
+  output: "outputs/scaled_{scaled,\d+}/similarity-k{ksize,\d+}"
   input: expand("outputs/scaled_{{scaled}}/refs/{i}.sig", i=range(0, 64))
+  params:
+    ksize = "{ksize}"
   conda: "envs/sourmash.yml"
   shell: """
-    sourmash compare -o {output} {input}
+    sourmash compare -k {params.ksize} -o {output} {input}
   """
 
 rule plot_sigs_similarity:

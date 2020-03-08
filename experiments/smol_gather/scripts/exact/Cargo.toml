@@ -1,0 +1,10 @@
+[package]
+authors = ["Luiz Irber <luiz.irber@gmail.com>"]
+edition = "2018"
+name = "exact"
+version = "0.1.0"
+
+[dependencies]
+needletail = "0.3.2"
+bincode = "1.2.1"
+structopt = "0.3.11"

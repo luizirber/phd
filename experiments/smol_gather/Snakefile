@@ -5,9 +5,9 @@ rule all:
     expand("outputs/scaled_1000/containments_SRR606249-k{k}.csv", k=[21,31,51]),
     expand("outputs/scaled_1000/similarity-k{k}.matrix.png", k=[21,31,51]),
     expand("outputs/scaled_1000/SRR606249-k{k}.csv", k=[21,31,51]),
-#    "outputs/scaled_1/SRR606249.csv",
     expand("outputs/mash_screen/SRR606249-k{k}-s{num}-m1.tsv", k=[21,31], num=[1000, 100000]),
     expand("outputs/mash_screen/SRR606249-k{k}-s{num}-m2.tsv", k=[21,31], num=[1000, 100000]),
+    expand("outputs/exact/SRR606249-k{k}.csv", k=[21,31,51]),
     "outputs/cmash/SRR606249.csv",
 
 ### Download the podar metagenome
@@ -37,6 +37,37 @@ rule download_cmash_db:
 rule download_podar:
   output: expand("data/refs/{i}.fa", i=range(0, 64))
   shell: "curl -L https://osf.io/8uxj9/download | tar xzf - -C data/"
+
+### Compute exact k-mer sets
+
+rule build_exact:
+  output: "scripts/exact/target/release/exact"
+  conda: "envs/exact.yml"
+  shell: """
+    cargo build --release --manifest-path scripts/exact/Cargo.toml
+  """
+
+rule kmer_sets_refs:
+  output: "outputs/exact/refs/{sample}-k{ksize}.set"
+  input:
+    ref = "data/refs/{sample}.fa",
+    exact = "scripts/exact/target/release/exact"
+  params:
+    ksize = "{ksize}",
+  shell: """
+    {input.exact} generate -k {params.ksize} {input.ref} {output}
+  """
+
+rule kmer_sets_reads:
+  output: "outputs/exact/reads/{sample}-k{ksize}.set"
+  input:
+    reads = "data/reads/{sample}_2.fastq.gz",
+    exact = "scripts/exact/target/release/exact"
+  params:
+    ksize = "{ksize}",
+  shell: """
+    {input.exact} generate -k {params.ksize} {input.reads} {output}
+  """
 
 ### Compute sourmash signatures for each reference genome and the reads
 
@@ -69,6 +100,18 @@ rule compute_reads:
              --track-abundance \
              -o {output} \
              {input}
+  """
+
+### Exact containment
+
+rule exact_containment:
+  output: "outputs/exact/{sample}-k{ksize}.csv"
+  input:
+    mg = "outputs/exact/reads/{sample}-k{ksize}.set",
+    refs = expand("outputs/exact/refs/{i}-k{{ksize}}.set", i=range(0, 64)),
+    exact = "scripts/exact/target/release/exact"
+  shell: """
+    {input.exact} containment {input.mg} {input.refs} > {output}
   """
 
 ### Run gather
@@ -104,6 +147,9 @@ rule containment_sample:
     for ref in input:
       with open(ref, 'r') as f:
         data = f.readlines()[-1]
+        if "similarity" in data:  # Couldn't find it
+          continue
+
         containment = data.split(',')[0]
         filename = os.path.basename(ref).split("_")[0]
         out.append(f"{containment},{filename}.fa")
@@ -145,7 +191,7 @@ rule mash_screen:
 #    db = "outputs/mash_screen/db.msh",
   conda: "envs/mash.yml"
   shell: """
-    mash screen {input.db} {input.query} > {output}
+    mash screen -p 6 {input.db} {input.query} > {output}
   """
 
 ### Build DB and run cmash
@@ -184,7 +230,7 @@ rule compare_sigs_similarity:
 
 rule plot_sigs_similarity:
   output: "outputs/scaled_{scaled,\d+}/{metric}.matrix.png"
-  input: "outputs/scaled_{scaled,\d+}/{metric}"
+  input: "outputs/scaled_{scaled}/{metric}"
   params:
     outdir = lambda w, output: os.path.dirname(output[0])
   conda: "envs/sourmash.yml"

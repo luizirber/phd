@@ -9,7 +9,7 @@ rule all:
     expand("outputs/scaled_1000/containments_SRR606249-k{k}.csv", k=ALL_K),
     expand("outputs/scaled_1000/similarity-k{k}.matrix.png", k=ALL_K),
     expand("outputs/scaled_1000/SRR606249-k{k}.csv", k=ALL_K),
-    expand("outputs/mash_screen/SRR606249-k{k}-s{num}-m{m}.tsv", k=MASH_K, num=NUM, m=(1,2)),
+    expand("outputs/mash_screen/SRR606249-k{k}-s{num}-m{m}.tsv", k=MASH_K, num=NUM, m=(1,3)),
     expand("outputs/exact/SRR606249-k{k}.csv", k=ALL_K),
     expand("outputs/cmash/SRR606249-k{k}-n{num}.csv", k=ALL_K, num=NUM),
 

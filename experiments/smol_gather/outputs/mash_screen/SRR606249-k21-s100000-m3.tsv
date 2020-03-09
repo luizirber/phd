@@ -1,0 +1,64 @@
+1	7490/7490	117	0	data/refs/0.fa	CP001472.1 Acidobacterium capsulatum ATCC 51196, complete genome
+1	1616/1616	214	0	data/refs/1.fa	CP001941.1 Aciduliprofundum boonei T469, complete genome
+1	7261/7261	49	0	data/refs/2.fa	CP001071.1 Akkermansia muciniphila ATCC BAA-835, complete genome
+1	2738/2738	223	0	data/refs/3.fa	AE000782.1 Archaeoglobus fulgidus DSM 4304, complete genome
+1	18373/18373	47	0	data/refs/4.fa	AE015928.1 Bacteroides thetaiotaomicron VPI-5482, complete genome
+1	19603/19603	46	0	data/refs/5.fa	CP000139.1 Bacteroides vulgatus ATCC 8482, complete genome
+0.999166	11710/11917	13	0	data/refs/6.fa	[76 seqs] NZ_JGWU01000001.1 Bordetella bronchiseptica D989 ctg7180000008197, whole genome shotgun sequence [...]
+0.999946	30935/30970	21	0	data/refs/7.fa	[3 seqs] NC_007951.1 Burkholderia xenovorans LB400 chromosome 1, complete sequence [...]
+1	14950/14950	150	0	data/refs/8.fa	CP000679.1 Caldicellulosiruptor saccharolyticus DSM 8903, complete genome
+1	41226/41226	76	0	data/refs/9.fa	[3 seqs] NZ_FWDH01000003.1 Caldicellulosiruptor bescii strain MACB1021, whole genome shotgun sequence [...]
+0.999927	11667/11685	117	0	data/refs/10.fa	CP001097.1 Chlorobium limicola DSM 245, complete genome
+1	26170/26170	83	0	data/refs/11.fa	CP000492.1 Chlorobium phaeobacteroides DSM 266, complete genome
+1	4570/4570	120	0	data/refs/12.fa	CP000607.1 Chlorobium phaeovibrioides DSM 265, complete genome
+1	3377/3377	77	0	data/refs/13.fa	AE006470.1 Chlorobium tepidum TLS, complete genome
+0.999967	27548/27567	44	0	data/refs/14.fa	CP000909.1 Chloroflexus aurantiacus J-10-fl, complete genome
+1	31650/31650	66	0	data/refs/15.fa	CP000568.1 Clostridium thermocellum ATCC 27405, complete genome
+1	15119/15119	61	0	data/refs/16.fa	[4 seqs] NZ_CP015081.1 Deinococcus radiodurans R1 chromosome 1, complete sequence [...]
+0.998745	7409/7607	64	0	data/refs/17.fa	[2 seqs] NC_008751.1 Desulfovibrio vulgaris DP4, complete genome [...]
+1	1100/1100	62	0	data/refs/18.fa	CP001251.1 Dictyoglomus turgidum DSM 6724, complete genome
+0.959013	6671/16065	74	0	data/refs/19.fa	[9 seqs] NZ_KE136524.1 Enterococcus faecalis V583 acyDH-supercont2.1, whole genome shotgun sequence [...]
+0.962541	5805/12942	39	0	data/refs/20.fa	AE009951.2 Fusobacterium nucleatum subsp. nucleatum ATCC 25586, complete genome
+1	1624/1624	105	0	data/refs/21.fa	AP009153.1 Gemmatimonas aurantiaca T-27 DNA, complete genome
+1	5382/5382	154	0	data/refs/22.fa	AE017180.2 Geobacter sulfurreducens PCA, complete genome
+1	11304/11304	88	0	data/refs/23.fa	[5 seqs] NC_013968.1 Haloferax volcanii DS2 plasmid pHV1, complete sequence [...]
+1	23942/23942	25	0	data/refs/24.fa	[3 seqs] NC_009972.1 Herpetosiphon aurantiacus DSM 785, complete genome [...]
+1	1096/1096	130	0	data/refs/25.fa	CP001130.1 Hydrogenobaculum sp. Y04AAS1, complete genome
+1	752/752	45	0	data/refs/26.fa	CP000816.1 Ignicoccus hospitalis KIN4/I, complete genome
+0.999983	8211/8214	53	0	data/refs/27.fa	CP001013.1 Leptothrix cholodnii SP-6, complete genome
+1	2395/2395	97	0	data/refs/28.fa	[3 seqs] NC_000909.1 Methanocaldococcus jannaschii DSM 2661, complete genome [...]
+1	5818/5818	123	0	data/refs/29.fa	CP000609.1 Methanococcus maripaludis C5, complete genome
+1	5610/5610	122	0	data/refs/30.fa	BX950229.1 Methanococcus maripaludis strain S2, complete sequence
+1	532/532	72	0	data/refs/31.fa	AE009439.1 Methanopyrus kandleri AV19, complete genome
+1	53754/53754	32	0	data/refs/32.fa	AE010299.1 Methanosarcina acetivorans str. C2A, complete genome
+0.998825	160/164	555	0	data/refs/33.fa	NC_005213.1 Nanoarchaeum equitans Kin4-M chromosome, complete genome
+1	12932/12932	220	0	data/refs/34.fa	AL954747.1 Nitrosomonas europaea ATCC 19718, complete genome
+1	26742/26742	61	0	data/refs/35.fa	[7 seqs] NC_003272.1 Nostoc sp. PCC 7120 DNA, complete genome [...]
+1	19048/19048	75	0	data/refs/36.fa	CP001110.1 Pelodictyon phaeoclathratiforme BU-1, complete genome
+1	18516/18516	58	0	data/refs/37.fa	AP009380.1 Porphyromonas gingivalis ATCC 33277 DNA, complete genome
+1	4400/4400	137	0	data/refs/38.fa	AE009441.1 Pyrobaculum aerophilum str. IM2, complete genome
+1	636/636	82	0	data/refs/39.fa	CP000660.1 Pyrobaculum arsenaticum DSM 13514, complete genome
+1	460/460	131	0	data/refs/40.fa	CP000561.1 Pyrobaculum calidifontis JCM 11548, complete genome
+1	3548/3548	206	0	data/refs/41.fa	AE009950.1 Pyrococcus furiosus DSM 3638, complete genome
+1	473/473	192	0	data/refs/42.fa	BA000001.2 Pyrococcus horikoshii OT3 DNA, complete genome
+1	23093/23093	212	0	data/refs/43.fa	BX119912.1 Rhodopirellula baltica SH 1 complete genome
+1	9049/9049	32	0	data/refs/44.fa	[2 seqs] NC_003911.12 Ruegeria pomeroyi DSS-3, complete genome [...]
+1	18079/18079	51	0	data/refs/45.fa	CP000850.1 Salinispora arenicola CNS-205, complete genome
+0.999905	15946/15978	44	0	data/refs/46.fa	CP000667.1 Salinispora tropica CNB-440, complete genome
+1	24795/24795	29	0	data/refs/47.fa	[2 seqs] NC_009665.1 Shewanella baltica OS185, complete genome [...]
+1	13532/13532	124	0	data/refs/48.fa	NC_010730.1 Sulfurihydrogenibium sp. YO3AOP1, complete genome
+0.999888	13642/13674	80	0	data/refs/49.fa	[228 seqs] NZ_ABZS01000228.1 Sulfurihydrogenibium yellowstonense SS-5 gcontig_18, whole genome shotgun sequence [...]
+1	22241/22241	60	0	data/refs/50.fa	CP000924.1 Thermoanaerobacter pseudethanolicus ATCC 33223, complete genome
+1	928/928	163	0	data/refs/51.fa	CP000916.1 Thermotoga neapolitana DSM 4359, complete genome
+1	1764/1764	508	0	data/refs/52.fa	CP000702.1 Thermotoga petrophila RKU-1, complete genome
+1	3338/3338	393	0	data/refs/53.fa	CP000969.1 Thermotoga sp. RQ2, complete genome
+1	513/513	90	0	data/refs/54.fa	CP001230.1 Persephonella marina EX-H1, complete genome
+0.9913	1420/1706	54	0	data/refs/55.fa	AE017221.1 Thermus thermophilus HB27, complete genome
+1	5728/5728	82	0	data/refs/56.fa	AE017226.1 Treponema denticola ATCC 35405, complete genome
+1	9835/9835	57	0	data/refs/57.fa	BX571656.1 Wolinella succinogenes DSM 1740, complete genome
+0.998163	2057/2138	7	0	data/refs/58.fa	[30 seqs] NZ_KQ961402.1 Zymomonas mobilis strain ATCC 31823 Scaffold1, whole genome shotgun sequence [...]
+1	8272/8272	271	0	data/refs/59.fa	[5 seqs] NZ_CH959311.1 Sulfitobacter sp. EE-36 scf_1099451318005, whole genome shotgun sequence [...]
+1	14803/14803	281	0	data/refs/60.fa	[11 seqs] NZ_CH959317.1 Sulfitobacter sp. NAS-14.1 scf_1099451320472, whole genome shotgun sequence [...]
+0.999954	1026/1027	68	0	data/refs/61.fa	[47 seqs] NZ_DS996397.1 Desulfovibrio piger ATCC 29098 Scfld442, whole genome shotgun sequence [...]
+1	13340/13340	157	0	data/refs/62.fa	BA000023.2 Sulfolobus tokodaii str. 7 DNA, complete genome
+1	31337/31337	77	0	data/refs/63.fa	[4 seqs] NC_011663.1 Shewanella baltica OS223, complete genome [...]

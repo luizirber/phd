@@ -1,0 +1,5 @@
+data/
+outputs/
+scripts/exact/Cargo.lock
+scripts/exact/target/
+notebooks/.ipynb_checkpoints/

@@ -235,5 +235,5 @@ rule plot_sigs_similarity:
     outdir = lambda w, output: os.path.dirname(output[0])
   conda: "envs/sourmash.yml"
   shell: """
-    sourmash plot --output-dir {params.outdir} --labels {input}
+    sourmash plot --output-dir {params.outdir} {input}
   """

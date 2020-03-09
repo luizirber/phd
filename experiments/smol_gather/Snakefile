@@ -1,14 +1,17 @@
 from glob import glob
 
+ALL_K = [21, 31, 51]
+MASH_K = [21, 31]
+
 rule all:
   input:
-    expand("outputs/scaled_1000/containments_SRR606249-k{k}.csv", k=[21,31,51]),
-    expand("outputs/scaled_1000/similarity-k{k}.matrix.png", k=[21,31,51]),
-    expand("outputs/scaled_1000/SRR606249-k{k}.csv", k=[21,31,51]),
-    expand("outputs/mash_screen/SRR606249-k{k}-s{num}-m1.tsv", k=[21,31], num=[1000, 100000]),
-    expand("outputs/mash_screen/SRR606249-k{k}-s{num}-m2.tsv", k=[21,31], num=[1000, 100000]),
-    expand("outputs/exact/SRR606249-k{k}.csv", k=[21,31,51]),
-    "outputs/cmash/SRR606249.csv",
+    expand("outputs/scaled_1000/containments_SRR606249-k{k}.csv", k=ALL_K),
+    expand("outputs/scaled_1000/similarity-k{k}.matrix.png", k=ALL_K),
+    expand("outputs/scaled_1000/SRR606249-k{k}.csv", k=ALL_K),
+    expand("outputs/mash_screen/SRR606249-k{k}-s{num}-m1.tsv", k=MASH_K, num=[1000, 100000]),
+    expand("outputs/mash_screen/SRR606249-k{k}-s{num}-m2.tsv", k=MASH_K, num=[1000, 100000]),
+    expand("outputs/exact/SRR606249-k{k}.csv", k=ALL_K),
+    expand("outputs/cmash/SRR606249-k{k}.csv", k=ALL_K)
 
 ### Download the podar metagenome
 
@@ -214,6 +217,34 @@ rule cmash:
   conda: "envs/cmash.yml"
   shell: """
      StreamingQueryDNADatabase.py {input.query} {input.db} {output} 21-51-10
+  """
+
+rule build_cmash_db_k:
+  output:
+    db = "outputs/cmash/db-k{ksize}.h5",
+    tst = "outputs/cmash/db-k{ksize}.tst",
+  input: expand("data/refs/{i}.fa", i=range(0, 64))
+  params:
+    ksize = "{ksize}"
+  conda: "envs/cmash.yml"
+  shell: """
+    MakeStreamingDNADatabase.py -k {params.ksize} <(ls -1 data/refs/*.fa) {output.db}
+  """
+
+rule cmash_k:
+  output: "outputs/cmash/{sample}-k{ksize}.csv"
+  input:
+    query = "data/reads/{sample}_2.fastq.gz",
+    db = "outputs/cmash/db-k{ksize}.h5"
+  params:
+    k = "{ksize}"
+  conda: "envs/cmash.yml"
+  shell: """
+     StreamingQueryDNADatabase.py \
+         {input.query} \
+         {input.db} \
+         {output} \
+         {params.k}-{params.k}-1
   """
 
 ### Evaluating similarity and containment of the samples

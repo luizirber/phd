@@ -2,12 +2,14 @@
 
 \chaptermark {MHBT}
 
+## Abstract
+
 ## Introduction
 
 ### Hierarchical index
 
 Searching for matches in large collection of datasets is not viable when hundreds of thousands of
-them are available, 
+them are available,
 especially if they are partitioned and not all present at the same place.
 
 Bloofi [@crainiceanu_bloofi:_2015] is a hierarchical index structure that
@@ -34,10 +36,70 @@ early [@sun_allsome_2017] and developing more efficient representations for the
 internal nodes [@solomon_improved_2017] [@harris_improved_2018] to use less
 storage space and memory.
 
-## Methods
+### Inverted index
+
+<!--
+- Mantis is also an inverted index (hash -> color), where 'color' encodes
+  a subset of the datasets
+-->
 
 ## Results
 
+
+### Efficient containment and similarity searches
+
+#### Index construction and updating
+
+resources (time, cpu, mem)
+
+#### Querying
+
+<!--
+COST (cost of single thread)
+-->
+
+### CAMI 2 mouse gut toy challenge results
+
+<!--
+
+-->
+
 ## Discussion
 
-## Conclusion
+### Limitations
+
+<!--
+Viruses (scaled minhash too small).
+  mash screen solves this by going for sensitivity (at the cost of precision),
+  possible solution: scaled+num hashes, but would only allow mash screen-like method
+
+
+-->
+
+### Future directions
+
+<!--
+- Better localization in SBT
+- batch_insert for SBT, insert_one for Inverse Index
+- Other indices
+  * Fundamentally a scaled minhash is a subset of the k-mer composition of a
+  dataset, so any index from https://www.biorxiv.org/content/10.1101/866756v1
+  ("Data structures based on k-mers for querying large collections of sequencing datasets")
+  can be used to scale.
+  * since gather is defined over a collection of signatures,
+- gather assigns hashes to best matches ("winner-takes-all"). Other approaches
+  will be needed to disambiguate matches further
+- sourmash is single threaded, but parallel queries are possible
+-->
+
+### Summary/Conclusion
+
+## Methods
+
+### Mathematical foundations
+
+### Implementation
+
+sourmash is implemented in
+
+### Experiments

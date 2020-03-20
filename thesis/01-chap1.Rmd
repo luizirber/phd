@@ -2,11 +2,11 @@
 The {#rmd-basics} text after the chapter declaration will allow us to link throughout the document back to the beginning of Chapter 1.  These labels will automatically be generated (if not specified) by changing the spaces to hyphens and capital letters to lowercase.  Look for the reference to this label at the beginning of Chapter 2.
 -->
 
-# Compositional analysis with scaled minhash and gather
+# Scaled MinHash {#scaled-minhash}
 
 \chaptermark{Scaled}
 
-## intro
+## Introduction
 
 ### Data sketches
 
@@ -55,120 +55,6 @@ different degrees of accuracy when comparing across highly-diverged organisms
 (bacteria to animals, for example), and it is even more extreme when taking more
 complex datasets into account (like metagenomes).
 
-### minhash and mod hash (broder paper)
-
-### mash and genomic minhash
-
-
-## Comparison with mod hash
-
-MinHash containment: mash works only on datasets of similar genome size/complexity
-ModHash is a solution (more complex dataset will have larger sketch), but falls apart
-with very small dataset (might not contain enough hashes for meaningful results)
-
-(intro CMash here)
-
-## Decomposition of queries with Gather
-
-gather algorithm: Given a dataset and a collection of signatures $DB$
-```
-query = scaled_minhash(dataset)
-
-matches = []
-while len(query) > threshold:
-  best_contained = find_best_contained(query, DB)
-  matches.append(best_match)
-  query = subtract(query, best_match)
-
-summarize_matches(matches)
-```
-
-Operations:
-```
-def find_best_contained(query, DB):
-  best_score = 0.0
-  best_match = None
-
-  for sig in DB:
-    if score := query.containment(sig) > best_score:
-      best_score = score
-      best_match = sig
-
-  return best_match
-```
-
-```
-def subtract(query, best_match):
-  # possible 
-```
-
-### Limitations
-
-- increased size (compared with minhash, which is constant size)
-- detection threshold (viruses)
-
-## Implementation
-
-
-
-## Evaluation
-
-### Run gather on a collection of signatures (>100)
-
-(show method works, even if slow -> leading to introduction of other indices)
-
-(use scaled=1 and scaled=1000, show results are similar.
-Use small datasets, since scaled=1 will be huge...)
-
-(maybe use podar dataset?)
-
-(compare with cmash/mash screen here?)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--
 #### Bloom Filter: Set membership
 
 The Bloom Filter [@bloom_space/time_1970] allows set membership queries.
@@ -212,4 +98,11 @@ uses the $k$-mer composition of a genomic dataset and the \emph{murmurhash3} has
 together with the improved estimator from [@heule_hyperloglog_2013].
 Dashing [@baker_dashing:_2018] is a recent method that supports both similarity and cardinality estimation using HyperLogLog,
 based on a better estimator for union and intersection of HyperLogLog sketches by [@ertl_new_2017].
--->
+
+## Methods
+
+## Results
+
+## Discussion
+
+## Conclusion

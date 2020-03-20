@@ -39,18 +39,25 @@ storage space and memory.
 ### Inverted index
 
 <!--
+- a map of hash -> list of dataset IDs
+- differs from kraken: it collapses the list of dataset IDs to the LCA,
+
 - Mantis is also an inverted index (hash -> color), where 'color' encodes
   a subset of the datasets
 -->
 
 ## Results
 
-
 ### Efficient containment and similarity searches
 
 #### Index construction and updating
 
 resources (time, cpu, mem)
+<!--
+
+- sourmash indices benefit from more data. Inverted index
+
+-->
 
 #### Querying
 
@@ -58,10 +65,33 @@ resources (time, cpu, mem)
 COST (cost of single thread)
 -->
 
-### CAMI 2 mouse gut toy challenge results
+### CAMI challenges
 
 <!--
 
+Intro: what is CAMI, what it provides:
+- challenges provide gold standards (what is expected to be in the sample)
+- standardized tools for profiling performance comparisons (OPAL)
+
+-->
+
+#### CAMI 1 (low, medium, high)
+
+<!--
+- Already published, but results are for older/outdated tools
+- still a good benchmark (because gold standards are available)
+- low and medium datasets have viruses, which are not in sourmash indices
+
+-->
+
+#### CAMI 2 mouse gut toy challenge
+
+<!--
+- new CAMI challenges, with short and long reads (pacbio)
+- toy challenge is calibration: gold standard available
+- CAMI provides results for other tools
+
+- sourmash gather:
 -->
 
 ## Discussion

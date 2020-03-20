@@ -8,6 +8,8 @@
 
 ### Hierarchical index
 
+<!-- 'k-mer aggregative methods in (marchet 2019)' -->
+
 Searching for matches in large collection of datasets is not viable when hundreds of thousands of
 them are available,
 especially if they are partitioned and not all present at the same place.
@@ -38,10 +40,13 @@ storage space and memory.
 
 ### Inverted index
 
+<!-- 'color- aggregative methods in (marchet 2019)' -->
+
 <!--
 - a map of hash -> list of dataset IDs
 - differs from kraken: it collapses the list of dataset IDs to the LCA,
-
+  which decreases precision and sensitivity when more datasets are used
+  (see dasko 2018)
 - Mantis is also an inverted index (hash -> color), where 'color' encodes
   a subset of the datasets
 -->
@@ -111,7 +116,8 @@ Viruses (scaled minhash too small).
 
 <!--
 - Better localization in SBT
-- batch_insert for SBT, insert_one for Inverse Index
+   * or go full HowDe SBT
+- batch_insert for SBT, insert_one for Inverted Index
 - Other indices
   * Fundamentally a scaled minhash is a subset of the k-mer composition of a
   dataset, so any index from https://www.biorxiv.org/content/10.1101/866756v1

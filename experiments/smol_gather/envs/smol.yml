@@ -1,0 +1,8 @@
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - python=3.8
+  - screed=1.0.1
+  - mmh3=2.5.1

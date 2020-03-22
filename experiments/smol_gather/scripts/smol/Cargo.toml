@@ -1,0 +1,12 @@
+[package]
+authors = ["Luiz Irber <luiz.irber@gmail.com>"]
+edition = "2018"
+name = "smol"
+version = "0.1.0"
+
+[dependencies]
+needletail = "0.3.2"
+structopt = "0.3.11"
+murmurhash3 = "0.0.5"
+serde = { version = "1.0.105", features = ["derive"] }
+serde_json = "1.0.48"

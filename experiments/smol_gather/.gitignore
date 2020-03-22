@@ -2,4 +2,6 @@ data/
 outputs/
 scripts/exact/Cargo.lock
 scripts/exact/target/
+scripts/smol/Cargo.lock
+scripts/smol/target/
 notebooks/.ipynb_checkpoints/

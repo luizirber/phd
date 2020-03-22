@@ -9,6 +9,7 @@ rule all:
     expand("outputs/scaled_1000/containments_SRR606249-k{k}.csv", k=ALL_K),
     expand("outputs/scaled_1000/similarity-k{k}.matrix.png", k=ALL_K),
     expand("outputs/scaled_1000/SRR606249-k{k}.csv", k=ALL_K),
+    expand("outputs/smol_1000/SRR606249-k{k}.csv", k=ALL_K),
     expand("outputs/mash_screen/SRR606249-k{k}-s{num}-m{m}.tsv", k=MASH_K, num=NUM, m=(1,3)),
     expand("outputs/mash_screen/SRR606249-k{k}-refseq.tsv", k=MASH_K),
     expand("outputs/exact/SRR606249-k{k}.csv", k=ALL_K),
@@ -41,7 +42,7 @@ rule download_cmash_db:
 
 rule download_podar:
   output: expand("data/refs/{i}.fa", i=range(0, 64))
-  shell: "curl -L https://osf.io/8uxj9/download | tar xzf - -C data/"
+  shell: "curl -L https://osf.io/8uxj9/download | tar xzf - -C data/refs/"
 
 ### Compute exact k-mer sets
 
@@ -72,6 +73,40 @@ rule kmer_sets_reads:
     ksize = "{ksize}",
   shell: """
     {input.exact} generate -k {params.ksize} {input.reads} {output}
+  """
+
+### Compute smol sketches
+
+rule build_smol:
+  output: "scripts/smol/target/release/smol"
+#  input: "scripts/smol/src/main.rs"
+  conda: "envs/exact.yml"
+  shell: """
+    cargo build --release --manifest-path scripts/smol/Cargo.toml
+  """
+
+rule smol_refs:
+  output: "outputs/smol_{scaled}/refs/{sample}-k{ksize}.smol"
+  input:
+    ref = "data/refs/{sample}.fa",
+    smol = "scripts/smol/target/release/smol"
+  params:
+    ksize = "{ksize}",
+    scaled = "{scaled}",
+  shell: """
+    {input.smol} compute -k {params.ksize} -o {output} --scaled {params.scaled} {input.ref}
+  """
+
+rule smol_reads:
+  output: "outputs/smol_{scaled}/reads/{sample}-k{ksize}.smol"
+  input:
+    reads = "data/reads/{sample}_2.fastq.gz",
+    smol = "scripts/smol/target/release/smol"
+  params:
+    ksize = "{ksize}",
+    scaled = "{scaled}",
+  shell: """
+    {input.smol} compute -k {params.ksize} --scaled {params.scaled} -o {output} {input.reads}
   """
 
 ### Compute sourmash signatures for each reference genome and the reads
@@ -107,16 +142,17 @@ rule compute_reads:
              {input}
   """
 
-### Exact containment
+### smol containment
 
-rule exact_containment:
-  output: "outputs/exact/{sample}-k{ksize}.csv"
+rule smol_gather:
+  output: "outputs/smol_{scaled}/{sample}-k{ksize}.csv"
   input:
-    mg = "outputs/exact/reads/{sample}-k{ksize}.set",
-    refs = expand("outputs/exact/refs/{i}-k{{ksize}}.set", i=range(0, 64)),
-    exact = "scripts/exact/target/release/exact"
+    mg = "outputs/smol_{scaled}/reads/{sample}-k{ksize}.smol",
+    refs = expand("outputs/smol_{{scaled}}/refs/{i}-k{{ksize}}.smol", i=range(0, 64)),
+    smol = "scripts/smol.py"
+  conda: "envs/smol.yml"
   shell: """
-    {input.exact} containment {input.mg} {input.refs} > {output}
+    {input.smol} gather --threshold 0.01 -o {output} {input.mg} {input.refs}
   """
 
 ### Run gather

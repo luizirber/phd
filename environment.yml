@@ -8,3 +8,4 @@ dependencies:
   - snakemake-minimal=5.10.0
   - pandas=1.0.1
   - matplotlib-base
+  - hvplot

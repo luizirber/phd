@@ -4,6 +4,14 @@
 
 ## Qualifying Exam
 
+Exam happened in 2019-04-19.
+
+- [Proposal]
+- [Presentation]
+
+[Proposal]: proposal/Proposal.pdf
+[Presentation]: qe/presentation/QE_no_extras.pdf
+
 ## Dissertation
 
 Uses [aggiedown] and [GitHub Actions] for CI. Tagged versions are available in

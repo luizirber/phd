@@ -32,13 +32,20 @@ Comparison of containment approaches using MinHash:
 
 - CMash (containment minhash)
 - mash screen
-- sourmash (scaled minhash)
+- smol (scaled minhash)
 
 Regenerating results (after running the [setup](#Setup) steps):
 ```bash
 conda activate thesis
 cd experiments/smol_gather && snakemake --use-conda
 ```
+
+### Scaled MinHash sizes
+
+[experiments/sizes](https://github.com/luizirber/phd/tree/master/experiments/sizes)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/luizirber/phd/master?urlpath=lab%2Ftree%2Fexperiments%2Fsizes%2Fnotebooks%2Fanalysis.ipynb)
+
+Scaled MinHash sizes (number of hashes) analysis across domains in Genbank.
 
 ## Setup
 

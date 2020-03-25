@@ -26,7 +26,7 @@ def reverse(s):
 
 def kmers(seq, k):
     for start in range(len(seq) - k + 1):
-        kmer = seq[start : start + k].upper()
+        kmer = seq[start:start + k].upper()
         if any(c not in "ACGT" for c in kmer):
             continue
         yield kmer
@@ -80,12 +80,10 @@ def compute(filename, *, k=21, scaled=1000, output=None, **kwargs):
     import mmh3
     import screed
 
-    max_hash = (2 ** 64) / scaled
-
     # compute the actual hashes to insert by breaking down the sequence
     # into k-mers and applying MurmurHash to each one; here, the only
     # interesting thing that is done by add() is to keep only the
-    # hashes smaller than max_hash.
+    # hashes smaller than max_hash, where max_hash =  2^64 / scaled.
 
     mh = ScaledMinHash(k=k, scaled=scaled, filename=filename)
     name = None

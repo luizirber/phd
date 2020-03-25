@@ -6,9 +6,9 @@ The {#rmd-basics} text after the chapter declaration will allow us to link throu
 
 \chaptermark{Scaled}
 
-## intro
+## Introduction
 
-### Data sketches
+### MinHash sketch: similarity and containment
 
 A data sketch is a representative proxy for the original data focused on queries
 for specific properties.
@@ -19,8 +19,6 @@ precision of the answer for a query.
 This allows a memory/accuracy trade-off:
 using more memory leads to more accurate results,
 but in memory-constrained situations it still bound results to an expected error rate.
-
-#### MinHash sketch: similarity and containment
 
 The MinHash sketch [@broder_resemblance_1997] was developed at Altavista in the context of document clustering and deduplication.
 It provides an estimate of the Jaccard similarity
@@ -33,21 +31,21 @@ and transforming large sets into short signatures,
 while preserving similarity ("Min-Hashing").
 In the original use case the *$w$-shingling* $\Omega$ of a document $D$ is defined as the set of all
 continuous subsequence of $w$ words contained in $D$.
-*Min-hashing* is the process of creating <!--$W = \{h(x) | \forall x \in \Omega\}$,-->
+*Min-hashing* is the process of creating $W = \{\,h(x) \mid \forall x \in \Omega\,\}$,
 where $h(x)$ is an uniform hash function,
 and then either
+a) keeping the $n$ smallest elements ($\mathbf{MIN}_n(W)$), or
+b) keeping elements that are $0 \mod m$ ($\mathbf{MOD}_m(W)$).
 
-   - keeping the $n$ smallest hash values as a representative sketch of the original document ($\mathbf{MIN}_n(W)$)
-   - keeping elements that are $0 \mod m$ ($\mathbf{MOD}_m(W)$).
-
-$\mathbf{MIN}_n(W)$ if fixed-sized (length $n$) and supports similarity estimation,
+$\mathbf{MIN}_n(W)$ is fixed-sized (length $n$) and supports similarity estimation,
 but doesn't support containment.
 $\mathbf{MOD}_m(W)$ supports both similarity and containment,
 with the drawback of not being fixed-sized anymore,
 growing with the complexity of the document.
 
 Mash [@ondov_mash:_2016] was the first implementation of MinHash in the genomic context,
-relating the $w$-shingling of a document to the $k$-mer composition of a genomic sequence,
+relating the $w$-shingling of a document to the $k$-mer composition of genomic
+datasets,
 and using the $\mathbf{MIN}_n(W)$ fixed-sized formulation for the signature.
 Mash needs extra information (the genome size for the organism being queried) to account for genomic complexity in datasets.
 This extra information is required because using a fixed-size MinHash leads to
@@ -59,8 +57,9 @@ complex datasets into account (like metagenomes).
 
 ### mash and genomic minhash
 
+## Scaled MinHash
 
-## Comparison with mod hash
+### Comparison with mod hash
 
 MinHash containment: mash works only on datasets of similar genome size/complexity
 ModHash is a solution (more complex dataset will have larger sketch), but falls apart
@@ -76,9 +75,9 @@ query = scaled_minhash(dataset)
 
 matches = []
 while len(query) > threshold:
-  best_contained = find_best_contained(query, DB)
+  best_contained = find_best_contained(query, collection)
   matches.append(best_match)
-  query = subtract(query, best_match)
+  query = remove_intersection(query, best_match)
 
 summarize_matches(matches)
 ```
@@ -109,7 +108,59 @@ def subtract(query, best_match):
 
 ## Implementation
 
+### smol
 
+`smol` is a minimal implementation for the Scaled MinHash sketch and the gather method for simulation and verifying results with more featureful tools.
+There are two compatible versions,
+one in Python and another in Rust,
+due to performance requirements when processing large datasets (like metagenomes).
+Both versions of the Scaled MinHash implementations use each language standard library sets
+(`set` for Python, `HashSet` for Rust)
+for storing hashes and efficient set operations (intersection and difference).
+Experiments used the Rust version for calculating Scaled MinHash sketches,
+and the Python version for running gather and reporting containment scores.
+Since they serialize the sketches to a compatible JSON format,
+they can be used interchangeably and while computing Scaled MinHash sketches is
+orders of magnitude faster in Rust,
+for gather running time are similar and in the order of seconds.
+
+The Python version has two external dependencies:
+`screed` for sequence parsing,
+and `mmh3` for the MurmurHash3 hash function.
+Other modules from the standard library are used for JSON serialization (`json`)
+and command line parsing (`argparse`).
+
+The Rust version has four direct external dependencies:
+`needletail` for sequence parsing and normalization
+(similar to what `screed` does in the Python version),
+`murmurhash3` for the MurmurHash3 hash function,
+`serde_json` for JSON serialization and `structopt` for command line parsing.
+
+### exact
+
+`exact` is an exact k-mer counting implementation in Rust.
+
+
+### Experiments
+
+<!--
+- containment score experiments
+- sketch sizes
+-->
+
+Experiments are implemented in `snakemake` workflows and use `conda` for
+managing dependencies,
+allowing reproducibility of the results with one command:
+`snakemake --use-conda`.
+This will download all data,
+install dependencies and generate the data used for analysis.
+
+The analysis is contained in a Jupyter Notebook,
+and can be executed in any place where it is supported,
+including in a local installation or using Binder,
+a service that deploy a live Jupyter environment in cloud instances.
+Instructions are available at https://github.com/luizirber/phd
+<!-- TODO: replace with zenodo archival DOI -->
 
 ## Evaluation
 

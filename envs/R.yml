@@ -27,6 +27,7 @@ dependencies:
   - r-git2r=0.25.2
   - r-htmlwidgets=1.3
   - r-httpuv=1.5.2
+  - r-isoband=0.2.0
   - r-knitr=1.22
   - r-later=0.8.0
   - r-lifecycle==0.1.0

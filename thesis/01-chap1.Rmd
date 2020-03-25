@@ -34,6 +34,7 @@ continuous subsequence of $w$ words contained in $D$.
 *Min-hashing* is the process of creating $W = \{\,h(x) \mid \forall x \in \Omega\,\}$,
 where $h(x)$ is an uniform hash function,
 and then either
+
 a) keeping the $n$ smallest elements ($\mathbf{MIN}_n(W)$), or
 b) keeping elements that are $0 \mod m$ ($\mathbf{MOD}_m(W)$).
 
@@ -43,21 +44,26 @@ $\mathbf{MOD}_m(W)$ supports both similarity and containment,
 with the drawback of not being fixed-sized anymore,
 growing with the complexity of the document.
 
-Mash [@ondov_mash:_2016] was the first implementation of MinHash in the genomic context,
+### mash and genomic minhash
+
+Mash [@ondov_mash:_2016] was the first implementation of MinHash in genomic contexts,
 relating the $w$-shingling of a document to the $k$-mer composition of genomic
 datasets,
 and using the $\mathbf{MIN}_n(W)$ fixed-sized formulation for the signature.
-Mash needs extra information (the genome size for the organism being queried) to account for genomic complexity in datasets.
+Mash needs extra information (the genome size for the organism being queried) to account for genomic complexity in datasets and derive a new score,
+the Mash distance,
+to bring it closer to previously existing similarity measures in biology
+(Average Nucleotide Identity).
 This extra information is required because using a fixed-size MinHash leads to
 different degrees of accuracy when comparing across highly-diverged organisms
-(bacteria to animals, for example), and it is even more extreme when taking more
-complex datasets into account (like metagenomes).
-
-### minhash and mod hash (broder paper)
-
-### mash and genomic minhash
+(bacteria to animals, for example),
+and it is even more extreme when taking more complex datasets into account (like metagenomes).
 
 ## Scaled MinHash
+
+In order to calculate containment
+
+$\mathbf{MIN}_n(W)$ fixed-sized formulation
 
 ### Comparison with mod hash
 
@@ -67,7 +73,9 @@ with very small dataset (might not contain enough hashes for meaningful results)
 
 (intro CMash here)
 
-## Decomposition of queries with Gather
+## Decomposition of queries with gather
+
+
 
 gather algorithm: Given a dataset and a collection of signatures $DB$
 ```
@@ -98,7 +106,7 @@ def find_best_contained(query, DB):
 
 ```
 def subtract(query, best_match):
-  # possible 
+  # possible
 ```
 
 ### Limitations
@@ -139,14 +147,54 @@ The Rust version has four direct external dependencies:
 ### exact
 
 `exact` is an exact k-mer counting implementation in Rust.
+It also uses the standard library `HashSet` to store the $k$-mer composition of
+a dataset,
+and Needletail for sequence parsing.
+It differs from `smol` because it stores all canonical $k$-mers,
+instead of a subset.
+The `bincode` library is used for serialization,
+since it provides a simpler binary format output for Rust data types.
+The goal is not to have a general purpose tool,
+but only a way to calculate the ground truth for containment in a dataset,
+and so a more compatible serialization format
+(like JSON in the `smol` case)
+is not required.
 
+## Evaluation
 
-### Experiments
+### Average Scaled MinHash sketch sizes across Genbank domains
+
+<!--
+Use genbank signatures
+-->
+
+### Containment score methods
 
 <!--
 - containment score experiments
-- sketch sizes
 -->
+
+
+
+(show method works, even if slow -> leading to introduction of other indices)
+
+(use scaled=1 and scaled=1000, show results are similar.
+Use small datasets, since scaled=1 will be huge...)
+
+(maybe use podar dataset?)
+
+(compare with cmash/mash screen here?)
+
+(cmash and mash screen can do `gather` too,
+but still require the original data available.
+Scaled MinHash allows using the sketches for gather,
+which are a fraction of the original data in size.
+Additional benefit:
+if there are collection updates you don't need to recalculate the query sketch,
+and both cmash and mash screen would need the original data for the query
+again)
+
+### Implementation for experiments
 
 Experiments are implemented in `snakemake` workflows and use `conda` for
 managing dependencies,
@@ -162,105 +210,7 @@ a service that deploy a live Jupyter environment in cloud instances.
 Instructions are available at https://github.com/luizirber/phd
 <!-- TODO: replace with zenodo archival DOI -->
 
-## Evaluation
+<!-- TODO: related work section? It's sort of covered with cmash and mash screen
+already -->
 
-### Run gather on a collection of signatures (>100)
-
-(show method works, even if slow -> leading to introduction of other indices)
-
-(use scaled=1 and scaled=1000, show results are similar.
-Use small datasets, since scaled=1 will be huge...)
-
-(maybe use podar dataset?)
-
-(compare with cmash/mash screen here?)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--
-#### Bloom Filter: Set membership
-
-The Bloom Filter [@bloom_space/time_1970] allows set membership queries.
-Inserting an element in a Bloom Filter is a two-step process: first use multiple
-hash functions on the element,
-and then for each bit set in the hashed value update the same position in the
-bit array.
-Querying an element involves calculating the multiple hash values for the
-element and then checking if the bits are set in the bit array.
-This guarantees that a false negative is impossible
-(if the element was inserted,
-a bit would be set),
-but can report false positives if there are collisions in the hash values.
-
-khmer [@crusoe_khmer_2015] implements a variation where longer (and multiple) bit arrays are used,
-and hash functions are derived from a composed hashing strategy $h_i(x) = h(x) \mod p_i$,
-where each bit array has a distinct length $p_i$ (and $p$ is a prime number),
-with $h(x)$ being a more CPU-intensive hash function.
-
-Bloom Filters are used extensively in bioinformatics,
-including lossy representation of assembly graphs [@pell_scaling_2012] and as
-a filtering step in processing pipelines [@ondov_mash:_2016].
-
-#### HyperLogLog: Cardinality estimation
-
-The HyperLogLog sketch [@flajolet_hyperloglog:_2008] estimates the number of unique elements in a dataset.
-It is designed to lower the variability of a more basic estimator:
-given a run of $\rho$ zeros in a binary sequence,
-it estimates the cardinality of the dataset to be $2^{\rho}$.
-It achieves this by splitting the binary sequence in two:
-the lower bits define an index for $m$ registers,
-and each register contain the longest run of zeros seen for that index.
-The HyperLogLog estimator $E(D)$ is an harmonic mean of the registers $M$,
-with a correction factor $\alpha_m$ for the number of registers:
-$$E(D) = \alpha_m m^2 \left( \sum_{j=0}^{m-1} 2^{-M[j]} \right)^{-1}$$
-More recent methods [@heule_hyperloglog_2013] improve the cardinality estimator
-by further refining the estimate based on empirical data.
-
-In genomic contexts, the khmer [@crusoe_khmer_2015] implementation of HyperLogLog [@irber_junior_efficient_2016]
-uses the $k$-mer composition of a genomic dataset and the \emph{murmurhash3} hash function,
-together with the improved estimator from [@heule_hyperloglog_2013].
-Dashing [@baker_dashing:_2018] is a recent method that supports both similarity and cardinality estimation using HyperLogLog,
-based on a better estimator for union and intersection of HyperLogLog sketches by [@ertl_new_2017].
--->
+## Conclusion and Future Work

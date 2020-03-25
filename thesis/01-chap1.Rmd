@@ -78,7 +78,6 @@ with very small dataset (might not contain enough hashes for meaningful results)
 (intro CMash here)
 
 ## Decomposition of queries with gather
-
 <!--
 CTB suggestion: put gather in {\tt form} or {\sf form} to distinguish it.
 -->
@@ -135,7 +134,6 @@ CTB suggestion: put gather in {\tt form} or {\sf form} to distinguish it.
   \KwRet{$m$}
   \caption{a \emph{FindBestContained} implementation for a list}
 \end{algorithm} 
->>>>>>> 3de8313... algo
 
 
 ### Limitations
@@ -201,7 +199,6 @@ Use genbank signatures
 
 <!--
 - containment score experiments
-
 CTBQ: Write up these results.
 -->
 

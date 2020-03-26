@@ -4,4 +4,4 @@ channels:
   - defaults
 dependencies:
   - python=3.7.3
-  - cmash=0.4.0
+  - cmash=0.5.0

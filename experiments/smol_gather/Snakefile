@@ -285,6 +285,7 @@ rule build_cmash_db_k:
     ksize = "{ksize}",
     num = "{num}",
   conda: "envs/cmash.yml"
+  threads: 24
   shell: """
     MakeStreamingDNADatabase.py \
         -k {params.ksize} \
@@ -298,7 +299,7 @@ rule cmash_k:
   output: "outputs/cmash/{sample}-k{ksize,\d+}-n{num,\d+}.csv"
   input:
     query = "data/reads/{sample}_2.fastq.gz",
-    db = "outputs/cmash/db-k{ksize}.h5"
+    db = "outputs/cmash/db-k{ksize}-n{num}.h5"
   params:
     k = "{ksize}"
   conda: "envs/cmash.yml"

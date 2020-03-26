@@ -1,0 +1,64 @@
+CP001472.1 Acidobacterium capsulatum ATCC 51196, complete genome
+CP001941.1 Aciduliprofundum boonei T469, complete genome
+CP001071.1 Akkermansia muciniphila ATCC BAA-835, complete genome
+AE000782.1 Archaeoglobus fulgidus DSM 4304, complete genome
+AE015928.1 Bacteroides thetaiotaomicron VPI-5482, complete genome
+CP000139.1 Bacteroides vulgatus ATCC 8482, complete genome
+NZ_JGWU01000001.1 Bordetella bronchiseptica D989 ctg7180000008197, whole genome shotgun sequence
+NC_007951.1 Burkholderia xenovorans LB400 chromosome 1, complete sequence
+CP000679.1 Caldicellulosiruptor saccharolyticus DSM 8903, complete genome
+NZ_FWDH01000003.1 Caldicellulosiruptor bescii strain MACB1021, whole genome shotgun sequence
+CP001097.1 Chlorobium limicola DSM 245, complete genome
+CP000492.1 Chlorobium phaeobacteroides DSM 266, complete genome
+CP000607.1 Chlorobium phaeovibrioides DSM 265, complete genome
+AE006470.1 Chlorobium tepidum TLS, complete genome
+CP000909.1 Chloroflexus aurantiacus J-10-fl, complete genome
+CP000568.1 Clostridium thermocellum ATCC 27405, complete genome
+NZ_CP015081.1 Deinococcus radiodurans R1 chromosome 1, complete sequence
+NC_008751.1 Desulfovibrio vulgaris DP4, complete genome
+CP001251.1 Dictyoglomus turgidum DSM 6724, complete genome
+NZ_KE136524.1 Enterococcus faecalis V583 acyDH-supercont2.1, whole genome shotgun sequence
+AE009951.2 Fusobacterium nucleatum subsp. nucleatum ATCC 25586, complete genome
+AP009153.1 Gemmatimonas aurantiaca T-27 DNA, complete genome
+AE017180.2 Geobacter sulfurreducens PCA, complete genome
+NC_013968.1 Haloferax volcanii DS2 plasmid pHV1, complete sequence
+NC_009972.1 Herpetosiphon aurantiacus DSM 785, complete genome
+CP001130.1 Hydrogenobaculum sp. Y04AAS1, complete genome
+CP000816.1 Ignicoccus hospitalis KIN4/I, complete genome
+CP001013.1 Leptothrix cholodnii SP-6, complete genome
+NC_000909.1 Methanocaldococcus jannaschii DSM 2661, complete genome
+CP000609.1 Methanococcus maripaludis C5, complete genome
+BX950229.1 Methanococcus maripaludis strain S2, complete sequence
+AE009439.1 Methanopyrus kandleri AV19, complete genome
+AE010299.1 Methanosarcina acetivorans str. C2A, complete genome
+NC_005213.1 Nanoarchaeum equitans Kin4-M chromosome, complete genome
+AL954747.1 Nitrosomonas europaea ATCC 19718, complete genome
+NC_003272.1 Nostoc sp. PCC 7120 DNA, complete genome
+CP001110.1 Pelodictyon phaeoclathratiforme BU-1, complete genome
+AP009380.1 Porphyromonas gingivalis ATCC 33277 DNA, complete genome
+AE009441.1 Pyrobaculum aerophilum str. IM2, complete genome
+CP000660.1 Pyrobaculum arsenaticum DSM 13514, complete genome
+CP000561.1 Pyrobaculum calidifontis JCM 11548, complete genome
+AE009950.1 Pyrococcus furiosus DSM 3638, complete genome
+BA000001.2 Pyrococcus horikoshii OT3 DNA, complete genome
+BX119912.1 Rhodopirellula baltica SH 1 complete genome
+NC_003911.12 Ruegeria pomeroyi DSS-3, complete genome
+CP000850.1 Salinispora arenicola CNS-205, complete genome
+CP000667.1 Salinispora tropica CNB-440, complete genome
+NC_009665.1 Shewanella baltica OS185, complete genome
+NC_010730.1 Sulfurihydrogenibium sp. YO3AOP1, complete genome
+NZ_ABZS01000228.1 Sulfurihydrogenibium yellowstonense SS-5 gcontig_18, whole genome shotgun sequence
+CP000924.1 Thermoanaerobacter pseudethanolicus ATCC 33223, complete genome
+CP000916.1 Thermotoga neapolitana DSM 4359, complete genome
+CP000702.1 Thermotoga petrophila RKU-1, complete genome
+CP000969.1 Thermotoga sp. RQ2, complete genome
+CP001230.1 Persephonella marina EX-H1, complete genome
+AE017221.1 Thermus thermophilus HB27, complete genome
+AE017226.1 Treponema denticola ATCC 35405, complete genome
+BX571656.1 Wolinella succinogenes DSM 1740, complete genome
+NZ_KQ961402.1 Zymomonas mobilis strain ATCC 31823 Scaffold1, whole genome shotgun sequence
+NZ_CH959311.1 Sulfitobacter sp. EE-36 scf_1099451318005, whole genome shotgun sequence
+NZ_CH959317.1 Sulfitobacter sp. NAS-14.1 scf_1099451320472, whole genome shotgun sequence
+NZ_DS996397.1 Desulfovibrio piger ATCC 29098 Scfld442, whole genome shotgun sequence
+BA000023.2 Sulfolobus tokodaii str. 7 DNA, complete genome
+NC_011663.1 Shewanella baltica OS223, complete genome

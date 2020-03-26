@@ -9,3 +9,4 @@ dependencies:
   - pandas=1.0.1
   - matplotlib-base
   - hvplot
+  - scipy

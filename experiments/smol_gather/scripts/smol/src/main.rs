@@ -146,8 +146,6 @@ fn summarize_matches<W: Write>(
 fn gather(
     query: PathBuf,
     signatures: &[PathBuf],
-    _ksize: u8,
-    _scaled: usize,
     output: Option<PathBuf>,
     threshold: f64,
 ) -> Result<(), Box<dyn std::error::Error>> {
@@ -215,14 +213,6 @@ enum Cli {
         #[structopt(short = "t", long = "threshold", default_value = "0.1")]
         threshold: f64,
 
-        /// ksize
-        #[structopt(short = "k", long = "ksize", default_value = "21")]
-        ksize: u8,
-
-        /// scaled
-        #[structopt(short = "s", long = "scaled", default_value = "1000")]
-        scaled: usize,
-
         /// The path for output
         #[structopt(parse(from_os_str), short = "o", long = "output")]
         output: Option<PathBuf>,
@@ -243,12 +233,9 @@ fn main() {
             query,
             signatures,
             threshold,
-            ksize,
-            scaled,
             output,
         } => {
-            gather(query, &signatures, ksize, scaled, output, threshold)
-                .expect("Error running gather");
+            gather(query, &signatures, output, threshold).expect("Error running gather");
         }
     };
 }

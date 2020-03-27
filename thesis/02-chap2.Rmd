@@ -2,12 +2,16 @@
 
 \chaptermark {MHBT}
 
+## Abstract
+
 ## Introduction
 
 ### Hierarchical index
 
+<!-- 'k-mer aggregative methods in (marchet 2019)' -->
+
 Searching for matches in large collection of datasets is not viable when hundreds of thousands of
-them are available, 
+them are available,
 especially if they are partitioned and not all present at the same place.
 
 Bloofi [@crainiceanu_bloofi:_2015] is a hierarchical index structure that
@@ -34,10 +38,110 @@ early [@sun_allsome_2017] and developing more efficient representations for the
 internal nodes [@solomon_improved_2017] [@harris_improved_2018] to use less
 storage space and memory.
 
-## Methods
+### Inverted index
+
+<!-- 'color- aggregative methods in (marchet 2019)' -->
+
+<!--
+- a map of hash -> list of dataset IDs
+- differs from kraken: it collapses the list of dataset IDs to the LCA,
+  which decreases precision and sensitivity when more datasets are used
+  (see dasko 2018)
+- Mantis is also an inverted index (hash -> color), where 'color' encodes
+  a subset of the datasets
+-->
 
 ## Results
 
+### Efficient containment and similarity searches
+
+#### Index construction and updating
+
+resources (time, cpu, mem)
+<!--
+
+- sourmash indices benefit from more data. Inverted index
+
+-->
+
+#### Querying
+
+<!--
+COST (cost of single thread)
+-->
+
+### CAMI challenges
+
+<!--
+
+Intro: what is CAMI, what it provides:
+- challenges provide gold standards (what is expected to be in the sample)
+- standardized tools for profiling performance comparisons (OPAL)
+
+-->
+
+#### CAMI 1 (low, medium, high)
+
+<!--
+- Already published, but results are for older/outdated tools
+- still a good benchmark (because gold standards are available)
+- low and medium datasets have viruses, which are not in sourmash indices
+-->
+
+#### CAMI 2 mouse gut toy challenge
+
+<!--
+- new CAMI challenges, with short and long reads (pacbio)
+- toy challenge is calibration: gold standard available
+- CAMI provides results for other tools
+
+CAMI 2 refseq database also doesn't have viruses...
+
+- sourmash gather:
+-->
+
 ## Discussion
 
-## Conclusion
+### Limitations
+
+<!--
+Viruses (scaled minhash too small).
+  mash screen solves this by going for sensitivity (at the cost of precision),
+  possible solution: scaled+num hashes, but would only allow mash screen-like method
+
+
+-->
+
+### Future directions
+
+<!--
+- Better localization in SBT
+   * or go full HowDe SBT
+- batch_insert for SBT, insert_one for Inverted Index
+- Other indices
+  * Fundamentally a scaled minhash is a subset of the k-mer composition of a
+  dataset, so any index from https://www.biorxiv.org/content/10.1101/866756v1
+  ("Data structures based on k-mers for querying large collections of sequencing datasets")
+  can be used to scale,
+  and given that gather is defined over a collection of signatures the indices
+  can also be used to improve gather performance.
+- gather assigns hashes to best matches ("winner-takes-all"). Other approaches
+  will be needed to disambiguate matches further
+- sourmash is currently single threaded, but that's an implementation detail.
+  Parallel queries are possible (in a shared read-only index)
+-->
+
+### Summary/Conclusion
+
+## Methods
+
+### Mathematical foundations
+
+### Implementation
+
+sourmash is implemented in Rust for the core performance-critical functionality,
+and exposes a C API that is wrapped in Python for higher-level features.
+This includes a Python API for interactive use,
+as well as a command-line interface for more traditional bioinformatics workflows.
+
+### Experiments

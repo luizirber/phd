@@ -40,6 +40,10 @@ storage space and memory.
 
 ### Inverted index
 
+<!--
+ CTBQ: write this up next.
+-->
+
 <!-- 'color- aggregative methods in (marchet 2019)' -->
 
 <!--

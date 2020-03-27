@@ -8,11 +8,15 @@ The {#rmd-basics} text after the chapter declaration will allow us to link throu
 
 ## Introduction
 
+<!--
+ CTBQ: What are the goals of compositional analysis in biological systems?
+-->
+
 ### MinHash sketch: similarity and containment
 
 A data sketch is a representative proxy for the original data focused on queries
 for specific properties.
-It can also be viewed as a probabilistic data structure (in contrast with
+It can also be viewed as a probabilistic data structure (in contrast to
 deterministic data structures),
 since it uses hashing techniques to provide statistical guarantees on the
 precision of the answer for a query.
@@ -26,7 +30,7 @@ It provides an estimate of the Jaccard similarity
 and the **containment** of two documents,
 estimating how much of document $A$ is contained in document $B$.
 These estimates depend on two processes:
-Converting documents to sets ("Shingling"),
+converting documents to sets ("Shingling"),
 and transforming large sets into short signatures,
 while preserving similarity ("Min-Hashing").
 In the original use case the *$w$-shingling* $\Omega$ of a document $D$ is defined as the set of all
@@ -75,6 +79,9 @@ with very small dataset (might not contain enough hashes for meaningful results)
 
 ## Decomposition of queries with gather
 
+<!--
+CTB suggestion: put gather in {\tt form} or {\sf form} to distinguish it.
+-->
 
 
 gather algorithm: Given a dataset and a collection of signatures $DB$
@@ -172,6 +179,8 @@ Use genbank signatures
 
 <!--
 - containment score experiments
+
+CTBQ: Write up these results.
 -->
 
 

@@ -86,7 +86,7 @@ and represented a snapshot of the data available on the database at that point. 
 The sequencing data was available in a shared storage unit,
 and processing was done through NERSC's Cori scheduling system.
 
-<!-- Link IMG snakemake repo 
+<!-- Link IMG snakemake repo
 -->
 
 ### The worker
@@ -114,7 +114,7 @@ The first prototype (named `soursigs`) used `snakemake` to
 1) query metadata from SRA
 2) for each dataset, spawn a worker job to process it and generate a signature
 3) upload the signature to permanent storage
-<!-- Link soursigs repo for initial prototype 
+<!-- Link soursigs repo for initial prototype
 https://github.com/dib-lab/soursigs/
 -->
 
@@ -158,6 +158,9 @@ but not as appropriate for a system that is frequently updated. (=> IPFS chp 4 m
 <!-- how and why did soursigs evolve into wort? -->
 <!-- mirror structure from previous section, showing how things changed? -->
 
+<!--
+CTBQ: which limitation is being overcome? It's ok to repeat and be specific.
+-->
 `wort` was created to overcome this (which??) limitation and allow more computational systems to participate in the process,
 building an heterogeneous system that doesn't depend on similar resources being available for each worker.
 Two major changes for this:
@@ -241,6 +244,8 @@ decentralized approach.
 CTB: Attacks on this system by bad faith workers? Access restrictions on queue.
 
 Maybe reference "linda tuple space" in the paper somewhere?
+
+CTBQ: What points do you want to make here?
 -->
 
 ## Conclusion

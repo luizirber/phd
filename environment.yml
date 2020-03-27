@@ -4,9 +4,9 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - python=3.7.3
-  - snakemake-minimal=5.10.0
-  - pandas=1.0.1
+  - python=3.8
+  - snakemake-minimal=5.12
+  - pandas=1.0.3
   - matplotlib-base
   - hvplot
   - scipy

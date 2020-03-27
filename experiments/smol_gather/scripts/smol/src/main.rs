@@ -18,6 +18,11 @@ struct ScaledMinHash {
     filename: Option<String>,
 }
 
+trait Gatherable {
+    fn containment(&self, other: &Self) -> f64;
+    fn subtract(&mut self, other: &Self);
+}
+
 impl ScaledMinHash {
     fn new(k: usize, scaled: usize, name: Option<String>, filename: Option<String>) -> Self {
         let max_hash = (u64::max_value() as f64 / scaled as f64) as u64;
@@ -36,16 +41,6 @@ impl ScaledMinHash {
         }
     }
 
-    fn containment(&self, other: &ScaledMinHash) -> f64 {
-        assert_eq!(self.k, other.k);
-        assert_eq!(self.max_hash, other.max_hash);
-        self.hashes.intersection(&other.hashes).count() as f64 / self.hashes.len() as f64
-    }
-
-    fn subtract(&mut self, other: &ScaledMinHash) {
-        self.hashes = &self.hashes - &other.hashes;
-    }
-
     fn save<P: AsRef<Path>>(&self, out: P) -> Result<(), Box<dyn std::error::Error>> {
         let mut f = BufWriter::new(File::create(out)?);
         serde_json::to_writer(&mut f, &self)?;
@@ -56,6 +51,18 @@ impl ScaledMinHash {
         let f = BufReader::new(File::open(filename)?);
         let mh = serde_json::from_reader(f)?;
         Ok(mh)
+    }
+}
+
+impl Gatherable for ScaledMinHash {
+    fn containment(&self, other: &ScaledMinHash) -> f64 {
+        assert_eq!(self.k, other.k);
+        assert_eq!(self.max_hash, other.max_hash);
+        self.hashes.intersection(&other.hashes).count() as f64 / self.hashes.len() as f64
+    }
+
+    fn subtract(&mut self, other: &ScaledMinHash) {
+        self.hashes = &self.hashes - &other.hashes;
     }
 }
 
@@ -101,11 +108,11 @@ fn compute(
     Ok(())
 }
 
-fn find_best_contained<'a>(
-    query: &ScaledMinHash,
-    collection: &'a [ScaledMinHash],
+fn find_best_contained<'a, T: Gatherable>(
+    query: &T,
+    collection: &'a [T],
     threshold: f64,
-) -> Option<&'a ScaledMinHash> {
+) -> Option<&'a T> {
     let mut best_containment = threshold;
     let mut best_match = None;
 

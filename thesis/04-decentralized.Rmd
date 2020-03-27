@@ -1,6 +1,6 @@
 # Decentralized indices for public genomic data
 
-\chaptermark {wort}
+\chaptermark {decentralized}
 
 ## Introduction
 

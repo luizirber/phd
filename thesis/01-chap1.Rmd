@@ -83,38 +83,60 @@ with very small dataset (might not contain enough hashes for meaningful results)
 CTB suggestion: put gather in {\tt form} or {\sf form} to distinguish it.
 -->
 
+\RestyleAlgo{boxruled}
+\LinesNumbered
+\begin{algorithm}[ht]
+   \DontPrintSemicolon
+   \SetKwInOut{Input}{Input}
+   \SetKwInOut{Output}{Output}
+   \SetKwBlock{Loop}{Loop}{}
+   \SetKwFunction{FindBestContained}{FindBestContained}
+   \SetKwFunction{Subtract}{Subtract}
+   \SetKwFunction{AppendToMatches}{AppendToMatches}
+   \Input{query $Q$}
+   \Input{a collection $C$ of reference datasets}
+   \Input{a containment threshold $T$}
+   \Output{a list of matches $M$ from $C$ contained in $Q$}
+   \BlankLine
+   $M \leftarrow \emptyset$\;
+   $Q' \leftarrow Q$\;
+   \Loop {
+       $best = \FindBestContained(Q', C, T)$\;
+       \If{$best = \emptyset$ }{
+           break\;
+       }
+       $\AppendToMatches(M, best)$\;
+       $Q' \leftarrow \Subtract(M, Q')$\;
+   }
+   \KwRet{matches}
+   \caption{The gather method}
+\end{algorithm} 
+ 
+\begin{algorithm}[ht]
+  \DontPrintSemicolon
+  \SetKwInOut{Input}{Input}
+  \SetKwInOut{Output}{Output}
+  \SetKwFunction{containment}{containment}
+  \SetKwBlock{Loop}{Loop}{}
+  \Input{query $Q$}
+  \Input{a list $C$ of reference datasets}
+  \Input{a containment threshold $T$}
+  \Output{the match $m$ for $m \in C$ with best containment in $Q$, or $\emptyset$ if no match above threshold}
+  \BlankLine
+  $best\_containment \leftarrow T$\;
+  $m \leftarrow \emptyset$\;
+  \For{$c \in C$}{
+     $containment \leftarrow \containment(c,Q)$\;
+     \If{$containment \ge best\_containment$ }{
+       $best\_containment \leftarrow containment$\;
+       $m \leftarrow c$\;
+     }
+  }
+  \KwRet{$m$}
+  \caption{a \emph{FindBestContained} implementation for a list}
+\end{algorithm} 
+>>>>>>> 3de8313... algo
 
-gather algorithm: Given a dataset and a collection of signatures $DB$
-```
-query = scaled_minhash(dataset)
-
-matches = []
-while len(query) > threshold:
-  best_contained = find_best_contained(query, collection)
-  matches.append(best_match)
-  query = remove_intersection(query, best_match)
-
-summarize_matches(matches)
-```
-
-Operations:
-```
-def find_best_contained(query, DB):
-  best_score = 0.0
-  best_match = None
-
-  for sig in DB:
-    if score := query.containment(sig) > best_score:
-      best_score = score
-      best_match = sig
-
-  return best_match
-```
-
-```
-def subtract(query, best_match):
-  # possible
-```
 
 ### Limitations
 

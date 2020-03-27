@@ -64,7 +64,7 @@ Moreover,
 if a hash is present in more than one dataset
 kraken also reduces the list of taxons to the lowest common ancestor (LCA),
 which leads to reduced memory usage.
-[@dasko:2018] explores how this LCA leads to decreased precision and sensitivity over time,
+[@dasko:2018] explores how this LCA approach leads to decreased precision and sensitivity over time,
 since more datasets are added to reference databases and the chance of a k-mer being present
 in multiple datasets increases.
 
@@ -94,6 +94,15 @@ COST (cost of single thread)
 
 ### CAMI challenges
 
+Critical Assessment of Metagenome Intepretation (CAMI) is a community-driven initiative,
+and brings together tool developers to create standard and reproducible
+benchmarking methods.
+It is divided in three big groups:
+assembly,
+binning and profiling.
+
+Since there is a standard output format that tools need to implement,
+performance comparisons can be
 <!--
 
 Intro: what is CAMI, what it provides:

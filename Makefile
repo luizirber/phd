@@ -1,2 +1,2 @@
 all:
-	snakemake --use-conda
+	snakemake -j 1 --use-conda

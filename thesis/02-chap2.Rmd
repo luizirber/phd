@@ -6,13 +6,13 @@
 
 ## Introduction
 
-### Hierarchical index
-
-<!-- 'k-mer aggregative methods in (marchet 2019)' -->
-
 Searching for matches in large collection of datasets is not viable when hundreds of thousands of
 them are available,
 especially if they are partitioned and not all present at the same place.
+
+### Hierarchical index
+
+<!-- 'k-mer aggregative methods in (marchet 2019)' -->
 
 Bloofi [@crainiceanu_bloofi:_2015] is a hierarchical index structure that
 extends the Bloom Filter basic query to collections of Bloom Filters.
@@ -40,20 +40,38 @@ storage space and memory.
 
 ### Inverted index
 
-<!--
- CTBQ: write this up next.
--->
-
 <!-- 'color- aggregative methods in (marchet 2019)' -->
 
-<!--
-- a map of hash -> list of dataset IDs
-- differs from kraken: it collapses the list of dataset IDs to the LCA,
-  which decreases precision and sensitivity when more datasets are used
-  (see dasko 2018)
-- Mantis is also an inverted index (hash -> color), where 'color' encodes
-  a subset of the datasets
--->
+An inverted index is a mapping from words in a text back to its location inside
+the text.
+An example is the index in the back of a book,
+containing a list of topics and in which page they are present.
+Information retrieval system use inverted index to find the occurrences of
+words in a text [@ziviani:2000].
+
+In the signature collection indexing case,
+the inverted index is a map of all hashes in the collection back to
+the signature from where they originated.
+Just as words can appear more than once in a text,
+hashes show up in more than one signature,
+so the inverted index maps a hash to a list of signatures IDs.
+
+kraken has a similar index,
+but uses a taxonomic ID for each dataset.
+Datasets can share the same ID (taxon),
+if they belong to the same taxon.
+Moreover,
+if a hash is present in more than one dataset
+kraken also reduces the list of taxons to the lowest common ancestor (LCA),
+which leads to reduced memory usage.
+[@dasko:2018] explores how this LCA leads to decreased precision and sensitivity over time,
+since more datasets are added to reference databases and the chance of a k-mer being present
+in multiple datasets increases.
+
+Efficient storage of the list of signatures IDs can also be achieved via representation of the list as colors,
+where a color can represent one dataset or multiple datasets (if a hash is present in many of them).
+Mantis [@pandey_mantis:_2017] uses this hash to color mapping
+(and an auxiliary color table) to achieve reduced memory usage.
 
 ## Results
 

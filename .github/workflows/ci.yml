@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: install xelatex
-      run: sudo apt install -y texlive-xetex
+      run: sudo apt install -y texlive-xetex texlive-science
     - name: Update conda
       run: conda update -q conda
     - name: Install conda dependencies

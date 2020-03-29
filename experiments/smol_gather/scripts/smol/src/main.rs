@@ -97,9 +97,9 @@ fn compute(
     )?;
 
     let out = output.unwrap_or_else(move || {
-        let mut filename = filename;
-        filename.push(".sig");
-        filename
+        let mut name = filename.file_name().unwrap().to_owned();
+        name.push(".smol");
+        filename.with_file_name(name)
     });
 
     mh.name = name;

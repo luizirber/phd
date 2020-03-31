@@ -1,5 +1,7 @@
 # Indexing with MinHash Bloom Trees
 
+CTBQ: if you include inverted index, maybe the title should change?
+
 \chaptermark {MHBT}
 
 ## Abstract
@@ -9,6 +11,10 @@
 Searching for matches in large collection of datasets is not viable when hundreds of thousands of
 them are available,
 especially if they are partitioned and not all present at the same place.
+
+CTBQ: Additional points to raise: in-memory representation of sketches may be too big (!!), goal here is on disk storage/low minimum memory for "extremely large data" situation. Also/in addition, want ability to do incremental loading of things. Note we are not talking here about situations where the indices themselves are too big to download, could maybe include forward pointer to chp4.
+
+Note, in this chapter you could also include distinction in performance between SBT and LCA DB, to whit: large scaled works well with LCA (small DB, ~tolerable memory, load all at once, then quite fast) but low scaled may work (much) better with SBT.
 
 ### Hierarchical index
 

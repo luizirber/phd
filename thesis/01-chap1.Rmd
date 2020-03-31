@@ -158,8 +158,11 @@ CTB suggestion: put gather in {\tt form} or {\sf form} to distinguish it.
   \caption{a \emph{FindBestContained} implementation for a list}
 \end{algorithm} 
 
+CTBQ: where should we talk about how gather does not run into "k-mer saturation" problem that kraken style techniques run into?
 
 ### Limitations
+
+CTBQ: these are limitations not of gather, but of scaled.
 
 - increased size (compared with minhash, which is constant size)
 - detection threshold (viruses)

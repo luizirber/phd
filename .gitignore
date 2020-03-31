@@ -3,3 +3,4 @@ thesis/_bookdown*
 thesis/thesis.log
 proposal/Proposal.*
 .snakemake
+**/.ipynb_checkpoints/

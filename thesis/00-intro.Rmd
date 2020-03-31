@@ -84,3 +84,18 @@ metric, the mash distance, that takes into account the size of the genome for
 each dataset.
 
 
+## Thesis Structure {#structure}
+
+...
+The rest of this dissertation is organized as follows.
+
+**Chapter 1** describes Scaled MinHash
+
+**Chapter 2** describes SBT (hierarchical) and LCADB (inverted)
+
+**Chapter 3** describes gather
+
+**Chapter 4** describes wort,
+distributed signature calculation
+
+**Chapter 5** describes decentralized indices for genomic data

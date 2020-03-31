@@ -18,9 +18,9 @@ rule build_thesis:
   output: 'thesis/_book/thesis.pdf'
   input:
     sources=expand('thesis/{rmd}.Rmd',
-                   rmd=('index', '00-intro', '01-chap1', '02-chap2',
-                        '03-distributed', '04-decentralized', '05-conclusion',
-                        '06-appendix', '98-colophon', '99-references')),
+                   rmd=('index', '00-intro', '01-scaled', '02-index',
+                        '03-gather', '04-distributed', '05-decentralized',
+                        '06-conclusion', '07-appendix', '98-colophon', '99-references')),
     bibliography='thesis/bib/thesis.bib'
   shell: """
       cd thesis

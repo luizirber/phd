@@ -4,78 +4,13 @@ The {#rmd-basics} text after the chapter declaration will allow us to link throu
 
 # Compositional analysis with scaled minhash and gather
 
-\chaptermark{Scaled}
+\chaptermark{Gather}
 
 ## Introduction
 
 <!--
  CTBQ: What are the goals of compositional analysis in biological systems?
 -->
-
-### MinHash sketch: similarity and containment
-
-A data sketch is a representative proxy for the original data focused on queries
-for specific properties.
-It can also be viewed as a probabilistic data structure (in contrast to
-deterministic data structures),
-since it uses hashing techniques to provide statistical guarantees on the
-precision of the answer for a query.
-This allows a memory/accuracy trade-off:
-using more memory leads to more accurate results,
-but in memory-constrained situations it still bound results to an expected error rate.
-
-The MinHash sketch [@broder_resemblance_1997] was developed at Altavista in the context of document clustering and deduplication.
-It provides an estimate of the Jaccard similarity
-(called **resemblance** in the original article)
-and the **containment** of two documents,
-estimating how much of document $A$ is contained in document $B$.
-These estimates depend on two processes:
-converting documents to sets ("Shingling"),
-and transforming large sets into short signatures,
-while preserving similarity ("Min-Hashing").
-In the original use case the *$w$-shingling* $\Omega$ of a document $D$ is defined as the set of all
-continuous subsequence of $w$ words contained in $D$.
-*Min-hashing* is the process of creating $W = \{\,h(x) \mid \forall x \in \Omega\,\}$,
-where $h(x)$ is an uniform hash function,
-and then either
-
-a) keeping the $n$ smallest elements ($\mathbf{MIN}_n(W)$), or
-b) keeping elements that are $0 \mod m$ ($\mathbf{MOD}_m(W)$).
-
-$\mathbf{MIN}_n(W)$ is fixed-sized (length $n$) and supports similarity estimation,
-but doesn't support containment.
-$\mathbf{MOD}_m(W)$ supports both similarity and containment,
-with the drawback of not being fixed-sized anymore,
-growing with the complexity of the document.
-
-### mash and genomic minhash
-
-Mash [@ondov_mash:_2016] was the first implementation of MinHash in genomic contexts,
-relating the $w$-shingling of a document to the $k$-mer composition of genomic
-datasets,
-and using the $\mathbf{MIN}_n(W)$ fixed-sized formulation for the signature.
-Mash needs extra information (the genome size for the organism being queried) to account for genomic complexity in datasets and derive a new score,
-the Mash distance,
-to bring it closer to previously existing similarity measures in biology
-(Average Nucleotide Identity).
-This extra information is required because using a fixed-size MinHash leads to
-different degrees of accuracy when comparing across highly-diverged organisms
-(bacteria to animals, for example),
-and it is even more extreme when taking more complex datasets into account (like metagenomes).
-
-## Scaled MinHash
-
-In order to calculate containment
-
-$\mathbf{MIN}_n(W)$ fixed-sized formulation
-
-### Comparison with mod hash
-
-MinHash containment: mash works only on datasets of similar genome size/complexity
-ModHash is a solution (more complex dataset will have larger sketch), but falls apart
-with very small dataset (might not contain enough hashes for meaningful results)
-
-(intro CMash here)
 
 ## Decomposition of queries with gather
 <!--
@@ -135,11 +70,52 @@ CTB suggestion: put gather in {\tt form} or {\sf form} to distinguish it.
   \caption{a \emph{FindBestContained} implementation for a list}
 \end{algorithm} 
 
+### CAMI challenges
+
+Critical Assessment of Metagenome Intepretation (CAMI) is a community-driven initiative,
+and brings together tool developers to create standard and reproducible
+benchmarking methods.
+It is divided in three big groups:
+assembly,
+binning and profiling.
+
+Since there is a standard output format that tools need to implement,
+performance comparisons can be
+<!--
+
+Intro: what is CAMI, what it provides:
+- challenges provide gold standards (what is expected to be in the sample)
+- standardized tools for profiling performance comparisons (OPAL)
+
+-->
+
+#### CAMI 1 (low, medium, high)
+
+<!--
+- Already published, but results are for older/outdated tools
+- still a good benchmark (because gold standards are available)
+- low and medium datasets have viruses, which are not in sourmash indices
+-->
+
+#### CAMI 2 mouse gut toy challenge
+
+<!--
+- new CAMI challenges, with short and long reads (pacbio)
+- toy challenge is calibration: gold standard available
+- CAMI provides results for other tools
+
+CAMI 2 refseq database also doesn't have viruses...
+
+- sourmash gather:
+-->
 
 ### Limitations
 
-- increased size (compared with minhash, which is constant size)
-- detection threshold (viruses)
+<!--
+Viruses (scaled minhash too small).
+  mash screen solves this by going for sensitivity (at the cost of precision),
+  possible solution: scaled+num hashes, but would only allow mash screen-like method
+-->
 
 ## Implementation
 
@@ -171,47 +147,7 @@ The Rust version has four direct external dependencies:
 `murmurhash3` for the MurmurHash3 hash function,
 `serde_json` for JSON serialization and `structopt` for command line parsing.
 
-### exact
-
-`exact` is an exact k-mer counting implementation in Rust.
-It also uses the standard library `HashSet` to store the $k$-mer composition of
-a dataset,
-and Needletail for sequence parsing.
-It differs from `smol` because it stores all canonical $k$-mers,
-instead of a subset.
-The `bincode` library is used for serialization,
-since it provides a simpler binary format output for Rust data types.
-The goal is not to have a general purpose tool,
-but only a way to calculate the ground truth for containment in a dataset,
-and so a more compatible serialization format
-(like JSON in the `smol` case)
-is not required.
-
 ## Evaluation
-
-### Average Scaled MinHash sketch sizes across Genbank domains
-
-<!--
-Use genbank signatures
--->
-
-### Containment score methods
-
-<!--
-- containment score experiments
-CTBQ: Write up these results.
--->
-
-
-
-(show method works, even if slow -> leading to introduction of other indices)
-
-(use scaled=1 and scaled=1000, show results are similar.
-Use small datasets, since scaled=1 will be huge...)
-
-(maybe use podar dataset?)
-
-(compare with cmash/mash screen here?)
 
 (cmash and mash screen can do `gather` too,
 but still require the original data available.

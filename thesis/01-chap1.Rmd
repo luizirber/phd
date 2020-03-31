@@ -65,6 +65,29 @@ and it is even more extreme when taking more complex datasets into account (like
 
 ## Scaled MinHash
 
+CTBQ: define scaled algorithm here. [From this draft](https://hackmd.io/rxlN-Nv6Q-qhtim7EXCofw?view),
+* choose a density parameter D (--scaled)
+* divide hash space into bands of size H / D, where H = hash space size (2**64)
+
+CTBQ: it is not clear to me that we should use "Scaled MinHash", as MinHash is explicitly not scaled :). I like DensityHash, based on [durbin's nomenclature of "inverse density](https://github.com/richarddurbin/modimizer) ([also ref](https://github.com/richarddurbin/modimizer/issues/1)).
+
+What is the difference with modulo hash (per Broder 1997)? Modulo is expensive vs less-than operator; convertible between minhash and modhash.
+address brad’s comment on f1000 paper: the existing modulo approach has no guarantees on equal-sized (or even equal-fraction as the manuscript claims elsewhere) sub-sampling
+
+Features of scaled:
+* subsampling to lower densities
+* streaming guarantees (never lose hash value - containment never decreases as you get more data)
+* add and subtract hash values (category, “operations directly on sketches”?)
+* abundance filter hash values (operations directly on sketches)
+* modimizer additions per durbin
+  + addition of fwd/rc “sign” in sketch info (see comment)
+* poisson statistics / random sequence foo
+  + “A value of 2000 means that we are 99.98% likely to choose one k-mer per 10kb window, or to rephrase it, 9998 of 10000 windows of size 10kb will have at least one chosen k-mer in them.” see [numbers from charcoal](https://github.com/dib-lab/charcoal/blob/master/stats/stats.ipynb).
+
+Could also alternatively phrase scaled as lossy compression, more so than minhash.
+
+----
+
 In order to calculate containment
 
 $\mathbf{MIN}_n(W)$ fixed-sized formulation

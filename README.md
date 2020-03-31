@@ -4,7 +4,7 @@
 
 ## Qualifying Exam
 
-Exam happened in 2019-04-19.
+Exam happened in 2019-04-17.
 
 - [Proposal]
 - [Presentation]
@@ -46,6 +46,13 @@ cd experiments/smol_gather && snakemake --use-conda
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/luizirber/phd/master?urlpath=lab%2Ftree%2Fexperiments%2Fsizes%2Fnotebooks%2Fanalysis.ipynb)
 
 Scaled MinHash sizes (number of hashes) analysis across domains in Genbank.
+
+### Inverted index and shared hashes
+
+[experiments/lca](https://github.com/luizirber/phd/tree/master/experiments/lca)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/luizirber/phd/master?urlpath=lab%2Ftree%2Fexperiments%2Flca%2Fnotebooks%2Fanalysis.ipynb)
+
+Analyzing unique and shared hashes in an inverted index.
 
 ## Setup
 

@@ -1,0 +1,4 @@
+# Run on dir: /data/databases/
+
+export OMP_THREAD_LIMIT=1
+for d in archaea fungi protozoa viral bacteria; do python distribution.py $d; done;

@@ -1,4 +1,4 @@
-# Indexing with MinHash Bloom Trees
+# Efficient indexing of collections of signatures
 
 \chaptermark {MHBT}
 

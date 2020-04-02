@@ -143,6 +143,38 @@ fn summarize_matches<W: Write>(
     Ok(())
 }
 
+fn search(
+    query: PathBuf,
+    signatures: &[PathBuf],
+    output: Option<PathBuf>,
+    threshold: f64,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let collection: Vec<_> = signatures
+        .iter()
+        .map(|path| ScaledMinHash::load(path).expect("Error loading sketch"))
+        .collect();
+
+    let query = ScaledMinHash::load(query)?;
+
+    let mut matches = vec![];
+
+    for sig in &collection {
+        let containment = sig.containment(&query);
+        if containment > threshold {
+            matches.push((sig, containment, containment));
+        }
+    }
+
+    let mut out: Box<dyn Write> = match output {
+        Some(path) => Box::new(BufWriter::new(File::create(path)?)),
+        None => Box::new(std::io::stdout()),
+    };
+
+    summarize_matches(&matches, &mut out)?;
+
+    Ok(())
+}
+
 fn gather(
     query: PathBuf,
     signatures: &[PathBuf],
@@ -217,6 +249,23 @@ enum Cli {
         #[structopt(parse(from_os_str), short = "o", long = "output")]
         output: Option<PathBuf>,
     },
+    Search {
+        /// Query signature
+        #[structopt(parse(from_os_str))]
+        query: PathBuf,
+
+        /// Signatures to search
+        #[structopt(parse(from_os_str))]
+        signatures: Vec<PathBuf>,
+
+        /// threshold
+        #[structopt(short = "t", long = "threshold", default_value = "0.1")]
+        threshold: f64,
+
+        /// The path for output
+        #[structopt(parse(from_os_str), short = "o", long = "output")]
+        output: Option<PathBuf>,
+    },
 }
 
 fn main() {
@@ -236,6 +285,14 @@ fn main() {
             output,
         } => {
             gather(query, &signatures, output, threshold).expect("Error running gather");
+        }
+        Cli::Search {
+            query,
+            signatures,
+            threshold,
+            output,
+        } => {
+            search(query, &signatures, output, threshold).expect("Error running search");
         }
     };
 }

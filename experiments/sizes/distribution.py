@@ -23,6 +23,7 @@ def analyze_file(filename):
         seqs += 1
 #        for hll in unique.values():
 #            hll.consume_string(record.sequence)
+    input_iter.close()
     for hll in unique.values():
         hll.consume_seqfile(filename)
     return bps, seqs, unique
@@ -33,7 +34,12 @@ def process_sig(sigfile):
 
     original = sigfile[5:-4]
     ident = sigfile.split("/")[3]
-    bps, seqs, unique = analyze_file(original)
+    try:
+        bps, seqs, unique = analyze_file(original)
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+
     counters["id"] = ident
     counters["bp"] = bps
     for k in unique:
@@ -59,8 +65,9 @@ def main(domain, output=None, basedir=None):
     sigfiles = glob(f"{basedir}/{domain}/**/*.sig")
     with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
         for result in pool.imap_unordered(process_sig, sigfiles):
-            for key in counters:
-                counters[key].append(result[key])
+            if result is not None:
+                for key in counters:
+                    counters[key].append(result[key])
 
     df = pd.DataFrame(counters).set_index("id")
     if output is None:

@@ -10,3 +10,5 @@ dependencies:
   - matplotlib-base
   - hvplot
   - scipy
+  - seaborn
+  - ficus

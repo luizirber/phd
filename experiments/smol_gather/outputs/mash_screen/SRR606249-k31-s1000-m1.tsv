@@ -62,3 +62,7 @@
 0.999935	998/1000	15	0	data/refs/61.fa	[47 seqs] NZ_DS996397.1 Desulfovibrio piger ATCC 29098 Scfld442, whole genome shotgun sequence [...]
 1	1000/1000	34	0	data/refs/62.fa	BA000023.2 Sulfolobus tokodaii str. 7 DNA, complete genome
 0.998279	948/1000	5	0	data/refs/63.fa	[4 seqs] NC_011663.1 Shewanella baltica OS223, complete genome [...]
+0.879986	19/1000	1	4.07058e-152	data/refs/64.fa	[22 seqs] NZ_GL383344.1 Cutibacterium acnes HL072PA1 Scfld0, whole genome shotgun sequence [...]
+0.847866	6/1000	1	5.59184e-46	data/refs/65.fa	[3 seqs] NZ_CM004381.1 Escherichia coli strain 2014C-3250 plasmid unnamed1, whole genome shotgun sequence [...]
+0.931545	111/1000	13	0	data/refs/66.fa	[21 seqs] NZ_JNKC01000001.1 Proteiniclasticum ruminis DSM 24773 T487DRAFT_scaffold00001.1_C, whole genome shotgun sequence [...]
+0.939189	143/1000	1	0	data/refs/67.fa	[79 seqs] NZ_JMRV01000049.1 Streptococcus parasanguinis strain C1A plasmid unnamed1 contig_49, whole genome shotgun sequence [...]

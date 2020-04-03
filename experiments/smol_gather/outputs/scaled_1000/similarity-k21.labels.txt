@@ -62,3 +62,7 @@ NZ_CH959317.1 Sulfitobacter sp. NAS-14.1 scf_1099451320472, whole genome shotgun
 NZ_DS996397.1 Desulfovibrio piger ATCC 29098 Scfld442, whole genome shotgun sequence
 BA000023.2 Sulfolobus tokodaii str. 7 DNA, complete genome
 NC_011663.1 Shewanella baltica OS223, complete genome
+NZ_GL383344.1 Cutibacterium acnes HL072PA1 Scfld0, whole genome shotgun sequence
+NZ_CM004381.1 Escherichia coli strain 2014C-3250 plasmid unnamed1, whole genome shotgun sequence
+NZ_JNKC01000001.1 Proteiniclasticum ruminis DSM 24773 T487DRAFT_scaffold00001.1_C, whole genome shotgun sequence
+NZ_JMRV01000049.1 Streptococcus parasanguinis strain C1A plasmid unnamed1 contig_49, whole genome shotgun sequence

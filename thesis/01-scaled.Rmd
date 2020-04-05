@@ -65,9 +65,14 @@ and it is even more extreme when taking more complex datasets into account (like
 
 ## Scaled MinHash
 
-In order to calculate containment
-
-$\mathbf{MIN}_n(W)$ fixed-sized formulation
+The Scaled MinHash is a mix of both $\mathbf{MIN}_n(W)$ and $\mathbf{MOD}_m(W)$.
+From the former it keeps the smallest elements,
+and from the latter it adopts the dynamic size to allow containment estimation.
+Instead of taking $0 \mod m$ elements like $\mathbf{MOD}_m(W)$,
+a Scaled MinHash uses a parameter $s$ to select a subset of $W$.
+$\mathbf{SCALED}_s(W) = \{\,w \leq \frac{H}{s} \mid \forall w \in W\,\}$,
+where $H$ is the largest possible value in the domain of $h(x)$.
+$\frac{H}{s}$ is the \emph{maximum hash} value in the Scaled MinHash.
 
 ### Comparison with mod hash
 
@@ -76,6 +81,70 @@ ModHash is a solution (more complex dataset will have larger sketch), but falls 
 with very small dataset (might not contain enough hashes for meaningful results)
 
 (intro CMash here)
+
+
+\begin{figure}%[ht]
+    \begin{subfigure}{\textwidth}
+      \centering
+        \begin{tikzpicture}
+        \draw[] (0,0) -- (7.75,0) ; %edit here for the axis
+        \foreach \x in  {0,...,31} % edit here for the vertical lines
+          \draw[shift={(\x/4,0)},color=black] (0pt,2pt) -- (0pt,-2pt);
+        \foreach \x in {0,8,16,24,31} % edit here for the numbers
+          \draw[shift={(\x/4,0)},color=black] (0pt,0pt) -- (0pt,-3pt) node[below] {$\x$};
+        \foreach \x in {0,...,31} % edit here for the markers
+          \node[mark size=3pt] at (\x/4,0) {\pgfuseplotmark{triangle}};
+        \foreach \x in {0,3,6,9,12,15,18,21,24,27,30} % edit here for the markers
+          \draw[shift={(\x/4,6pt)},color=red] (0,2pt) -- (0,-2pt);
+        \foreach \x in {0,3,6,9} % edit here for the markers
+          \node[mark size=3pt,color=red] at (\x/4,0) {\pgfuseplotmark{triangle*}};
+        \end{tikzpicture}
+      \caption{$\mathbf{MIN}_4(W)$}
+      \label{fig:sub-first}
+    \end{subfigure}\vspace{0.02\textheight}
+    \begin{subfigure}{\textwidth}
+      \centering
+        \begin{tikzpicture}
+        \draw[] (0,0) -- (7.75,0) ; %edit here for the axis
+        \foreach \x in  {0,...,31} % edit here for the vertical lines
+          \draw[shift={(\x/4,0)},color=black] (0pt,2pt) -- (0pt,-2pt);
+        \foreach \x in {0,8,16,24,31} % edit here for the numbers
+          \draw[shift={(\x/4,0)},color=black] (0pt,0pt) -- (0pt,-3pt) node[below] {$\x$};
+        \foreach \x in {0,4,8,12,16,20,24,28} % edit here for the markers
+          \node[mark size=3pt] at (\x/4,0) {\pgfuseplotmark{oplus}};
+        \foreach \x in {0,3,6,9,12,15,18,21,24,27,30} % edit here for the markers
+          \draw[shift={(\x/4,6pt)},color=red] (0,2pt) -- (0,-2pt);
+        \foreach \x in {0,12,24} % edit here for the markers
+          \node[mark size=3pt,color=red] at (\x/4,0) {\pgfuseplotmark{oplus*}};
+        \end{tikzpicture}
+      \caption{$\mathbf{MOD}_4(W)$}
+      \label{fig:sub-second}
+    \end{subfigure}\vspace{0.02\textheight}
+    \begin{subfigure}{\textwidth}
+      \centering
+        \begin{tikzpicture}
+        \draw[] (0,0) -- (7.75,0) ; %edit here for the axis
+        \foreach \x in  {0,...,31} % edit here for the vertical lines
+          \draw[shift={(\x/4,0)},color=black] (0pt,2pt) -- (0pt,-2pt);
+        \foreach \x in {0,8,16,24,31} % edit here for the numbers
+          \draw[shift={(\x/4,0)},color=black] (0pt,0pt) -- (0pt,-3pt) node[below] {$\x$};
+        \foreach \x in {0,1,2,3,4,5,6,7} % edit here for the markers
+          \node[mark size=3pt] at (\x/4,0) {\pgfuseplotmark{diamond}};
+        \foreach \x in {0,3,6,9,12,15,18,21,24,27,30} % edit here for the markers
+          \draw[shift={(\x/4,6pt)},color=red] (0,2pt) -- (0,-2pt);
+        \foreach \x in {0,3,6} % edit here for the markers
+          \node[mark size=3pt,color=red] at (\x/4,0) {\pgfuseplotmark{oplus*}};
+        \end{tikzpicture}
+      \caption{$\mathbf{SCALED}_4(W)$}
+      \label{fig:sub-third}
+    \end{subfigure}\vspace{0.02\textheight}
+\caption{Comparing the behavior of different MinHash approaches with the same parameter
+         value $n=m=s=4$ and a hash function with domain $[0,31]$ (5 bits). Possible
+         values for each MinHash are represented with hollow shapes. Elements from
+         $W=\{\,0 \mod 3 \mid \forall w \in W\,\}$ are marked with red lines
+         above the axis.}
+\label{fig:fig}
+\end{figure}
 
 ### Limitations
 
@@ -136,13 +205,10 @@ is not required.
 Use genbank signatures
 -->
 
-### Containment score methods
+### Comparison with other containment estimation methods
 
-<!--
-- containment score experiments
-CTBQ: Write up these results.
--->
-
+In this section the Scaled MinHash method is compared to CMash (containment
+MinHash) and mash screen (containment score).
 
 
 (show method works, even if slow -> leading to introduction of other indices)

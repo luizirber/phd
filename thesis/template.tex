@@ -16,7 +16,8 @@ $if(csl-refs)$
 $endif$
 
 %--- Packages ---------------------------------------------------------
-\usepackage[lofdepth,lotdepth,caption=false]{subfig}
+%\usepackage[lofdepth,lotdepth,caption=false]{subfig}
+\usepackage{subcaption}
 \usepackage{fancyhdr}
 \usepackage{amsmath, amssymb, graphicx}
 \usepackage{xspace}
@@ -31,6 +32,11 @@ $endif$
 
 %% for the per mil symbol
 \usepackage[nointegrals]{wasysym}
+
+% tikz
+\usepackage{tikz}
+\usetikzlibrary{arrows}
+\usetikzlibrary{plotmarks}
 
 % more attractive tables
 \usepackage{booktabs}

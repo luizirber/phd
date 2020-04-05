@@ -25,6 +25,6 @@ rule build_thesis:
   shell: """
       cd thesis
       rm -f _main.Rmd
-      R -e "options(tinytex.verbose = TRUE); bookdown::render_book('index.Rmd', aggiedown::thesis_pdf(latex_engine = 'xelatex'))"
+      R -e "options(tinytex.verbose = TRUE); bookdown::render_book('index.Rmd', aggiedown::thesis_pdf(latex_engine = 'pdflatex'))"
       mv _book/_main.pdf _book/thesis.pdf
   """

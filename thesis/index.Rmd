@@ -24,7 +24,7 @@ knit: "bookdown::render_book"
 site: bookdown::bookdown_site
 output: 
   aggiedown::thesis_pdf: 
-    latex_engine: xelatex
+    latex_engine: pdflatex
 #  aggiedown::thesis_gitbook: default
 #  aggiedown::thesis_word: default
 #  aggiedown::thesis_epub: default

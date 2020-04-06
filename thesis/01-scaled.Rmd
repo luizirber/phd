@@ -39,8 +39,8 @@ continuous subsequence of $w$ words contained in $D$.
 where $h(x)$ is an uniform hash function,
 and then either
 
-a) keeping the $n$ smallest elements ($\mathbf{MIN}_n(W)$), or
-b) keeping elements that are $0 \mod m$ ($\mathbf{MOD}_m(W)$).
+a) keeping the $n$ smallest elements ($\mathbf{MIN}_n(W)$, a MinHash), or
+b) keeping elements that are $0 \mod m$ ($\mathbf{MOD}_m(W)$, a ModHash).
 
 $\mathbf{MIN}_n(W)$ is fixed-sized (length $n$) and supports similarity estimation,
 but doesn't support containment.
@@ -48,7 +48,7 @@ $\mathbf{MOD}_m(W)$ supports both similarity and containment,
 with the drawback of not being fixed-sized anymore,
 growing with the complexity of the document.
 
-### mash and genomic minhash
+### Mash and genomic minhash
 
 Mash [@ondov_mash:_2016] was the first implementation of MinHash in genomic contexts,
 relating the $w$-shingling of a document to the $k$-mer composition of genomic
@@ -63,6 +63,41 @@ different degrees of accuracy when comparing across highly-diverged organisms
 (bacteria to animals, for example),
 and it is even more extreme when taking more complex datasets into account (like metagenomes).
 
+### Containment MinHash
+
+CMash [@koslicki_cmash:_2017] implements the Containment MinHash with the goal
+of allowing containment estimates between sets of very different sizes.
+The construction is the same as MinHash for the smaller dataset,
+but the larger dataset $k$-mer composition is stored in a Bloom Filter,
+which can also be calculated while streaming the data.
+The containment is defined as the number of hashes from the MinHash $A$ present in the Bloom Filter $B$,
+divided by the size of $A$:
+$C(A, B) = \frac{\vert \{\,h \in B \mid \forall h \in \mathbf{MIN}_n(W)\,\} \vert}{\vert \mathbf{MIN}_n(W) \vert}$
+
+Since the Containment MinHash approach is not doing MinHash to MinHash comparisons,
+it also avoids needing to store a large set of hashes in order to keep the
+containment estimation within small error bounds (less than 1\%).
+
+This formulation enables the comparison of metagenomes (stored in a Bloom Filter)
+against a collection of MinHash sketches (one for each reference dataset),
+an use case not supported by Mash originally.
+
+### Containment score and mash screen
+
+[@ondov_mash:_2019] introduces a new method to Mash (\emph{mash screen}) for calculating containment scores.
+Given a collection of reference MinHash sketches and a query sequence mixture (like a metagenome),
+\emph{mash screen} builds a mapping of each distinct hash from the set of all hashes in the reference MinHash sketches to a count of how many times the hash was observed.
+The query sequence mixture is decomposed and hashed with the same parameters $k$
+(from the $k$-mer composition) and $h$ (the hash function) used to generate the reference MinHash sketches,
+and for each hash in the query also present in the mapping the counter is updated.
+Finally,
+after the mapping is completed each reference MinHash sketch is summarized by
+checking the counts for each of its hashes in the mapping and then producing a
+final containment estimate.
+
+
+
+
 ## Scaled MinHash
 
 The Scaled MinHash is a mix of both $\mathbf{MIN}_n(W)$ and $\mathbf{MOD}_m(W)$.
@@ -74,14 +109,20 @@ $\mathbf{SCALED}_s(W) = \{\,w \leq \frac{H}{s} \mid \forall w \in W\,\}$,
 where $H$ is the largest possible value in the domain of $h(x)$.
 $\frac{H}{s}$ is the \emph{maximum hash} value in the Scaled MinHash.
 
-### Comparison with mod hash
+Given an uniform hash function and $s=m$,
+the cardinalities of $\mathbf{SCALED}_s(W)$ and $\mathbf{MOD}_m(W)$ converge for large $\vert W \vert$.
+The main difference is the range of possible values in the hash space,
+since the Scaled Minhash range is contiguous and the ModHash range is not.
 
+Figure \ref{fig:minhashes} shows an example comparing MinHash, ModHash and Scaled MinHash with the same parameter value.
+
+<!--
 MinHash containment: mash works only on datasets of similar genome size/complexity
 ModHash is a solution (more complex dataset will have larger sketch), but falls apart
 with very small dataset (might not contain enough hashes for meaningful results)
 
 (intro CMash here)
-
+-->
 
 \begin{figure}%[ht]
     \begin{subfigure}{\textwidth}
@@ -143,7 +184,7 @@ with very small dataset (might not contain enough hashes for meaningful results)
          values for each MinHash are represented with hollow shapes. Elements from
          $W=\{\,0 \mod 3 \mid \forall w \in W\,\}$ are marked with red lines
          above the axis.}
-\label{fig:fig}
+\label{fig:minhashes}
 \end{figure}
 
 ### Limitations

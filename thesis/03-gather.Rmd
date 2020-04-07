@@ -4,7 +4,7 @@
 
 ## Introduction
 
-\todo[inline]{
+\todoin{
  - What are the goals of compositional analysis in biological systems?
 }
 
@@ -77,25 +77,31 @@ binning and profiling.
 
 Since there is a standard output format that tools need to implement,
 performance comparisons can be
-\todo{
+\todoin{
 Intro: what is CAMI, what it provides:
+
 - challenges provide gold standards (what is expected to be in the sample)
+
 - standardized tools for profiling performance comparisons (OPAL)
 }
 
 #### CAMI 1 (low, medium, high)
 
-\todo{
+\todoin{
 - Already published, but results are for older/outdated tools
+
 - still a good benchmark (because gold standards are available)
+
 - low and medium datasets have viruses, which are not in sourmash indices
 }
 
 #### CAMI 2 mouse gut toy challenge
 
-\todo{
+\todoin{
 - new CAMI challenges, with short and long reads (pacbio)
+
 - toy challenge is calibration: gold standard available
+
 - CAMI provides results for other tools
 
 CAMI 2 refseq database also doesn't have viruses...
@@ -103,7 +109,7 @@ CAMI 2 refseq database also doesn't have viruses...
 
 ### Limitations
 
-\todo{
+\todoin{
 Viruses (scaled minhash too small).
   mash screen solves this by going for sensitivity (at the cost of precision),
   possible solution: scaled+num hashes, but would only allow mash screen-like method

@@ -200,8 +200,9 @@ Figure \ref{fig:minhashes} shows an example comparing MinHash, ModHash and Scale
 
 ### Limitations
 
-\todo{
+\todoin{
 - increased size (compared with minhash, which is constant size)
+
 - detection threshold (viruses)
 }
 
@@ -256,7 +257,7 @@ is not required.
 ### Average Scaled MinHash sketch sizes across Genbank domains
 
 ```{r scaledGenBankSizes, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, fig.width=4, fig.cap="Scaled MinHash sketch sizes over GenBank domains"}
-knitr::include_graphics('experiments/sizes/figures/sizes.png')
+knitr::include_graphics('../experiments/sizes/figures/sizes.png')
 ```
 
 ### Comparison with other containment estimation methods
@@ -265,24 +266,14 @@ In this section the Scaled MinHash method is compared to CMash (containment
 MinHash) and mash screen (containment score).
 
 
-\todo{
-(show method works, even if slow -> leading to introduction of other indices)
+\todoin{
+- show method works, even if slow, lead to introduction of other indices
 
-(use scaled=1 and scaled=1000, show results are similar.
-Use small datasets, since scaled=1 will be huge...)
+- use exact and scaled=1000, show results are similar.
 
-(maybe use podar dataset?)
+- use podar dataset
 
-(compare with cmash/mash screen here?)
-
-(cmash and mash screen can do `gather` too,
-but still require the original data available.
-Scaled MinHash allows using the sketches for gather,
-which are a fraction of the original data in size.
-Additional benefit:
-if there are collection updates you don't need to recalculate the query sketch,
-and both cmash and mash screen would need the original data for the query
-again)
+- compare with cmash/mash screen here?
 }
 
 ### Implementation for experiments

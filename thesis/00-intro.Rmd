@@ -1,6 +1,6 @@
 <!-- The {.unnumbered} option here means that the introduction will be "Chapter 0." You can also use {-} for no numbers on chapters. -->
 
-# Introduction {#intro}
+# Introduction {-}
 
 
 Genome sequencing generates data at increasing rates with lower costs than

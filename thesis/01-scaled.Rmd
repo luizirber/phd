@@ -8,10 +8,6 @@ The {#rmd-basics} text after the chapter declaration will allow us to link throu
 
 ## Introduction
 
-<!--
- CTBQ: What are the goals of compositional analysis in biological systems?
--->
-
 ### MinHash sketch: similarity and containment
 
 A data sketch is a representative proxy for the original data focused on queries
@@ -204,8 +200,10 @@ Figure \ref{fig:minhashes} shows an example comparing MinHash, ModHash and Scale
 
 ### Limitations
 
+\todo{
 - increased size (compared with minhash, which is constant size)
 - detection threshold (viruses)
+}
 
 ## Implementation
 
@@ -257,9 +255,9 @@ is not required.
 
 ### Average Scaled MinHash sketch sizes across Genbank domains
 
-<!--
-Use genbank signatures
--->
+```{r scaledGenBankSizes, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, fig.width=4, fig.cap="Scaled MinHash sketch sizes over GenBank domains"}
+knitr::include_graphics('experiments/sizes/figures/sizes.png')
+```
 
 ### Comparison with other containment estimation methods
 
@@ -267,6 +265,7 @@ In this section the Scaled MinHash method is compared to CMash (containment
 MinHash) and mash screen (containment score).
 
 
+\todo{
 (show method works, even if slow -> leading to introduction of other indices)
 
 (use scaled=1 and scaled=1000, show results are similar.
@@ -284,6 +283,7 @@ Additional benefit:
 if there are collection updates you don't need to recalculate the query sketch,
 and both cmash and mash screen would need the original data for the query
 again)
+}
 
 ### Implementation for experiments
 

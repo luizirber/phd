@@ -92,6 +92,11 @@ Intro: what is CAMI, what it provides:
 - low and medium datasets have viruses, which are not in sourmash indices
 }
 
+```{r gatherCAMIlow, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="CAMI I Low"}
+knitr::include_graphics('figure/cami_i_low_table.png')
+knitr::include_graphics('figure/cami_i_low_recall_precision.png')
+```
+
 #### CAMI 2 mouse gut toy challenge
 
 \todoin{
@@ -103,6 +108,11 @@ Intro: what is CAMI, what it provides:
 
 CAMI 2 refseq database also doesn't have viruses...
 }
+
+```{r gatherCAMImg, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="CAMI II Mouse Gut"}
+knitr::include_graphics('figure/cami_ii_mg_table.png')
+knitr::include_graphics('figure/cami_ii_mg_recall_precision.png')
+```
 
 ### Limitations
 

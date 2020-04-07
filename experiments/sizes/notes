@@ -2,3 +2,7 @@
 
 export OMP_THREAD_LIMIT=1
 for d in archaea fungi protozoa viral bacteria; do python distribution.py $d; done;
+
+# use ntcard for unique k-mers?
+# ntcard -k21,31,51 -o /dev/null genbank/viral/GCA_008314095.1/GCA_008314095.1_ASM831409v1_genomic.fna.gz
+# and parse stdout (don't need the -o output)

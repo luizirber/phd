@@ -38,6 +38,12 @@ early [@sun_allsome_2017] and developing more efficient representations for the
 internal nodes [@solomon_improved_2017] [@harris_improved_2018] to use less
 storage space and memory.
 
+<!--
+example figure for SBT:
+http://www.texample.net/tikz/examples/merge-sort-recursion-tree/
+
+-->
+
 ### Inverted index
 
 <!-- 'color- aggregative methods in (marchet 2019)' -->

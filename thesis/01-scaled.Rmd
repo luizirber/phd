@@ -72,7 +72,7 @@ but the larger dataset $k$-mer composition is stored in a Bloom Filter,
 which can also be calculated while streaming the data.
 The containment is defined as the number of hashes from the MinHash $A$ present in the Bloom Filter $B$,
 divided by the size of $A$:
-$C(A, B) = \frac{\vert \{\,h \in B \mid \forall h \in \mathbf{MIN}_n(W)\,\} \vert}{\vert \mathbf{MIN}_n(W) \vert}$
+$$C(A, B) = \frac{\vert \{\,h \in B \mid \forall h \in \mathbf{MIN}_n(W)\,\} \vert}{\vert \mathbf{MIN}_n(W) \vert}$$
 
 Since the Containment MinHash approach is not doing MinHash to MinHash comparisons,
 it also avoids needing to store a large set of hashes in order to keep the
@@ -81,6 +81,13 @@ containment estimation within small error bounds (less than 1\%).
 This formulation enables the comparison of metagenomes (stored in a Bloom Filter)
 against a collection of MinHash sketches (one for each reference dataset),
 an use case not supported by Mash originally.
+
+In terms of repeated analysis of a query,
+\emph{CMash} has the advantage that the query only needs to be processed once into a Bloom Filter,
+and can later be reused when the collection of reference MinHash sketches is updated.
+This precludes the need to keep the original query,
+and since the Bloom Filter is much smaller than the original dataset in most cases
+that leads to storage savings for this use case.
 
 ### Containment score and mash screen
 
@@ -95,8 +102,24 @@ after the mapping is completed each reference MinHash sketch is summarized by
 checking the counts for each of its hashes in the mapping and then producing a
 final containment estimate.
 
+<!--
+`mash screen` also defines a new metric,
+the Mash Containment,
+to model the $k$-mer survival
+-->
 
+Comparing \emph{mash screen} to \emph{CMash},
+the main difference is that the former streams the query as raw sequencing data,
+while the latter generates a Bloom Filter for the query first.
+\emph{mash screen} avoids repeated membership checks to a Bloom Filter by collecting all distinct hashes in the collection of reference MinHash sketches first,
+and then updating a counter associated with each hash if it is observed in the query.
+After the query finishes streaming,
+then it is summarized again against the sketches in the collection.
 
+\emph{mash screen} also needs the original data for the query during reanalysis,
+because adding new sketches to the collection of references might introduce new hashes not observed before.
+For large scale projects like reanalysis of all the SRA metagenomes this
+requirement means continuous storage or re-download of many petabytes of data.
 
 ## Scaled MinHash
 
@@ -115,14 +138,6 @@ The main difference is the range of possible values in the hash space,
 since the Scaled Minhash range is contiguous and the ModHash range is not.
 
 Figure \ref{fig:minhashes} shows an example comparing MinHash, ModHash and Scaled MinHash with the same parameter value.
-
-<!--
-MinHash containment: mash works only on datasets of similar genome size/complexity
-ModHash is a solution (more complex dataset will have larger sketch), but falls apart
-with very small dataset (might not contain enough hashes for meaningful results)
-
-(intro CMash here)
--->
 
 \begin{figure}%[ht]
     \begin{subfigure}{\textwidth}

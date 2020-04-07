@@ -42,7 +42,7 @@ Extend discussion from centralized resources from previous chapter.
 ### Future work
 
 \todoin{
- - Updating/merging separate indices. Mergeable replicated data types
+ - Updating and syncing separate indices. Mergeable replicated data types
 
  - Integrating into wort. wort as minimal shim over decentralized infra.
 }

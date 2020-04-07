@@ -74,10 +74,30 @@ which leads to reduced memory usage.
 since more datasets are added to reference databases and the chance of a k-mer being present
 in multiple datasets increases.
 
+\todoin{
+- mash screen has a similar index, but it is constructed on-the-fly using the
+  distinct hashes in a sketch collection as keys,
+  and the values are mapped to a hash occurrence counter in a query metagenome.
+
+- sourmash LCA index is the opposite: it stores the hashes, but allow
+  reconstructing the original sketch collection.
+}
+
 Efficient storage of the list of signatures IDs can also be achieved via representation of the list as colors,
 where a color can represent one dataset or multiple datasets (if a hash is present in many of them).
 Mantis [@pandey_mantis:_2017] uses this hash to color mapping
 (and an auxiliary color table) to achieve reduced memory usage.
+
+### Converting between indices
+
+Both MHBT and LCA index can recover the original sketch collection.
+In the MHBT case,
+it outputs all the leaf nodes.
+In the LCA index,
+it reconstruct each sketch from the hash -> dataset ID mapping.
+This allows trade-offs between storage efficiency,
+distribution,
+updating and query performance.
 
 ## Results
 

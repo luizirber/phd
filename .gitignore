@@ -1,6 +1,7 @@
 *.tmp
 thesis/_bookdown*
 thesis/thesis.log
+thesis/thesis.tdo
 proposal/Proposal.*
 .snakemake
 **/.ipynb_checkpoints/

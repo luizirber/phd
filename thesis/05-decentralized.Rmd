@@ -4,10 +4,47 @@
 
 ## Introduction
 
+\todoin{
+Extend discussion from centralized resources from previous chapter.
+
+- Failure modes for public genomic resources: de-funding, too much data, most
+  data infrequently accessed, bandwidth limitations
+
+- Current solutions: move to cloud infrastructure, but charge from user for data
+  transfer out of cloud infra (SRA and AWS/GCP)
+}
+
 ## Methods
+
+\todoin{
+- The SBT index is amenable to content addressable approaches.
+  Leaf nodes are effectively immutable (since original datasets don't change),
+  and adding new leaf nodes to an existing tree doesn't change the other leaf
+  nodes. Some internal nodes are changed, but most also stay the same.
+
+- Allow operations to continue working if internal node data is not available
+  (with a performance hit, but doesn't fail)
+
+- Leaf-only SBT, basically the original MH collection with a tree structure,
+  but without internal node data. Allow reconstructing the full SBT.
+}
 
 ## Results
 
+\todoin{
+- Hosting SBT index and data on IPFS
+
+- sourmash operations using a decentralized index
+}
+
 ## Discussion
+
+### Future work
+
+\todoin{
+ - Updating/merging separate indices. Mergeable replicated data types
+
+ - Integrating into wort. wort as minimal shim over decentralized infra.
+}
 
 ## Conclusion

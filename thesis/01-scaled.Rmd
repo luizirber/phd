@@ -256,7 +256,7 @@ is not required.
 
 ### Average Scaled MinHash sketch sizes across Genbank domains
 
-```{r scaledGenBankSizes, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, fig.width=4, fig.cap="Scaled MinHash sketch sizes over GenBank domains"}
+```{r scaledGenBankSizes, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, fig.width=4, fig.cap="Scaled MinHash sketch sizes over GenBank domains, s=2000.", out.width="400px"}
 knitr::include_graphics('../experiments/sizes/figures/sizes.png')
 ```
 

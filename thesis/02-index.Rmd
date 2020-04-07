@@ -85,18 +85,19 @@ Mantis [@pandey_mantis:_2017] uses this hash to color mapping
 
 #### Index construction and updating
 
-resources (time, cpu, mem)
-<!--
+\todoin{resource usage (time, cpu, mem)
 
 - sourmash indices benefit from more data. Inverted index
 
--->
+}
 
 #### Querying
 
-<!--
-COST (cost of single thread)
--->
+\todoin{
+
+- discuss COST (cost of single thread)
+
+}
 
 
 ## Discussion
@@ -105,10 +106,7 @@ COST (cost of single thread)
 
 ### Future directions
 
-<!--
-- Better localization in SBT
-   * or go full HowDe SBT
-- batch_insert for SBT, insert_one for Inverted Index
+\todoin{
 - Other indices
   * Fundamentally a scaled minhash is a subset of the k-mer composition of a
   dataset, so any index from https://www.biorxiv.org/content/10.1101/866756v1
@@ -116,11 +114,10 @@ COST (cost of single thread)
   can be used to scale,
   and given that gather is defined over a collection of signatures the indices
   can also be used to improve gather performance.
-- gather assigns hashes to best matches ("winner-takes-all"). Other approaches
-  will be needed to disambiguate matches further
+
 - sourmash is currently single threaded, but that's an implementation detail.
   Parallel queries are possible (in a shared read-only index)
--->
+}
 
 ### Summary/Conclusion
 

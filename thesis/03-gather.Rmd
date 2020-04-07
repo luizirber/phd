@@ -8,10 +8,7 @@
  - What are the goals of compositional analysis in biological systems?
 }
 
-## Decomposition of queries with \tt{gather}
-<!--
-CTB suggestion: put gather in {\tt form} or {\sf form} to distinguish it.
--->
+## Decomposition of queries with gather
 
 \RestyleAlgo{boxruled}
 \LinesNumbered
@@ -110,9 +107,12 @@ CAMI 2 refseq database also doesn't have viruses...
 ### Limitations
 
 \todoin{
-Viruses (scaled minhash too small).
+- Viruses (scaled minhash too small).
   mash screen solves this by going for sensitivity (at the cost of precision),
   possible solution: scaled+num hashes, but would only allow mash screen-like method
+
+- gather assigns hashes to best matches ("winner-takes-all"). Other approaches
+  will be needed to disambiguate matches further
 }
 
 ## Implementation
@@ -173,3 +173,5 @@ Instructions are available at https://github.com/luizirber/phd
 <!-- TODO: replace with zenodo archival DOI -->
 
 ## Conclusion and Future Work
+
+

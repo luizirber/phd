@@ -171,7 +171,7 @@ Two major changes for this:
 		 but is not as convenient in cloud infrastructures.
 		 <!-- encapsulation is also easier to do because all dependencies are available on conda channels,
 		 especially bioconda and conda-forge -->
-	2) Use a messaging queue for job submission that can be accessed by workers in any computational system.  (here note this is still centralized)
+	2) Use a messaging queue for job submission that can be accessed by workers in any computational system. <!-- (here note this is still centralized) -->
 
 Another goal for `wort` is creating a basic API for common tasks that allow external interactions without needing knowledge about internal implementation.
 Since the internal details are not exposed it allows refactoring and reimplementing the infrastructure with other technologies not used in the original version.
@@ -182,7 +182,7 @@ with a web application written in Flask serving the API and sending job requests
 Workers connect to the queue and grab jobs for execution,
 and upload results to Amazon S3.
 
-```{r wortArch, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, fig.width=4, fig.cap="wort architecture"}
+```{r wortArch, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="wort architecture"}
 knitr::include_graphics('figure/arch.png')
 ```
 
@@ -210,10 +210,6 @@ and move to more decentralized approaches.
 <!-- It's easier to test and refactor than coming up with the perfect design upfront -->
 Because the original version is already working,
 refactoring the internal implementation while keeping all tests working allow improvements to the system without breaking the public API and clients using `wort`.
-
-
-
-
 
 
 ## Results
@@ -256,5 +252,5 @@ Distributed workers can be an efficient and effective solution but only insofar 
 TODO:
 * pull text down from above into discussion as you think it makes sense
 * smoothen out additional text from CTB discussion, with extra points
-* move on to chp4
+* move on to chp5
 -->

@@ -1,0 +1,12 @@
+rule all:
+  input: "refseq-k51-s10000.lca.json.gz.csv"
+
+rule sizes:
+  output: "{db}.csv"
+  input:
+    data = "/home/luizirber/work/sourmash-bio/2020-cami/outputs/lca/{db}",
+    script = "hist_lca.py"
+  conda: "deps.yml"
+  shell: """
+    python {input.script} {input.data}
+  """

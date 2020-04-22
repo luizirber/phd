@@ -212,7 +212,7 @@ rule gather_sigs:
     ksize = "{ksize}"
   conda: "envs/sourmash.yml"
   shell: """
-    sourmash gather -o {output} {input.query} {input.sigs}
+    sourmash gather --threshold-bp 0 -o {output} {input.query} {input.sigs}
   """
 
 rule containment_sigs:

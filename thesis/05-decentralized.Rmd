@@ -1,4 +1,4 @@
-# Decentralized indices for public genomic data
+# Decentralizing indices for public genomic data
 
 \chaptermark {decentralized}
 
@@ -14,9 +14,105 @@ Extend discussion from centralized resources from previous chapter.
   transfer out of cloud infra (SRA and AWS/GCP)
 }
 
+
+### Content addressable storage
+
+One example of content-addressable storage is git.
+Every commit in git has a hash attached to it,
+calculated based on the content plus some extra metadata
+(author and parent commit, for example),
+creating a git object.
+<!-- mention other types of git objects? -->
+The hash is used to index and access the git objects in the repository history,
+and they are stored usually stored in the `.git/storage` directory.
+The commit history is a directed acyclic graph (DAG) of these git objects.
+Since the parent commit hash is also included in the calculation this
+creates a structure where changing (or tampering) with a commit changes all the
+hashes depending on this commit,
+in turn making the DAG into a Merkle DAG.
+<!-- TODO: cite merkle dag/structures -->
+
+While git uses content-addresses for storing the data,
+these git objects are not shareable with other repositories automatically.
+Finding and synchronizing repositories is an explicit operation,
+so when a new `clone` command is executed the user needs to provide the location of the original repository,
+and all the objects will be pulled from this one repository,
+even if there are many other copies spread around the network
+(or even other copies already exist locally in the machine).
+
+Every git repository is self-contained
+(can operate only with a local copy of the data)
+and git provides operations to synchronize between repositories,
+but there is no networking layer for sharing automatically the data with other repositories:
+pushing and pulling changes are operations using a single remote,
+ant they need to be explicitly configured beforehand.
+
+git was originally created for the Linux kernel development,
+where change proposals are usually communicated through mailing lists,
+but services that streamlined the process for other development models appeared,
+with GitHub being the dominant player.
+GitHub is a centralized service for hosting repositories,
+and the majority of users don't synchronize changes with each other directly,
+opting to push and pull changes from GitHub instead.
+
+### Distributed Hash Tables (DHT)
+
+DHTs originated from research in peer-to-peer (P2P) systems,
+<!-- TODO: cite dump -->
+with the goal of allowing queries for which node had a specific piece of data.
+It exposes a simple key-value store,
+but each node of the network is also responsible for storing a small chunk of
+the store,
+with data available in multiple nodes for additional resiliency.
+In order to maintain an operational DHT,
+protocols for distributing the data between nodes,
+and dealing with network partitions (leading to node disconnection) are
+required.
+
+In the early 2000s P2P networks started using DHTs in large scale for distributing content,
+with BitTorrent as a representative example.
+<!-- TODO: cite? -->
+A torrent is a file containing metadata for any content being shared in the network,
+and includes information about size, blocks (pieces of the data) and checksums
+to verify that the data was transmitted without errors.
+Initial implementations of the BitTorrent protocol used servers ("trackers") for storing
+which peers had which parts of the torrent content,
+but content transfer didn't involve these servers:
+they were used only as coordinators.
+If a server went offline,
+peers couldn't discover any new peers,
+and so the network was vulnerable to anything that affected the server.
+With DHTs,
+instead of storing peer information in a server,
+the torrent file was added to the DHT,
+and peers could announce (again at the DHT) which blocks of the torrent they have.
+
+### The Interplanetary File System (IPFS)
+
+One drawback of using the torrent files as the unit of data is that creating
+another torrent file with the same content means that the two torrent files can't
+see blocks from each other (even if they exactly the same).
+Torrents bring the distributed network routing for peer discovery and content addressing at the torrent file level,
+but they lack content-addressable storage at the block level.
+
+On the other hand,
+git has content-addressable storage,
+and one could create a DHT that indexes git objects addresses,
+mapping it to what nodes in the network have it available.
+Instead of querying a single remote node,
+this would allow git to fetch remote objects from many sources,
+and any user that cloned the same repository is a potential provider for the data.
+
+The Interplanetary File System (IPFS)
+<!-- TODO cite benet 2014 -->
+builds on these two ideas.
+IPFS addresses are hashes of the content organized as a Merkle DAG like git,
+but using a DHT for peer and content discovery,
+like Bittorrent.
+
 ## Methods
 
-\todoin{
+<!-- previous TODO:
 - The SBT index is amenable to content addressable approaches.
   Leaf nodes are effectively immutable (since original datasets don't change),
   and adding new leaf nodes to an existing tree doesn't change the other leaf
@@ -27,24 +123,151 @@ Extend discussion from centralized resources from previous chapter.
 
 - Leaf-only SBT, basically the original MH collection with a tree structure,
   but without internal node data. Allow reconstructing the full SBT.
-}
+-->
+
+### The SBT index is amenable to content addressable approaches
+
+The SBT index introduced in chapter 2 has structural features that make it a
+good fit for content-addressable approaches.
+
+Leaf nodes in an SBT are signatures for a specific dataset,
+and are effectively immutable for public genomic databases,
+since any changes to a dataset in these databases tend to generate a new version or identifier.
+Signatures can also change if other parameters for calculating their sketches are used,
+but having a default set of "good enough" parameters like the ones defined in `wort`
+<!-- TODO: link to previous chapter? -->
+allows general queries that can later be refined once a candidate subset of the database is found.
+
+<!-- TODO figure from recomb 2017 paper showing insertion changes for current method -->
+
+Insertion of new signatures to an SBT trigger changes in the path from new leaf
+location to root of the tree,
+but all other nodes are left unchanged.
+Even if new methods for signature placement in the tree are developed in the future,
+in the worst case at most half of the total nodes (the internal nodes) would change,
+but the other half (the leaves) would stay the same.
+
+### Flexible and resilient indices with leaf-only SBTs
+
+Since SBTs follow a similar principle to Merkle DAGs,
+where the content of an internal node depends on the content of the subtree defined by using the internal node as the root,
+this also means that given only the leaves of a tree and their placement it is possible to reconstruct all the internal nodes (and so the full SBT).
+This opens the possibility of distributing SBT indices as leaf-only SBTs:
+a description of the tree structure with the leaves placement,
+and where to download the content for each leaf.
+This information is enough to reconstruct the full index,
+and also prioritizes storage and distribution of a minimal amount of data,
+since the internal nodes content is redundant information (for allowing faster queries)
+and are potentially mutable (on new signature insertions to the index),
+
+While internal nodes are bad candidates for long-term archival,
+they are still good candidates for short-term caching for performance,
+either locally or loaded from the network.
+A trade-off is making internal nodes available in the network,
+but not failing local operations with the index if they fail to load:
+either recalculate the internal node (more expensive)
+or proceed with operations where this is acceptable.
+For the latter case,
+a search where an internal node is missing can proceed by queueing the children of the node for search,
+which is less efficient than a regular search (which could potentially stop at that node and avoid checking the subtree),
+but is a better user experience than failing completely.
+In the worst case where only the leaves are available,
+this search turns into a linear scan over a list.
 
 ## Results
 
 \todoin{
-- Hosting SBT index and data on IPFS
-
 - sourmash operations using a decentralized index
 }
 
+### Hosting an SBT index on IPFS
+
+SBTs in \emph{sourmash} use a `Storage` instance to save and load data,
+with the default storage being a hidden directory with all the content for internal nodes and leaves and,
+in the future,
+Zip files.
+\emph{sourmash} support for IPFS is implement as an instance of the `Storage` interface that communicates with an IPFS node running at the same machine or on a remote location.
+Since it follows the same interface,
+any operations on other storages is also supported with the IPFS backend.
+
+Saving data is implementing by sending an `add` request to the IPFS node and pinning the data.
+A pin is an operation that instructs an IPFS node to avoid garbage-collecting the data,
+making a good fit for long-term availability.
+Once the data is saved,
+a new IPFS multihash is returned,
+which serves as a location for addressing this data in the network from now on.
+Loading data involves passing an IPFS multihash to the storage,
+and returns a byte buffer ready for consumption.
+
+### sourmash operations using a decentralized index
+
+<!-- TODO: an experiment here:
+- load a current SBT into IPFS
+- do a local query with the new SBT and compare performance
+- do a query with a computer in the same network and the new SBT
+- run two queries in a row, showing impact of loading data in the first one,
+  and how the second time it is queried is similar to a local query
+-->
+
+
 ## Discussion
+
+<!--
+If there is a system for sharing the node contents,
+this means that users once users download an SBT index they can become new seeders for future users.
+In the worst case,
+where only the initial seeder is available,
+it becomes a centralized system and the whole network depends on the resources and bandwidth that the seeder provides,
+but this is typically the situation where most bioinformatics web services are anyway.
+
+
+IPFS was chosen because it provides implementations in multiple programming languages,
+and has a large user and developer base that can drive development of useful features in the long term.
+IPFS is a good candidate for the features required to do this,
+but any system with similar features can also be used.
+-->
+
 
 ### Future work
 
-\todoin{
+<!-- initial TODO
  - Updating and syncing separate indices. Mergeable replicated data types
 
  - Integrating into wort. wort as minimal shim over decentralized infra.
-}
+-->
+
+In the current version only the content of each node (internal or leaf) is stored in a decentralized manner,
+but index construction and updating is not synchronized.
+There is no protocol for merging changes if multiple users start from the same index but update it with their own data.
+This is an active area of research,
+but recent developments involving Conflict-Free Replicated Data Types (CRDTs)
+<!-- TODO: cite -->
+and especially Mergeable Replicated Data Types (MRDTs) point in promising directions,
+with the latter defining semantics for merging tree-like structures that are applicable to SBTs.
+
+While these methods can provide the technical means for fully decentralized indices,
+they don't solve organizational problems that also arise,
+or even if the system design should aim for a global index that is updated with every single new signature that
+is added to an initial index.
+For public databases there is a ground truth that provides what signatures should be present in an index,
+but private collections of signatures could be organized as a group of users
+sharing a single index and updating each other local copies when any user add
+new signatures.
+
+`wort` initially focused in calculating signatures for public genomic databases,
+but since it already has the immutable parts of SBTs (the signatures) available
+on IPFS it is a good candidate for being extended and also provide leaf-only
+SBT indices for these databases.
+
+<!-- TODO this might be better in chapter 4? -->
+While the `wort` service is currently implemented as a central server that coordinates new submissions and requests for computing new signatures,
+the main benefit it brings is a clear API that doesn't have to change if the implementation start using other technologies.
+As an example,
+the first prototype uploaded the data only to AWS S3,
+and the IPFS upload was added later.
+Moreover,
+there is also a command-line interface (CLI) that currently communicates directly with the central API for downloading data,
+but following the same principle of the public interface of the CLI not changing
+if the implementation changes it can serve as a minimal shim over more decentralized approaches.
 
 ## Conclusion

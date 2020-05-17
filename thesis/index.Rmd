@@ -1,6 +1,6 @@
 ---
 # UCD thesis fields
-title: "Decentralized indices for genomic data"
+title: "Decentralizing indices for genomic data"
 author: "Luiz Carlos Irber Junior"
 year: "2020"
 month: "March"

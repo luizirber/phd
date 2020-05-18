@@ -6,9 +6,37 @@
 
 ## Introduction
 
-Searching for matches in large collection of datasets is not viable when hundreds of thousands of
+\todoin{
+ - Public genome databases
+ - Exponential growth
+ - Challenges in indexing, searching and updating the indices for collections of datasets
+ - Methods for indexing genomic datasets
+}
+
+Searching for matches in large collection of datasets is challenging when hundreds of thousands of
 them are available,
-especially if they are partitioned and not all present at the same place.
+especially if they are partitioned and the data is not all present at the same place,
+or too large to even be stored in a single system.
+<!-- cite some methods, including SBT and Mantis -->
+
+[@marchet_2019] classifies indexing strategies for querying large collections of
+sequencing datasets into $k$-mer aggregative methods and color aggregative methods.
+$k$-mer aggregative methods index the $k$-mer composition for each individual dataset,
+and then build structures for retrieving the datasets where query $k$-mers is present.
+Color aggregative methods index the full $k$-mer composition for all datasets,
+and then assign a color representing an intersection of datasets where a $k$-mer is present.
+This allows reduced space requirements,
+since each $k$-mer is stored only once,
+but needs extra structures for storing what datasets each color represents.
+
+Both strategies allow the same class of queries,
+but with different trade-offs and optimizations:
+$k$-mer aggregative methods favor threshold queries
+("what datasets contain more 60% of the query $k$-mers?")
+while color aggregative methods tend to be more efficient for specific $k$-mer
+queries ("what datasets contain this query $k$-mer?").
+
+<!-- how to dive into hierarchical index and inverted index below? -->
 
 ### Hierarchical index
 
@@ -41,7 +69,6 @@ storage space and memory.
 <!--
 example figure for SBT:
 http://www.texample.net/tikz/examples/merge-sort-recursion-tree/
-
 -->
 
 ### Inverted index
@@ -101,13 +128,14 @@ updating and query performance.
 
 ## Results
 
-### Efficient containment and similarity searches
+### Efficient similarity and containment queries
 
 #### Index construction and updating
 
-\todoin{resource usage (time, cpu, mem)
+\todoin{
 
-- sourmash indices benefit from more data. Inverted index
+- 
+- resource usage (time, cpu, mem)
 
 }
 
@@ -116,7 +144,7 @@ updating and query performance.
 \todoin{
 
 - discuss COST (cost of single thread)
-
+- sourmash indices benefit from more data. Inverted index
 }
 
 
@@ -143,13 +171,13 @@ updating and query performance.
 
 ## Methods
 
-### Mathematical foundations
-
 ### Implementation
 
 sourmash is implemented in Rust for the core performance-critical functionality,
 and exposes a C API that is wrapped in Python for higher-level features.
 This includes a Python API for interactive use,
 as well as a command-line interface for more traditional bioinformatics workflows.
+
+
 
 ### Experiments

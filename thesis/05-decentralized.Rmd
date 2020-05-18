@@ -176,15 +176,11 @@ this search turns into a linear scan over a list.
 
 ## Results
 
-\todoin{
-- sourmash operations using a decentralized index
-}
-
 ### Hosting an SBT index on IPFS
 
 SBTs in \emph{sourmash} use a `Storage` instance to save and load data,
 with the default storage being a hidden directory with all the content for internal nodes and leaves and,
-in the future,
+in the future (version 4),
 Zip files.
 \emph{sourmash} support for IPFS is implement as an instance of the `Storage` interface that communicates with an IPFS node running at the same machine or on a remote location.
 Since it follows the same interface,
@@ -201,12 +197,178 @@ and returns a byte buffer ready for consumption.
 
 ### sourmash operations using a decentralized index
 
-<!-- TODO: an experiment here:
+sourmash version 3.3.0 was used for the experiments.
+All experiments are running a `sourmash gather` command on an SBT index with 5914 signatures.
+These signatures are a subset of the prepared Genbank database that sourmash provides,
+while the query signature is an iHMP metagenome.
+<!-- TODO: more info here, obvs) -->
+
+The three machines used for the experiments reflect different levels of performance:
+- `takver` is a workstation with fast CPU (AMD Ryzen 9 3900X 12-Core running at 3.80 GHz),
+  memory (64 GB DDR4 2133 MHz)
+  and storage (2 TB NVMe Samsung SSD 970 EVO Plus),
+  connected to a Gigabit local network with access to the UC Davis network.
+- `datasilo` is a compute stick,
+  a system with limited computational resources aimed at the low cost market.
+  It has an Intel Atom x5-Z8330 CPU running at 1.44 GHz,
+  2 GB DDR3 1600 MHz of memory,
+  a 32 GB internal eMMC storage,
+  and it is connected to the same Gigabit local network as `takver`.
+- `rosewater` is a 2015 laptop with resources typically found on a regular user notebook:
+  an Intel Core i7-5600U CPU running at 2.60GHz,
+  16GB DDR3 1600MHz of memory,
+  and 1 TB mSATA Samsung 860 SSD for storage.
+  It is not on the same network as the other machines,
+  and it connects to the internet with a 20 Mbps DSL connection.
+
+#### SBT index with an IPFS storage
+
+Experiment 1) uses a Zipped SBT index,
+with a storage using a Zip file for holding the tree structure and all the nodes compressed data.
+This will be the default format in sourmash 4,
+and is more convenient than the previous hidden dir storage.
+The goal of this experiment is to define a baseline to compare both each individual machine performance and the decentralizing approaches described in previous sections.
+
+Experiments 2) and 3) use the same SBT index as 1), but with an IPFS backend as storage.
+2) and 3) are the same experiment,
+with the only difference being that 3) is executed right after 2),
+and so all the data is already available in the local IPFS node and no network transfer is needed.
+The goal is to show the performance impact of a cold start (experiment 2),
+and what is the overhead that IPFS imposes when used in conditions more similar to experiment 1),
+when all the data is available.
+
+Table: (\#tab:sbt-ipfs) Performance of SBT operations with IPFS storage. Units in seconds, with fold-difference to the baseline in parenthesis.
+
+ experiment              takver      datasilo        rosewater
+-------------           --------  --------------  ------------------
+1) local (zip)              9        43 (4.7x)        14 (1.5x)
+2) ipfs                    12       115 (9.5x)       415 (34.5x)
+3) ipfs again              12        64 (5.5x)        23 (1.9x)
+
+Experiment 1) is a measure of raw processing power,
+and as expected `takver` is the fastest one.
+`datasilo` suffers from the low cost components in the system,
+taking 4.7 times longer to run.
+
+Experiment 2) shows the impact of loading the data from the network.
+For `takver` the impact is smaller,
+since it is also the data seeder for the other machines,
+and ends up showing the performance overhead of using IPFS
+(since `sourmash` communicates with an external IPFS process to load/save the data).
+The IPFS storage is 33% slower than the Zip storage (9 to 12 seconds).
+For `datasilo`,
+which is in the same Gigabit network as `takver`,
+using IPFS is 2.6 times slower (43 to 115 seconds).
+Data loading in `sourmash` storages is sequential,
+so even with a very fast network the throughput is low.
+This effect is even clearer with `rosewater`,
+which has a slower connection with higher latency and is almost 30 times slower (14 to 415 seconds) than loading from a Zip file.
+
+Experiment 3) show the impact of IPFS overhead if the data is already available in the local IPFS node.
+For `takver` it is the same as experiment 2),
+but for the other machines the results are closer to what happened with `takver`,
+with `datasilo` being 48% slower and `rosewater` being 64% slower than the Zip storage.
+Despite `rosewater` having the worst relative performance
+(64% versus 33% and 48% for the other machines),
+it is important to point out that all results are in the order of seconds,
+and since `datasilo` has lower performance hardware it takes longer in absolute numbers,
+being over a minute for this experiment.
+<!-- TODO: A better experiment would be taking `rosewater` to the lab,
+     and connect to the same network. Alas, we are in the middle of a pandemic,
+     and I want to avoid going there if possible =] -->
+
+#### Leaf-only SBTs
+
+The goal of leaf-only SBTs is to increase resilience and reduce storage space,
+trading it for performance costs.
+Experiments 4), 5) and 6) changes the SBT index to a leaf-only SBT,
+but otherwise they follow the same conditions as experiments 1-3.
+<!-- The goal is to verify the impact of reconstructing the internal nodes and also loading all the leaves from storage
+(since all the leaves are required for reconstruction).
+-->
+
+Table: (\#tab:leaf-ipfs) Performance of a leaf-only SBT operations with IPFS storage. Units in seconds, with fold-difference to the baseline in parenthesis.
+
+<!--
+ experiment              takver      datasilo        rosewater
+-------------           --------  --------------  ------------------
+1) local (zip)              9        43 (4.7x)        14 (1.5x)
+2) ipfs                    12       115 (9.5x)       415 (34.5x)
+3) ipfs again              12        64 (5.5x)        23 (1.9x)
+-->
+
+ experiment              takver      datasilo        rosewater
+-------------           --------  --------------  ------------------
+4) leaf-only (zip)         20        92 (4.6x)        35 (1.7x)
+5) leaf-only ipfs          31       307 (14.6x)     1267 (40.8x)
+6) leaf-only ipfs again    31       170 (5.4x)        63 (2x)
+
+The relative performance difference between machines are in the same order of magnitude when comparing experiments 4-6 to their counterparts in the previous section.
+We can see more clearly the performance impact of reconstructing the internal nodes in experiment 4),
+where all systems take twice as long to run when compared to experiment 1).
+
+Experiment 5) show a drawback of the leaf-only approach,
+combined with the sequential nature of sourmash storages:
+since all the leaves are required for reconstruction,
+it will potentially have to download more data than a query to an SBT fully loaded into an IPFS storage,
+since it can't prune subtrees from the search space (and so avoid downloading them).
+`rosewater` is particularly impacted,
+with a runtime of more than 20 minutes.
+
+
+<!--
+- issues with current results:
+  takver, datasilo and rosewater are wildly different machines, too many confounding factors?
+  At the same time, it's good to have an underpowered machine like datasilo,
+  and a regular laptop like rosewater because they show clearly what are the CPU/mem or network trade-offs.
+
+a small experiment:
+
 - load a current SBT into IPFS
+    SBT: 5914 signatures
+      sourmash index -k 51 --traverse-directory index.sbt.zip sigs/
+      sourmash index -k 51 --traverse-directory index.sbt.json sigs/
+      sourmash storage convert -b ipfs index.sbt.json
+
+    leaf only:
+      sourmash index -k 51 --sparseness 1 --traverse-directory index_leaf.sbt.zip sigs/
+      sourmash index -k 51 --sparseness 1 --traverse-directory index_leaf.sbt.json sigs/
+      sourmash storage convert -b ipfs index_leaf.sbt.json
+
 - do a local query with the new SBT and compare performance
+    takver: AMD Ryzen 9 3900X 12-Core @ 3.80GHz, 64GB DDR4 2133 MHz, 2TB Samsung SSD 970 EVO Plus, 1Gbps network
+      local: 9s
+      ipfs: 12s
+
+      leaf-only: 20s
+      leaf-only ipfs: 31s
+
 - do a query with a computer in the same network and the new SBT
 - run two queries in a row, showing impact of loading data in the first one,
   and how the second time it is queried is similar to a local query
+
+    datasilo: Intel(R) Atom(TM) x5-Z8330  CPU @ 1.44GHz, 2GB DDR3 1600 MHz, 32GB eMMC, 1 Gbps network
+              https://ark.intel.com/content/www/us/en/ark/products/91065/intel-compute-stick-stk1aw32sc.html
+      local: 43s
+      ipfs: 1m55s
+      second time: 1m04s
+
+      leaf-only: 1m32s
+      leaf-only ipfs: 5m07s
+      second time: 2m50s
+
+- do a query with a computer in another network
+    rosewater: Intel(R) Core(TM) i7-5600U CPU @ 2.60GHz, 16GB DDR3 1600MHz, 1TB Samsung SSD 860, 2.2 Mbps network
+      local: 14s
+      ipfs: 6m55s
+      second time: 23s
+      time to download zipped DB: 1m53s
+
+      leaf-only: 35s
+      leaf-only ipfs: 21m7s  <- not having any internal node leads to having to load all leaves, one by one...
+      second time: 1m3s  <- all leaves already available, overhead is recalculating internal nodes
+      time to download zipped DB: 51s
+
 -->
 
 

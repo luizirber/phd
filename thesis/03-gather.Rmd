@@ -92,8 +92,11 @@ Intro: what is CAMI, what it provides:
 - low and medium datasets have viruses, which are not in sourmash indices
 }
 
-```{r gatherCAMIlow, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="CAMI I Low"}
+```{r gatherCAMIlowTable, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="CAMI I Low table"}
 knitr::include_graphics('figure/cami_i_low_table.png')
+```
+
+```{r gatherCAMIlowSpider, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="CAMI I Low spider plot"}
 knitr::include_graphics('figure/cami_i_low_recall_precision.png')
 ```
 
@@ -109,8 +112,11 @@ knitr::include_graphics('figure/cami_i_low_recall_precision.png')
 CAMI 2 refseq database also doesn't have viruses...
 }
 
-```{r gatherCAMImg, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="CAMI II Mouse Gut"}
+```{r gatherCAMImgTable, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="CAMI II Mouse Gut table"}
 knitr::include_graphics('figure/cami_ii_mg_table.png')
+```
+
+```{r gatherCAMImgSpider, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="CAMI II Mouse Gut spider plot"}
 knitr::include_graphics('figure/cami_ii_mg_recall_precision.png')
 ```
 

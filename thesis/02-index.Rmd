@@ -19,7 +19,7 @@ especially if they are partitioned and the data is not all present at the same p
 or too large to even be stored in a single system.
 <!-- cite some methods, including SBT and Mantis -->
 
-[@marchet_2019] classifies indexing strategies for querying large collections of
+[@marchet_data_2019] classifies indexing strategies for querying large collections of
 sequencing datasets into $k$-mer aggregative methods and color aggregative methods.
 $k$-mer aggregative methods index the $k$-mer composition for each individual dataset,
 and then build structures for retrieving the datasets where query $k$-mers is present.
@@ -80,7 +80,7 @@ the text.
 An example is the index in the back of a book,
 containing a list of topics and in which page they are present.
 Information retrieval system use inverted index to find the occurrences of
-words in a text [@ziviani:2000].
+words in a text [@ziviani_compression_2000].
 
 In the signature collection indexing case,
 the inverted index is a map of all hashes in the collection back to
@@ -97,7 +97,7 @@ Moreover,
 if a hash is present in more than one dataset
 kraken also reduces the list of taxons to the lowest common ancestor (LCA),
 which leads to reduced memory usage.
-[@dasko:2018] explores how this LCA approach leads to decreased precision and sensitivity over time,
+[@nasko_refseq_2018] explores how this LCA approach leads to decreased precision and sensitivity over time,
 since more datasets are added to reference databases and the chance of a k-mer being present
 in multiple datasets increases.
 
@@ -112,7 +112,7 @@ in multiple datasets increases.
 
 Efficient storage of the list of signatures IDs can also be achieved via representation of the list as colors,
 where a color can represent one dataset or multiple datasets (if a hash is present in many of them).
-Mantis [@pandey_mantis:_2017] uses this hash to color mapping
+Mantis [@pandey_mantis:_2018] uses this hash to color mapping
 (and an auxiliary color table) to achieve reduced memory usage.
 
 ### Converting between indices

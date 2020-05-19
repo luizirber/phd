@@ -61,7 +61,7 @@ and it is even more extreme when taking more complex datasets into account (like
 
 ### Containment MinHash
 
-CMash [@koslicki_cmash:_2017] implements the Containment MinHash with the goal
+CMash [@koslicki_improving_2019] implements the Containment MinHash with the goal
 of allowing containment estimates between sets of very different sizes.
 The construction is the same as MinHash for the smaller dataset,
 but the larger dataset $k$-mer composition is stored in a Bloom Filter,
@@ -87,7 +87,7 @@ that leads to storage savings for this use case.
 
 ### Containment score and mash screen
 
-[@ondov_mash:_2019] introduces a new method to Mash (\emph{mash screen}) for calculating containment scores.
+[@ondov_mash_2019] introduces a new method to Mash (\emph{mash screen}) for calculating containment scores.
 Given a collection of reference MinHash sketches and a query sequence mixture (like a metagenome),
 \emph{mash screen} builds a mapping of each distinct hash from the set of all hashes in the reference MinHash sketches to a count of how many times the hash was observed.
 The query sequence mixture is decomposed and hashed with the same parameters $k$

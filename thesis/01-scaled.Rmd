@@ -8,9 +8,11 @@ The {#rmd-basics} text after the chapter declaration will allow us to link throu
 
 ## Introduction
 
-CTB notes:
-
-* can be narrow
+\todoin{
+- Note, can be narrow given the whole thesis introduction.
+- paragraph 1: what is the technical problem of interest? lightweight compositional queries? motivate briefly with some biology, maybe.
+- paragraph 2: motivate narrowing our focus to k-mer containment and minhash-based techniques. Will you consider dashing etc?
+}
 
 ### MinHash sketch: similarity and containment
 
@@ -208,6 +210,8 @@ Figure \ref{fig:minhashes} shows an example comparing MinHash, ModHash and Scale
 - increased size (compared with minhash, which is constant size)
 
 - detection threshold (viruses)
+
+- CTB: include poisson statistics and plot of how many windows are missed (from charcoal stats)
 }
 
 ## Implementation
@@ -302,5 +306,9 @@ already -->
 ## Conclusion and Future Work
 
 \todoin{
-- CTB
+- CTB 2-3 paragraphs
+- our hashing approach is simple to implement, simple to analyze.
+- has some upsides - no need to reindex. summarize comparison with other techniques briefly.
+- Has some drawbacks, summarize briefly.
+- Building software ecosystem to allow practical application in many ways - gather, indices, etc. Discussed in following chapters.
 }

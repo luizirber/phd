@@ -5,10 +5,18 @@
 ## Introduction
 
 \todoin{
+- CTB para 1
+- In chapter 1, we introduced...
+- To make practical use, we want to support efficient search.
+- This means efficient indexing to support various kinds of queries.
+- Ideally indices would support incremental update, n+1, search across multiple databases.
+- CTB note: these are good motivating points. Put them in paragraph 2 and write complete sentences, and I can iterate on them.
+- para 2, go into detail --
 - Public genome databases
 - Exponential growth
 - Challenges in indexing, searching and updating the indices for collections of datasets
 - Methods for indexing genomic datasets
+- CTB actually not sure how to split these up, but suggest two paragraphs, one focused on basic types of questions, the other focused on practical issues. If you write complete sentences, I can iterate.
 }
 
 Searching for matches in large collection of datasets is challenging when hundreds of thousands of
@@ -150,6 +158,13 @@ updating and query performance.
 
 \todoin{
 - CTB
+- para 1 (can be more than one)
+- summarize results, what kind of searches and updating these indices support.
+- para 2:
+- I think the point about any k-mer indices working can go here?
+- Our implementation makes use of and highlights different tradeoffs in both standard (LCA) text indexing approaches as well as non-standard k-mer focused (SBT).
+- make some deep point about how specifics of biological data affect use of indices in ways that are not so important for traditional text mining. e.g. lca indices support discovery of k-mers belonging to multiple genomes, SBTs can be organized in way to support locality that matches bio samples (evo relationships) that is not so important for regular text.
+- for conclusion/future directions, worth noting that while both support gather (next chapter?), only SBT supports distributed, and incremental update, and...
 }
 
 ### Limitations
@@ -169,8 +184,9 @@ updating and query performance.
   and given that gather is defined over a collection of signatures the indices
   can also be used to improve gather performance.
 
-- sourmash is currently single threaded, but that's an implementation detail.
+- sourmash index search is currently single threaded, but that's an implementation detail.
   Parallel queries are possible (in a shared read-only index)
+- certain kinds of queries can be fully parallelized.
 }
 
 ### Summary/Conclusion

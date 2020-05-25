@@ -5,7 +5,7 @@ Genome sequencing generates data at increasing rates with lower costs than
 before, and the amount of data available for analysis requires new methods
 for storing, retrieving and processing it. One of the first large scale
 applications for large genomic databases is BLAST, which performs local
-alignment (smith-waterman algorithm) using a seed heuristic to lower the cost
+alignment (Smith-Waterman algorithm) using a seed heuristic 
 that has a lower amortized cost for performing the dyanamic programming
 required by the original algorithm. While BLAST allows great precision and
 recall, the requirements for having indexes with sizes of the same magnitude of
@@ -13,7 +13,7 @@ the original data end up making it challenging to use with collections in the
 order of multiple terabytes or even petabytes of data. For example, NCBI
 provides BLAST search as a feature on their website, but it uses specially
 prepared databases with a subset of the data stored in genbank or similar
-databases, but not for the SRA (sequence read archive), which is on the order
+databases. NCBI does not host BLAST for the SRA (sequence read archive) because of its size, which is on the order
 of petabytes of data and growing exponentially.
 
 Approaches for indexing large collections of data instead focus on narrowing
@@ -24,30 +24,30 @@ shares content with a query up to or over a certain threshold. The content is
 defined as the k-mer composition of the datasets and query, where individual --
 unique-- presence/absence of each k-mer in the query is checked, instead of
 performing local alignment like BLAST does. While this lowers the ability to
-deal with important biological features like mutations, the
-exact nature of the k-mer comparisons allow many computational benefits: k-mers
+deal with important biological features like variations, the
+exact nature of the k-mer comparisons has many computational benefits: k-mers
 can be hashed and stored in integer datatypes, allowing for fast comparison and
 many opportunities for compression. Solomon and Kingfsord's solution for the
-problem, the Sequence Bloom Tree (and variants), use these propertie to define
+problem, the Sequence Bloom Tree (and variants), use these properties to define
 and store the k-mer composition of a dataset in a Boom Filter, a probabilistic
-data structure that allows insertion and checking if a value might be present,
-and stands for a probabilistic version of a set structure in this case. Bloom
+data structure that allows insertion and checking if a value might be present.
+Bloom
 Filters can be tuned to reach a predefined false positive bound, trading off
-memory for accurracy (more memory is more accurate, but lower memory can
+memory for accuracy (more memory is more accurate, but lower memory can
 still have acceptable accuracy). While this solves the problem of
 representing datasets in a smaller representation than the original data,
 it still requires checking the query against all avalilable datasets: for each
-q k-mer in the query dataset, check if it is present each of the
+k-mer in the query dataset, check if it is present each of the
 datasets. The linear nature of this approach is prohibitive for thousands and
-millions of datasets, so the SBT is organized as an hierarchical search index: a
+millions of datasets, so the SBT is organized as a hierarchical search index: a
 tree, where each internal node contains all the k-mer presence/absence data from
 nodes under it. This was first explored in Bloofi, which is a hierarchy of
 bloom filters, and the SBT adapts this idea for genomic datasets. Bloom
 filters also have the useful property of being easy and fast to merge:
 given two bloom filters, constructing a third one containing all the data from
 the first two can be done by doing element-wise OR on both bloom filters
-(usually represented as arrays). The downside is false positive increase-- rate
-increasing, especially if both original filters are already reaching
+(usually represented as arrays). The downside is the false positive rate
+increase, especially if both original filters are already reaching
 saturation. To account for that, Bloom Filters in a SBT need to be
 initialized with a size proportional to the cardinality of the combined
 datasets, which can be quite large for big collections. But, since Bloom Filters
@@ -67,11 +67,11 @@ hashing each element and taking the smallest values for each dataset. Broder
 defines two approaches for taking the smallest values: one generates a
 fixed-size collection, which is preferable when datasets have similar
 cardinalities (and properties). The other one takes instead a -- every hash that
-is mod M for --, with M used to control how many elements might be taken: large
-M leads to fewer elements being taken, with smaller M taiing more elements. The
+is mod M for --??--, with M used to control how many elements might be taken: large
+M leads to fewer elements being taken, with smaller M taking more elements. The
 ModHash aproach also allows calculating the containment of two datasets, how
 much aof a dataset is present in another. It is defined as the size of the
-intersection divided by the size of the dataset, and so is asymetrical (unlike
+intersection divided by the size of the dataset, and so is asymmetrical (unlike
 the jaccard similarity). While the MinHash can also calculate containment, if
 the datasets are of distinct cardinalities there is an error that accumulates
 quickly. This is especially relevant for biological use cases, especially
@@ -92,7 +92,7 @@ and a new approach for containment estimation using Scaled MinHash sketches,
 comparing it with existing methods for containment estimation.
 
 **Chapter 2** describes indexing methods for sketches,
-focusing on an hierarchical approach optimized for storage access (`MHBT`)
+focusing on a hierarchical approach optimized for storage access (`MHBT`)
 and a fast inverted index (`LCA index`).
 It also introduces `sourmash`,
 a software implementing these indices and optimized Scaled MinHash sketches and
@@ -100,7 +100,7 @@ providing extended functionality for biological data analysis.
 
 **Chapter 3** presents `gather`, a method for compositional metagenomics analysis.
 Comparisons with current taxonomic profiling methods using community-developed benchmarking
-assessments shows that `gather` paired with taxonomic information outperforms other
+assessments show that `gather` paired with taxonomic information outperforms other
 approaches,
 using a fraction of the computational resources and allowing analysis in
 platforms accessible to regular users (like laptops).

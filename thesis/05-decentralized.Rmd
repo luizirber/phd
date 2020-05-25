@@ -374,6 +374,10 @@ a small experiment:
 
 ## Discussion
 
+\todoin{
+- CTB
+}
+
 <!--
 If there is a system for sharing the node contents,
 this means that users once users download an SBT index they can become new seeders for future users.
@@ -433,3 +437,7 @@ but following the same principle of the public interface of the CLI not changing
 if the implementation changes it can serve as a minimal shim over more decentralized approaches.
 
 ## Conclusion
+
+\todoin{
+- CTB
+}

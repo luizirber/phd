@@ -97,6 +97,13 @@ knitr::include_graphics('figure/cami_i_low_table.png')
 knitr::include_graphics('figure/cami_i_low_recall_precision.png')
 ```
 
+\todoin{
+- Figure 3.1 needs a caption, and maybe pointers or highlighted columns.
+- Figure 3.2 needs a caption, and some arrows or something to guide eye.
+- Figure 3.3 needs a caption and some arrows or highlight columns or ...
+- Figure 3.4 needs a caption, and some arrows or something to guide eye.
+}
+
 #### CAMI 2 mouse gut toy challenge
 
 \todoin{
@@ -157,6 +164,10 @@ The Rust version has four direct external dependencies:
 
 ## Evaluation
 
+\todoin{
+- fixme
+}
+
 (cmash and mash screen can do `gather` too,
 but still require the original data available.
 Scaled MinHash allows using the sketches for gather,
@@ -184,4 +195,7 @@ Instructions are available at https://github.com/luizirber/phd
 
 ## Conclusion and Future Work
 
+\todoin{
+- CTB
+}
 

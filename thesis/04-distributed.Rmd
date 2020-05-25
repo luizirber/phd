@@ -4,6 +4,11 @@
 
 ## Introduction
 
+\todoin{
+- Add one paragraph, "In Chapter XX we introduced YY".
+}
+
+
 Signature calculation in sourmash is a low memory and streaming process.
 Low memory because a signature retains a subset of the original data,
 and streaming because once a chunk of the data is processed it is not necessary to keep it or refer to it again.
@@ -118,6 +123,10 @@ The first prototype (named `soursigs`) used `snakemake` to
 https://github.com/dib-lab/soursigs/
 -->
 
+\todoin{
+- CTB fill in
+}
+
 This system was able to process 412k datasets over two weeks,
 ...
 <!-- link to soursigs posts?
@@ -138,6 +147,10 @@ Signatures were initially stored locally in the system where they were processed
 (NERSC Cori for IMG, MSU HPCC for SRA).
 None serve as permanent or public storage,
 since they are restricted systems and access can be revoked once projects are concluded.
+
+\todoin{
+- CTB Fix below
+}
 
 For convenience,
 data was uploaded to Amazon S3,
@@ -186,6 +199,10 @@ and upload results to Amazon S3.
 knitr::include_graphics('figure/arch.png')
 ```
 
+\todoin{
+- Figure 4.1 needs a caption.
+}
+
 <!-- drop the "a little centralization goes a long way" paper here -->
 The coordination of the system is still centralized,
 but this new infrastructure allows workers to be executed in any system that has Docker or Singularity support,
@@ -214,10 +231,18 @@ refactoring the internal implementation while keeping all tests working allow im
 
 ## Results
 
+\todoin{
+- CTB
+}
+
 - 1M+ signatures
 - 2 TB compressed
 
 ## Discussion
+
+\todoin{
+- CTB
+}
 
 <!--
 We set out to solve a problem...
@@ -245,6 +270,10 @@ CTBQ: What points do you want to make here?
 -->
 
 ## Conclusion
+
+\todoin{
+- CTB
+}
 
 <!--
 Distributed workers can be an efficient and effective solution but only insofar as the centralized database can scale to hand data to them fast enough.

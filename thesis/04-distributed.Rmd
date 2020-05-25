@@ -6,6 +6,7 @@
 
 \todoin{
 - Add one paragraph, "In Chapter XX we introduced YY".
+- This showed us the following problems around calculating yada foo.
 }
 
 

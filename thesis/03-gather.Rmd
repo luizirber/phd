@@ -5,7 +5,14 @@
 ## Introduction
 
 \todoin{
- - What are the goals of compositional analysis in biological systems?
+- What are the goals of compositional analysis in biological systems?
+- para1 - a common bio question is that we want to know what's in where. this includes metagenomics and contamination analysis in genomes.
+- technically this devolves into asking containment questions: one big set, many small sets.
+- recap of challenging bits from chp 1, cmash and mash screen and so on. what info do you need to keep around, etc. LCA approaches kraken etc, in brief.
+- para 2 - our solution
+- here we implement this on top of scaled minhashes. no need to keep full data set around. scaled minhashes let us do this ina  cool way because we evenly sample across all minhashes.
+- for discussion - note that we can isolate unknown hashes too, which leads to some use cases around discovering common unknown k-mers, being explored by others. (this is unique to DNA).
+- para 3 - challenges of benchmarking on real data. things like gold standards, continental breakfast tuning per casey greene, etc. CAMI as one solution.
 }
 
 ## Decomposition of queries with gather
@@ -197,5 +204,9 @@ Instructions are available at https://github.com/luizirber/phd
 
 \todoin{
 - CTB
+- "why does gather work so well?" combinatorics I think? and no saturation of LCA?
+- maybe: not limited to sparse sketches like ours, can be done with bloom filters.
+- somewhere in this chapter need to highlight conceptual differences with gather. two ways to emphasize combinatorics of containment: one is by appeal to bloom filters (how we stumbled on it...), where containment => combinatorics is easy; the other is to lay out algorithm (one hash, two hash, three hash) combinatorics and greedy.
+- somewhere also need to discuss missing evidence/challenges of missing genomes/strains in databases. very hard to estimate, maybe a place where looking at unknown hashes could provide a handle.
 }
 

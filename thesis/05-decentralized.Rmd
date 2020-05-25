@@ -5,6 +5,11 @@
 ## Introduction
 
 \todoin{
+- Add paragraph, "In Chapter XX we introduced YY".
+- This showed us the following problems around updating yada foo.
+}
+
+\todoin{
 Extend discussion from centralized resources from previous chapter.
 
 - Failure modes for public genomic resources: de-funding, too much data, most

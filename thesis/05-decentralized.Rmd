@@ -4,39 +4,58 @@
 
 ## Introduction
 
-Public genomic databases like Genbank and RefSeq are maintained by NCBI,
+Public genomic databases like GenBank [@benson_genbank_2017] and RefSeq [@oleary_reference_2016] are maintained by NCBI,
 responsible for curation and quality control of submissions.
 They serve as reference for derived databases too,
 with RefSeq being an example:
-it is derived from Genbank,
+it is derived from GenBank,
 but with stricter quality controls and without a submission process,
-since it processes data submitted and accepted in Genbank.
-<!-- conflating  -->
+since it processes data submitted and accepted in GenBank.
+On top of being responsible for quality control,
+NCBI also serves as the archival and canonical data source,
+which leads to a common pattern in bioinformatics services:
+maintenance and data availability are tied to constant funding of the infrastructure,
+and in the cases where funding lapses the resource might become unavailable.
+[@gb_editorial_team_closure_2011] presents a scenario describing the hypothetical closure of Sequence Read Archive [@leinonen_sequence_2011],
+and a discussion including maintainers,
+data producers and end users.
+Among the issues raised are budgetary constraints
+(for both storage and costs associated with staff for maintaining the databases and processing submissions),
+scalability of storing all the raw data being generated,
+and long term access to data already archived.
 
-A solution is moving the data to cloud infrastructure and let companies implement the storage and distribution of the data.
-The Sequence Read Archive adopted this approach (on top of maintaining their own current infrastructure) with both Amazon Web Service (AWS) and Google Cloud Platform (GCP).
-Companies benefit from these arrangements because data is more readily available for their existing users,
+One of the proposed solutions is moving to cloud computing resources as an alternative to a central repository with its own public funded infrastructure,
+and let companies implement the storage and distribution of the data.
+In 2019 the Sequence Read Archive adopted this approach
+(on top of maintaining their own current infrastructure)
+with both Amazon Web Service (AWS) and Google Cloud Platform (GCP) serving as storage.
+This relieves the pressure on their current infrastructure,
+as well as expands bandwidth and throughput for accessing the data,
+since both AWS and GCP have extensive infrastructure in place in their cloud offerings.
+
+Companies also benefit from these arrangements because data is more readily available for their existing users,
 and it also attracts new users because there are financial incentives to avoid transferring data out of their cloud infrastructure.
 For example,
 internal data transfer from SRA to specific regions inside AWS and GCP are not charged,
 but transferring data to other systems incur costs,
 and given the amount of data available it can get very expensive if you don't become a user and use the AWS or GCP resources for computation too.
+This increased dependency on companies that already monopolize much of the internet infrastructure also raise issues about competition,
+since both companies have genomic data analysis services and possibly have conflicts with new (and smaller) companies that decide to use these databases.
 
-\todoin{
-Extend discussion from centralized resources from previous chapter.
+Chapter 4 introduced wort,
+<!-- TODO internal link to chapter 4 -->
+a distributed system for signature computation,
+and the challenges to efficiently retrieve data from public genomic databases.
+This chapter discusses alternatives for increasing resilience for storing and distributing data using decentralizing approaches,
+using indices and signatures for datasets in public genomic databases as a concrete problem.
+This is achieved by extending sourmash and wort to implement these approaches,
+as well as discussing limitations and direction for further improvement.
 
-- Failure modes for public genomic resources: de-funding, too much data, most
-  data infrequently accessed, bandwidth limitations
-
-- Current solutions: move to cloud infrastructure, but charge from user for data
-  transfer out of cloud infra (SRA and AWS/GCP)
-}
-
-### Decentralizing strategies
-
+### Decentralization and recentralization
 
 
-### A little centralization goes a long way
+<!-- TODO: [schneider_decentralization_2019] -->
+<!-- TODO: [tsitsiklis_power_2011] A little centralization goes a long way -->
 
 ### Content addressable storage
 
@@ -222,7 +241,7 @@ and returns a byte buffer ready for consumption.
 
 sourmash version 3.3.0 was used for the experiments.
 All experiments are running a `sourmash gather` command on an SBT index with 5914 signatures.
-These signatures are a subset of the prepared Genbank database that sourmash provides,
+These signatures are a subset of the prepared GenBank database that sourmash provides,
 while the query signature is an iHMP metagenome.
 <!-- TODO: more info here, obvs) -->
 

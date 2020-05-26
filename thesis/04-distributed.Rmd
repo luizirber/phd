@@ -48,13 +48,13 @@ Statement of what this chapter is about: soursigs and wort for exploring
 
 ## Methods
 
-The Sequence Read Archive stores raw sequence data for sequencing experiments,
+The Sequence Read Archive [@leinonen_sequence_2011] stores raw sequence data for sequencing experiments,
 and is part of the International Nucleotide Sequence Database Collaboration (INSDC),
-with the European Nucleotide Archive (ENA) and the DNA Database of Japan (DDBJ) being other members.
+with the European Nucleotide Archive (ENA) [@leinonen_european_2011] and the DNA Database of Japan (DDBJ) [@kaminuma_ddbj_2010] being other members.
 Submission to any of them are shared with the others,
 although with different methods for accessing and potentially distinct data formats.
 
-The Integrated Microbial Genomes and Microbiomes (IMG/M) contains assembled genomes and metagenomes for sequencing done at the Department of Energy's Joint Genome Institute,
+The Integrated Microbial Genomes and Microbiomes (IMG/M) [@chen_imgm_2019] contains assembled genomes and metagenomes for sequencing done at the Department of Energy's Joint Genome Institute,
 focusing on environmental samples.
 Because the sequencing data is already assembled,
 it is closer to GenBank and RefSeq than the Sequence Read Archive,

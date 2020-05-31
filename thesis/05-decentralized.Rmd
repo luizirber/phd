@@ -24,38 +24,61 @@ Among the issues raised are budgetary constraints
 scalability of storing all the raw data being generated,
 and long term access to data already archived.
 
-One of the proposed solutions is moving to cloud computing resources as an alternative to a central repository with its own public funded infrastructure,
-and let companies implement the storage and distribution of the data.
-In 2019 the Sequence Read Archive adopted this approach
-(on top of maintaining their own current infrastructure)
-with both Amazon Web Service (AWS) and Google Cloud Platform (GCP) serving as storage.
-This relieves the pressure on their current infrastructure,
-as well as expands bandwidth and throughput for accessing the data,
-since both AWS and GCP have extensive infrastructure in place in their cloud offerings.
-
-Companies also benefit from these arrangements because data is more readily available for their existing users,
-and it also attracts new users because there are financial incentives to avoid transferring data out of their cloud infrastructure.
-For example,
-internal data transfer from SRA to specific regions inside AWS and GCP are not charged,
-but transferring data to other systems incur costs,
-and given the amount of data available it can get very expensive if you don't become a user and use the AWS or GCP resources for computation too.
-This increased dependency on companies that already monopolize much of the internet infrastructure also raise issues about competition,
-since both companies have genomic data analysis services and possibly have conflicts with new (and smaller) companies that decide to use these databases.
-
 Chapter 4 introduced wort,
 <!-- TODO internal link to chapter 4 -->
 a distributed system for signature computation,
 and the challenges to efficiently retrieve data from public genomic databases.
 This chapter discusses alternatives for increasing resilience for storing and distributing data using decentralizing approaches,
 using indices and signatures for datasets in public genomic databases as a concrete problem.
+<!-- TODO: link indices to chp2, and signatures to chp1? -->
 This is achieved by extending sourmash and wort to implement these approaches,
 as well as discussing limitations and direction for further improvement.
 
 ### Decentralization and recentralization
 
+One of the proposed solutions for scaling the Sequence Read Archive and make it more convenient for users is moving to cloud computing resources,
+as an alternative to a central repository with its own public funded infrastructure,
+and let companies implement the storage and distribution of the data.
+In 2019 the Sequence Read Archive adopted this approach
+(on top of maintaining their own existing infrastructure)
+with both Amazon Web Service (AWS) and Google Cloud Platform (GCP) serving as storage.
+This relieves the pressure on their current infrastructure,
+as well as expands bandwidth and throughput for accessing the data,
+since both AWS and GCP already have extensive infrastructure in place for their cloud offerings.
+Companies also benefit from these arrangements because data is more readily available for their existing users,
+and it also attracts new users because there are financial incentives to avoid transferring data out of their cloud infrastructure.
+For example,
+internal data transfer from SRA to specific regions inside AWS and GCP are not charged,
+but transferring data to other systems incur costs,
+and given the amount of data available it can get very expensive if you don't become a user and use the AWS or GCP resources for computation too.
+This comes at an estimated \$150,000 dollars in monthly costs paid by the NIH to each provider for 10 petabytes of data,
+with forecasts to reach 33 petabytes by 2023
+[@council_of_councils_working_group_on_sequence_read_archive_data_interim_2020].
 
-<!-- TODO: [schneider_decentralization_2019] -->
-<!-- TODO: [tsitsiklis_power_2011] A little centralization goes a long way -->
+Arguably this is an example of decentralization (at the storage level),
+since now there are more providers for the same data.
+At the same time,
+there is recentralization happening due to increased dependency on companies that already monopolize much of the internet infrastructure,
+and also raise issues about competition,
+since both companies have genomic data analysis services and possibly have conflicts with new (and smaller) companies that decide to use these databases.
+This decentralization and recentralization dynamic is characterized in [schneider_decentralization_2019]:
+for every push for decentralization there is potential for recentralization and
+new power concentrations by different actors.
+Bitcoin is another example of this dynamic:
+one of the initial ideas was reducing the dependency on central banks and governments for currency and financial transactions,
+but the large computational requirements for proof-of-work mining concentrated most of the network in a small number of very large mining-farms.
+
+<!-- TODO: maybe this fits better in the discussion?
+At the same time,
+totally decentralized systems are usually less efficient,
+especially if consensus is necessary.
+This is reflected in the enormous energy impact of proof-of-work in Bitcoin,
+equivalent to the yearly energy consumption of whole countries [@digiconomist_bitcoin_nodate].
+
+Adding some centralized coordination can improve the overall performance of a system [tsitsiklis_power_2011]
+without creating a bottleneck like in fully-centralized system,
+-->
+
 
 ### Content addressable storage
 
@@ -145,8 +168,7 @@ Instead of querying a single remote node,
 this would allow git to fetch remote objects from many sources,
 and any user that cloned the same repository is a potential provider for the data.
 
-The Interplanetary File System (IPFS)
-<!-- TODO cite benet 2014 -->
+The Interplanetary File System (IPFS) [@benet_ipfs_2014]
 builds on these two ideas.
 IPFS addresses are hashes of the content organized as a Merkle DAG like git,
 but using a DHT for peer and content discovery,
@@ -171,13 +193,11 @@ like Bittorrent.
 
 The SBT index introduced in chapter 2 has structural features that make it a
 good fit for content-addressable approaches.
-
 Leaf nodes in an SBT are signatures for a specific dataset,
 and are effectively immutable for public genomic databases,
-since any changes to a dataset in these databases tend to generate a new version or identifier.
+since any changes to a dataset in these databases generate a new version or identifier.
 Signatures can also change if other parameters for calculating their sketches are used,
 but having a default set of "good enough" parameters like the ones defined in `wort`
-<!-- TODO: link to previous chapter? -->
 allows general queries that can later be refined once a candidate subset of the database is found.
 
 <!-- TODO figure from recomb 2017 paper showing insertion changes for current method -->
@@ -208,10 +228,10 @@ either locally or loaded from the network.
 A trade-off is making internal nodes available in the network,
 but not failing local operations with the index if they fail to load:
 either recalculate the internal node (more expensive)
-or proceed with operations where this is acceptable.
+or proceed with the operation anyway (if possible).
 For the latter case,
 a search where an internal node is missing can proceed by queueing the children of the node for search,
-which is less efficient than a regular search (which could potentially stop at that node and avoid checking the subtree),
+which is less efficient than a regular search (the search could potentially stop at that node and avoid checking the subtree),
 but is a better user experience than failing completely.
 In the worst case where only the leaves are available,
 this search turns into a linear scan over a list.
@@ -246,16 +266,19 @@ while the query signature is an iHMP metagenome.
 <!-- TODO: more info here, obvs) -->
 
 The three machines used for the experiments reflect different levels of performance:
+
 - `takver` is a workstation with fast CPU (AMD Ryzen 9 3900X 12-Core running at 3.80 GHz),
   memory (64 GB DDR4 2133 MHz)
   and storage (2 TB NVMe Samsung SSD 970 EVO Plus),
   connected to a Gigabit local network with access to the UC Davis network.
+
 - `datasilo` is a compute stick,
   a system with limited computational resources aimed at the low cost market.
   It has an Intel Atom x5-Z8330 CPU running at 1.44 GHz,
   2 GB DDR3 1600 MHz of memory,
   a 32 GB internal eMMC storage,
   and it is connected to the same Gigabit local network as `takver`.
+
 - `rosewater` is a 2015 laptop with resources typically found on a regular user notebook:
   an Intel Core i7-5600U CPU running at 2.60GHz,
   16GB DDR3 1600MHz of memory,
@@ -274,7 +297,7 @@ The three machines used for the experiments reflect different levels of performa
 
 Experiment 1) uses a Zipped SBT index,
 with a storage using a Zip file for holding the tree structure and all the nodes compressed data.
-This will be the default format in sourmash 4,
+This will be the default format in \emph{sourmash} 4,
 and is more convenient than the previous hidden dir storage.
 The goal of this experiment is to define a baseline to compare both each individual machine performance and the decentralizing approaches described in previous sections.
 
@@ -371,20 +394,17 @@ with a runtime of more than 20 minutes.
 
 ## Discussion
 
-<!--
 If there is a system for sharing the node contents,
 this means that users once users download an SBT index they can become new seeders for future users.
 In the worst case,
 where only the initial seeder is available,
-it becomes a centralized system and the whole network depends on the resources and bandwidth that the seeder provides,
-but this is typically the situation where most bioinformatics web services are anyway.
-
+it becomes a centralized system and the whole network depends on the resources and bandwidth that the seeder provides.
+This is typically the situation for most bioinformatics web services.
 
 IPFS was chosen because it provides implementations in multiple programming languages,
 and has a large user and developer base that can drive development of useful features in the long term.
 IPFS is a good candidate for the features required to do this,
 but any system with similar features can also be used.
--->
 
 
 ### Future work
@@ -399,9 +419,8 @@ In the current version only the content of each node (internal or leaf) is store
 but index construction and updating is not synchronized.
 There is no protocol for merging changes if multiple users start from the same index but update it with their own data.
 This is an active area of research,
-but recent developments involving Conflict-Free Replicated Data Types (CRDTs)
-<!-- TODO: cite -->
-and especially Mergeable Replicated Data Types (MRDTs) point in promising directions,
+but recent developments involving Conflict-Free Replicated Data Types (CRDTs) [@shapiro_conflict-free_2011],
+and especially Mergeable Replicated Data Types (MRDTs) [@kaki_mergeable_2019] point in promising directions,
 with the latter defining semantics for merging tree-like structures that are applicable to SBTs.
 
 While these methods can provide the technical means for fully decentralized indices,

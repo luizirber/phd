@@ -1,115 +1,136 @@
 # Introduction {-}
 
+Genome sequencing generates data at increasing rates with lower costs than before,
+and the amount of data available for analysis requires new methods for storing,
+retrieving and processing it.
+One of the first large scale applications for large genomic databases is BLAST [@altschul_basic_1990],
+which performs local alignment (Smith-Waterman algorithm) using a seed heuristic that has a lower amortized cost for performing the dynamic programming required by the original algorithm.
+While BLAST allows great precision and recall,
+the requirements for having indexes with sizes of the same magnitude of the original data end up making it challenging to use with collections in the order of multiple terabytes or even petabytes of data.
+For example,
+NCBI provides BLAST search as a service on their website,
+but it uses specially prepared databases with a subset of the data stored in GenBank or similar databases.
+While NCBI does offer a similar service for each dataset in the SRA (sequence read archive),
+there is no service to search across every dataset at once because of its size,
+which is on the order of petabytes of data and growing exponentially.
 
-Genome sequencing generates data at increasing rates with lower costs than
-before, and the amount of data available for analysis requires new methods
-for storing, retrieving and processing it. One of the first large scale
-applications for large genomic databases is BLAST, which performs local
-alignment (smith-waterman algorithm) using a seed heuristic to lower the cost
-that has a lower amortized cost for performing the dyanamic programming
-required by the original algorithm. While BLAST allows great precision and
-recall, the requirements for having indexes with sizes of the same magnitude of
-the original data end up making it challenging to use with collections in the
-order of multiple terabytes or even petabytes of data. For example, NCBI
-provides BLAST search as a feature on their website, but it uses specially
-prepared databases with a subset of the data stored in genbank or similar
-databases, but not for the SRA (sequence read archive), which is on the order
-of petabytes of data and growing exponentially.
-
-Approaches for indexing large collections of data instead focus on narrowing
-the problem that BLAST solves with tradeoffs in precision and
-accuracy. The experiment discovery problem, as defined in Solomon and
-kingsford, is phrased in terms of finding an experiment in a collection that
-shares content with a query up to or over a certain threshold. The content is
-defined as the k-mer composition of the datasets and query, where individual --
-unique-- presence/absence of each k-mer in the query is checked, instead of
-performing local alignment like BLAST does. While this lowers the ability to
-deal with important biological features like mutations, the
-exact nature of the k-mer comparisons allow many computational benefits: k-mers
-can be hashed and stored in integer datatypes, allowing for fast comparison and
-many opportunities for compression. Solomon and Kingfsord's solution for the
-problem, the Sequence Bloom Tree (and variants), use these propertie to define
-and store the k-mer composition of a dataset in a Boom Filter, a probabilistic
-data structure that allows insertion and checking if a value might be present,
-and stands for a probabilistic version of a set structure in this case. Bloom
-Filters can be tuned to reach a predefined false positive bound, trading off
-memory for accurracy (more memory is more accurate, but lower memory can
-still have acceptable accuracy). While this solves the problem of
-representing datasets in a smaller representation than the original data,
-it still requires checking the query against all avalilable datasets: for each
-q k-mer in the query dataset, check if it is present each of the
-datasets. The linear nature of this approach is prohibitive for thousands and
-millions of datasets, so the SBT is organized as an hierarchical search index: a
-tree, where each internal node contains all the k-mer presence/absence data from
-nodes under it. This was first explored in Bloofi, which is a hierarchy of
-bloom filters, and the SBT adapts this idea for genomic datasets. Bloom
-filters also have the useful property of being easy and fast to merge:
-given two bloom filters, constructing a third one containing all the data from
-the first two can be done by doing element-wise OR on both bloom filters
-(usually represented as arrays). The downside is false positive increase-- rate
-increasing, especially if both original filters are already reaching
-saturation. To account for that, Bloom Filters in a SBT need to be
-initialized with a size proportional to the cardinality of the combined
-datasets, which can be quite large for big collections. But, since Bloom Filters
-only generate false positives, and not false negatives, in the worst case there
-is degradation of performance computationally, because more
-internal nodes need to be checked, but the answer stays te same.
+Approaches for indexing large collections of data instead focus on narrowing the problem that BLAST solves with tradeoffs in precision and accuracy.
+The experiment discovery problem [@solomon_fast_2016],
+is phrased in terms of finding an experiment in a collection that shares content with a query up to or over a certain threshold.
+The content is defined as the k-mer composition of the datasets and query,
+where presence/absence of each k-mer in the query is checked,
+instead of performing local alignment like BLAST does.
+While this lowers the ability to deal with important biological features like variations,
+the exact nature of the k-mer comparisons has many computational benefits:
+k-mers can be hashed and stored in integer datatypes,
+allowing for fast comparison and many opportunities for compression.
+Solomon and Kingsford's solution for the problem,
+the Sequence Bloom Tree,
+use these properties to define and store the k-mer composition of a dataset in a Bloom Filter [@bloom_spacetime_1970],
+a probabilistic data structure that allows insertion and checking if a value might be present.
+Bloom Filters can be tuned to reach a predefined false positive bound,
+trading off memory for accuracy.
+While this solves the problem of representing datasets in sublinear size compared to the original data,
+it still requires checking the query against all available datasets:
+for each k-mer in the query dataset,
+check if it is present in each of the datasets.
+The linear nature of this approach is prohibitive for thousands (and millions) of datasets,
+so the SBT is organized as a hierarchical search index:
+a binary search tree,
+where each internal node contains all the k-mer presence/absence data from nodes under it.
+This hierarchy of Bloom Filter idea was first explored in Bloofi [@crainiceanu_bloofi:_2015],
+and the SBT adapts this idea for genomic datasets.
+Bloom filters also have the useful property of being easy and fast to merge:
+given two bloom filters,
+constructing a third one containing all the data from the first two can be done by doing element-wise OR on both bloom filters
+(usually represented as arrays).
+The downside is the false positive increase,
+especially if both original filters are already reaching saturation.
+To account for that,
+Bloom Filters in a SBT need to be initialized with a size proportional to the cardinality of the combined datasets,
+which can be quite large for big collections.
+Since Bloom Filters only generate false positives,
+and not false negatives,
+in the worst case there is degradation of the computational performance,
+(because more internal nodes need to be checked),
+but the final results are unchanged.
 
 While Bloom Filters can be used to calculate similarity of dataset,
-there are data structures more appropriate for this use case. A MinHash sketch
-(first defined by Broder 1997) is a representation of a dataset
-that allows estimating the Jaccard similarity of the original dataset
-without requiring the original data to be available. The Jaccard similarity of
-two datasets is the size of the intersection of elements in both datasets
-divided by the size of the union of elements in both datasets. The MinHash
-sketch uses a subset of the original data as a proxy for the data -- in this case,
-hashing each element and taking the smallest values for each dataset. Broder
-defines two approaches for taking the smallest values: one generates a
-fixed-size collection, which is preferable when datasets have similar
-cardinalities (and properties). The other one takes instead a -- every hash that
-is mod M for --, with M used to control how many elements might be taken: large
-M leads to fewer elements being taken, with smaller M taiing more elements. The
-ModHash aproach also allows calculating the containment of two datasets, how
-much aof a dataset is present in another. It is defined as the size of the
-intersection divided by the size of the dataset, and so is asymetrical (unlike
-the jaccard similarity). While the MinHash can also calculate containment, if
-the datasets are of distinct cardinalities there is an error that accumulates
-quickly. This is especially relevant for biological use cases, especially
-compariosns across large genomic distances. Mash is the first method to use
-MinHash for genomic data, and uses the k-mer composition to represent the
-original data as a set. To account for genomic distances they define a new
-metric, the mash distance, that takes into account the size of the genome for
-each dataset.
+there are data structures more efficient probabilistic data structures for this use case.
+A MinHash sketch [@broder_resemblance_1997] is a representation of a dataset that allows estimating the Jaccard similarity of the original dataset without requiring the original data to be available.
+The Jaccard similarity of two datasets is the size of the intersection of elements in both datasets divided by the size of the union of elements in both datasets.
+The MinHash sketch uses a subset of the original data as a proxy for the data -- in this case,
+hashing each element and taking the smallest values for each dataset.
+Broder defines two approaches for taking the smallest values:
+one generates a fixed-size collection,
+which is preferable when datasets have similar cardinalities.
+The other one takes instead every hash that is 0 mod M,
+with M used to control how many elements might be taken:
+large M leads to fewer elements being taken,
+with smaller M taking more elements.
+The ModHash approach also allows calculating the containment of two datasets,
+how much of a dataset is present in another.
+It is defined as the size of the intersection divided by the size of the dataset,
+and so is asymmetrical
+(unlike the Jaccard similarity).
+While the MinHash can also calculate containment,
+if the datasets are of distinct cardinalities the errors accumulate quickly.
+This is relevant for biological use cases,
+especially for comparisons across large genomic distances.
+Mash [@ondov_mash:_2016] is the first method to use MinHash for genomic data,
+and uses the k-mer composition to represent the original data as a set.
+To account for genomic distances it defines a new metric,
+the mash distance,
+that takes into account the size of the genome for each dataset.
 
+The experiment discovery problem focus on searching experiments in a collection that are similar to a query experiment,
+but another important biological problem is finding the community composition of a metagenome,
+including analyzing the presence of specific organisms and at what abundance they are present in a sample.
+Common approaches include amplicon barcoding for searching for marker genes (like 16S) to classify sequencing reads and quantify matches [@schloss_introducing_2009]
+and whole-genome analysis using sequencing read alignment to reference genomes [@huson_megan_2016]
+or exact k-mer assignments to taxons [@wood_kraken:_2014].
+These methods have many trade-offs in precision and sensitivity,
+number of reference genomes in their databases and computational resource required.
+The community composition problem can be compared to the experiment discovery problem:
+while the latter focus on computing the **similarity** of a query to other experiments,
+the former focus on computing the **containment** of organisms
+(represented as genomes in a reference database)
+in the metagenome sample query.
+
+Since public databases are growing to petabyte-scale levels,
+working with this data deluge is a significant challenge in most computational systems available to the average researcher. 
+Even keeping up with new submissions requires substantial network bandwidth to be able to download the data,
+let alone the computational resources to process the data into formats more amenable for specific analysis.
+At the same time,
+there is increasing pressure to the infrastructure for both storing and transferring the data in these public databases,
+and system architectures that allow distributing the computational workload and decentralizing the storage and transfer of these resources
+are essential for maintaining and expanding scientific research.
 
 ## Thesis Structure {#structure}
 
-...
-The rest of this dissertation is organized as follows.
+The rest of this dissertation is organized as follows:
 
 **Chapter 1** introduces containment queries for genomic data analysis,
-and a new approach for containment estimation using Scaled MinHash sketches,
-comparing it with existing methods for containment estimation.
+and a new approach for containment estimation using Scaled MinHash sketches.
 
 **Chapter 2** describes indexing methods for sketches,
-focusing on an hierarchical approach optimized for storage access (`MHBT`)
-and a fast inverted index (`LCA index`).
+focusing on a hierarchical approach optimized for storage access and low memory consumption (`MHBT`)
+and a fast inverted index optimized for fast retrieval but with larger memory consumption (`Revindex`).
 It also introduces `sourmash`,
-a software implementing these indices and optimized Scaled MinHash sketches and
-providing extended functionality for biological data analysis.
+a software implementing these indices and optimized Scaled MinHash sketches,
+as well as extended functionality for iterative and exploratory biological data analysis.
 
-**Chapter 3** presents `gather`, a method for compositional metagenomics analysis.
+**Chapter 3** presents `gather`,
+a method for compositional metagenomics analysis.
 Comparisons with current taxonomic profiling methods using community-developed benchmarking
-assessments shows that `gather` paired with taxonomic information outperforms other
-approaches,
-using a fraction of the computational resources and allowing analysis in
-platforms accessible to regular users (like laptops).
+assessments show that `gather` paired with taxonomic information outperforms other approaches,
+using a fraction of the computational resources and allowing analysis in platforms accessible to regular users (like laptops).
 
 **Chapter 4** describes wort,
 a framework for distributed signature calculation,
 including discussions about performance and cost trade-offs for sketching public genomic databases,
 as well as distributed systems architectures allowing large scale processing of petabytes of data.
 
-**Chapter 5** describes decentralizing indices for genomic data,
-showing how `sourmash` indices can be shared and maintained by multiple users
-and lower the need of centralized storage resources.
+**Chapter 5** discusses decentralizing indices for genomic data,
+showing how `sourmash` indices can have increased resilience to failure,
+lowering the need for centralized storage resources.

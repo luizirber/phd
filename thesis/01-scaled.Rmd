@@ -50,7 +50,7 @@ Mash [@ondov_mash:_2016] was the first implementation of MinHash in genomic cont
 relating the $w$-shingling of a document to the $k$-mer composition of genomic
 datasets,
 and using the $\mathbf{MIN}_n(W)$ fixed-sized formulation for the signature.
-Mash needs extra information (the genome size for the organism being queried) to account for genomic complexity in datasets and derive a new score,
+Mash needs extra information (the genome size for the organism being queried) to account for genomic complexity in datasets and derives a new score,
 the Mash distance,
 to bring it closer to previously existing similarity measures in biology
 (Average Nucleotide Identity).
@@ -76,7 +76,7 @@ containment estimation within small error bounds (less than 1\%).
 
 This formulation enables the comparison of metagenomes (stored in a Bloom Filter)
 against a collection of MinHash sketches (one for each reference dataset),
-an use case not supported by Mash originally.
+a use case not supported by Mash originally.
 
 In terms of repeated analysis of a query,
 \emph{CMash} has the advantage that the query only needs to be processed once into a Bloom Filter,
@@ -107,7 +107,7 @@ to model the $k$-mer survival
 Comparing \emph{mash screen} to \emph{CMash},
 the main difference is that the former streams the query as raw sequencing data,
 while the latter generates a Bloom Filter for the query first.
-\emph{mash screen} avoids repeated membership checks to a Bloom Filter by collecting all distinct hashes in the collection of reference MinHash sketches first,
+\emph{mash screen} avoids repeated membership checks to a Bloom Filter by collecting all distinct hashes across the reference MinHash sketches first,
 and then updating a counter associated with each hash if it is observed in the query.
 After the query finishes streaming,
 then it is summarized again against the sketches in the collection.

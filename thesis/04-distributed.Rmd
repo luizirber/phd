@@ -9,23 +9,21 @@ Low memory because a signature retains a subset of the original data,
 and streaming because once a chunk of the data is processed it is not necessary to keep it or refer to it again.
 The calculation process is frequently I/O bound on reading data,
 unless very fast access to the data is available.
-
-<!--
-CTB: here it is also important to note that sourmash signatures are typically
-quite small, and so the calculation process is inherently asymmetric in
-terms of communication: the input data is 1000-100000 times larger than the
-output data, which is what allows wort-like solutions to work in the first place.
-
-(Maybe throw in a comparison to folding@home, but differentiate because those require significant computation while wort requires significant data.)
--->
+sourmash signatures are also typically small,
+with input sizes in the order of thousands of times larger than the final signature,
+which lends itself to approaches where distributed workers do all the expensive data access,
+and report back a small amount of data.
+Systems like Folding@home [@beberg_folding_2009] focus on small amounts of input data
+and heavy computational requirements instead,
+but have similar architectures where a central server distributes tasks to
+workers and collect results.
 
 On top of fast access to one dataset,
 indexing large public genomic databases also requires considering another axis:
 since there are millions of datasets in these databases,
 embarrassingly parallel approaches to access the data are necessary too,
 because even with the fastest possible connection it would still take too long to process them all serially.
-Given that processing a dataset into a signature can be done independently
-of other datasets,
+Given that processing a dataset into a signature can be done independently of other datasets,
 a system that can spawn a large number of jobs can potentially keep up with the rate of new dataset inclusion,
 and also make it feasible to calculate signatures for the current datasets.
 
@@ -37,7 +35,8 @@ given the embarrassingly parallel nature of signature calculation,
 multiple workers can be spawned in different computational infrastructure
 (academic clusters, public cloud instances, and even browsers)
 with potentially independent network connections.
-Then the limitation is how fast data can be served from the public genomic database being indexed; this is inherently a limitation of centralized data storage.
+Then the limitation is how fast data can be served from the public genomic database being indexed;
+this is inherently a limitation of centralized data storage.
 
 <!--
 CTB Q: How does this change if the datasets / genomic databases are in the cloud, and so are accessible from multiple independent compute servers? This is the "scale out" approach and avoids the 1000x slower speed of WAN access. Note data egress charges / zone specificity.
@@ -161,7 +160,7 @@ but not as appropriate for a system that is frequently updated. (=> IPFS chp 4 m
 <!--
 CTBQ: which limitation is being overcome? It's ok to repeat and be specific.
 -->
-`wort` was created to overcome this (which??) limitation and allow more computational systems to participate in the process,
+`wort` was created to overcome this limitation and allow more computational systems to participate in the process,
 building an heterogeneous system that doesn't depend on similar resources being available for each worker.
 Two major changes for this:
 	1) encapsulate workers in a Docker container, which is also executable by Singularity.

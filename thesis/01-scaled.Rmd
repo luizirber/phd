@@ -8,17 +8,16 @@ The {#rmd-basics} text after the chapter declaration will allow us to link throu
 
 ## Introduction
 
-### MinHash sketch: similarity and containment
+...
 
-A data sketch is a representative proxy for the original data focused on queries
-for specific properties.
-It can also be viewed as a probabilistic data structure (in contrast to
-deterministic data structures),
-since it uses hashing techniques to provide statistical guarantees on the
-precision of the answer for a query.
+
+A data sketch is a representative proxy for the original data focused on queries for specific properties.
+It is also a probabilistic data structure since it uses hashing techniques to provide statistical guarantees on the precision of the answer for a query.
 This allows a memory/accuracy trade-off:
 using more memory leads to more accurate results,
 but in memory-constrained situations it still bound results to an expected error rate.
+
+### MinHash sketch: similarity and containment
 
 The MinHash sketch [@broder_resemblance_1997] was developed at Altavista in the context of document clustering and deduplication.
 It provides an estimate of the Jaccard similarity
@@ -29,8 +28,7 @@ These estimates depend on two processes:
 converting documents to sets ("Shingling"),
 and transforming large sets into short signatures,
 while preserving similarity ("Min-Hashing").
-In the original use case the *$w$-shingling* $\Omega$ of a document $D$ is defined as the set of all
-continuous subsequence of $w$ words contained in $D$.
+In the original use case the *$w$-shingling* $\Omega$ of a document $D$ is defined as the set of all continuous subsequence of $w$ words contained in $D$.
 *Min-hashing* is the process of creating $W = \{\,h(x) \mid \forall x \in \Omega\,\}$,
 where $h(x)$ is an uniform hash function,
 and then either
@@ -47,8 +45,7 @@ growing with the complexity of the document.
 ### Mash and genomic minhash
 
 Mash [@ondov_mash:_2016] was the first implementation of MinHash in genomic contexts,
-relating the $w$-shingling of a document to the $k$-mer composition of genomic
-datasets,
+relating the $w$-shingling of a document to the $k$-mer composition of genomic datasets,
 and using the $\mathbf{MIN}_n(W)$ fixed-sized formulation for the signature.
 Mash needs extra information (the genome size for the organism being queried) to account for genomic complexity in datasets and derives a new score,
 the Mash distance,
@@ -61,10 +58,9 @@ and it is even more extreme when taking more complex datasets into account (like
 
 ### Containment MinHash
 
-CMash [@koslicki_improving_2019] implements the Containment MinHash with the goal
-of allowing containment estimates between sets of very different sizes.
+CMash [@koslicki_improving_2019] implements the Containment MinHash with the goal of allowing containment estimates between sets of very different sizes.
 The construction is the same as MinHash for the smaller dataset,
-but the larger dataset $k$-mer composition is stored in a Bloom Filter,
+but the larger dataset $k$-mer composition is stored in a Bloom Filter [@bloom_spacetime_1970],
 which can also be calculated while streaming the data.
 The containment is defined as the number of hashes from the MinHash $A$ present in the Bloom Filter $B$,
 divided by the size of $A$:
@@ -88,7 +84,7 @@ that leads to storage savings for this use case.
 ### Containment score and mash screen
 
 [@ondov_mash_2019] introduces a new method to Mash (\emph{mash screen}) for calculating containment scores.
-Given a collection of reference MinHash sketches and a query sequence mixture (like a metagenome),
+Given a collection of reference MinHash sketches and a query sequence mixture (a metagenome, for example),
 \emph{mash screen} builds a mapping of each distinct hash from the set of all hashes in the reference MinHash sketches to a count of how many times the hash was observed.
 The query sequence mixture is decomposed and hashed with the same parameters $k$
 (from the $k$-mer composition) and $h$ (the hash function) used to generate the reference MinHash sketches,
@@ -123,16 +119,15 @@ The Scaled MinHash is a mix of both $\mathbf{MIN}_n(W)$ and $\mathbf{MOD}_m(W)$.
 From the former it keeps the smallest elements,
 and from the latter it adopts the dynamic size to allow containment estimation.
 Instead of taking $0 \mod m$ elements like $\mathbf{MOD}_m(W)$,
-a Scaled MinHash uses a parameter $s$ to select a subset of $W$.
-$\mathbf{SCALED}_s(W) = \{\,w \leq \frac{H}{s} \mid \forall w \in W\,\}$,
-where $H$ is the largest possible value in the domain of $h(x)$.
+a Scaled MinHash uses a parameter $s$ to select a subset of $W$:
+$$\mathbf{SCALED}_s(W) = \{\,w \leq \frac{H}{s} \mid \forall w \in W\,\}$$,
+where $H$ is the largest possible value in the domain of $h(x)$ and
 $\frac{H}{s}$ is the \emph{maximum hash} value in the Scaled MinHash.
 
 Given an uniform hash function and $s=m$,
 the cardinalities of $\mathbf{SCALED}_s(W)$ and $\mathbf{MOD}_m(W)$ converge for large $\vert W \vert$.
 The main difference is the range of possible values in the hash space,
-since the Scaled Minhash range is contiguous and the ModHash range is not.
-
+since the Scaled MinHash range is contiguous and the ModHash range is not.
 Figure \ref{fig:minhashes} shows an example comparing MinHash, ModHash and Scaled MinHash with the same parameter value.
 
 \begin{figure}%[ht]
@@ -197,6 +192,43 @@ Figure \ref{fig:minhashes} shows an example comparing MinHash, ModHash and Scale
          above the axis.}
 \label{fig:minhashes}
 \end{figure}
+
+### Operations without the original data
+<!-- TODO: yuck, better subsection title -->
+
+Once a Scaled MinHash is calculated there are many operation that can be applied without depending on the original data,
+saving storage space and allowing scaling analysis to thousands of datasets.
+Most of these operations are also possible with $\mathbf{MIN}_n(W)$ and $\mathbf{MOD}_m(W)$,
+with caveats.
+One example of these operations is \emph{downsampling}:
+the contiguous value range for Scaled MinHash sketches allow deriving $\mathbf{SCALED}_{s'}(W)$ sketches for any $s' \gt s$ using only $\mathbf{SCALED}_{s}(W)$,
+$\mathbf{MIN}_n(W)$ and $\mathbf{MOD}_m(W)$ also support this operation,
+as long as $n' \lt n$ and $m'$ is a multiple of $m$.
+
+Because Scaled MinHash sketches collect any value below a threshold this also guarantees that once a value is selected it is never discarded.
+This is useful in streaming contexts:
+any operations that used a previously selected value can be cached and updated with new arriving values.
+$\mathbf{MOD}_m(W)$ has similar properties,
+but this is not the case for $\mathbf{MIN}_n(W)$,
+since after $n$ values are selected any displacement caused by new data can invalidate previous calculations.
+
+Abundance tracking is another extension to MinHash sketches,
+keeping a count of how many times a value appeared in the original data.
+This allows filtering for low-abundance values,
+as implemented in Finch [@bovee_finch:_2018],
+another MinHash sketching software for genomics.
+Filtering values that only appeared once was implemented before in Mash by using a Bloom Filter and only adding values after they were seen once,
+with later versions also implementing an extra counter array to keep track of counts for each value in the MinHash.
+<!-- TODO: discuss here how abundance tracking in MinHash is not "correct",
+because it is not a proper weighted subsample of the data?
+Note that Scaled MinHash is a proper weighted subsample
+-->
+
+Other operations are adding and subtracting hash values from a Scaled MinHash sketch,
+allowing post-processing and filtering.
+Although possible for $\mathbf{MIN}_n(W)$,
+in practice this requires oversampling (using a larger $n$) to account for possibly having less than $n$ values after filtering.
+
 
 ### Limitations
 

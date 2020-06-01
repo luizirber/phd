@@ -1,5 +1,7 @@
 # Introduction {-}
 
+\chaptermark{Introduction}
+
 Genome sequencing generates data at increasing rates with lower costs than before,
 and the amount of data available for analysis requires new methods for storing,
 retrieving and processing it.

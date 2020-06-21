@@ -4,19 +4,18 @@
 
 ## Introduction
 
-Signature calculation in sourmash is a low memory and streaming process.
-Low memory because a signature retains a subset of the original data,
-and streaming because once a chunk of the data is processed it is not necessary to keep it or refer to it again.
+Signature calculation in sourmash is a low memory and streaming process,
+since a signature retains a much smaller subset of the original data
+and once a chunk of the data is processed it is not necessary to keep it or refer to it again.
 The calculation process is frequently I/O bound on reading data,
-unless very fast access to the data is available.
+unless very fast access to the data is available,
+when it becomes CPU-bound by the hashing algorithm.
 sourmash signatures are also typically small,
-with input sizes in the order of thousands of times larger than the final signature,
-which lends itself to approaches where distributed workers do all the expensive data access,
-and report back a small amount of data.
-Systems like Folding@home [@beberg_folding_2009] focus on small amounts of input data
-and heavy computational requirements instead,
-but have similar architectures where a central server distributes tasks to
-workers and collect results.
+with input sizes in the order of hundreds of times larger than the final signature.
+This creates opportunities for approaches where distributed workers do all the expensive data access,
+and report back a small amount of computed data.
+Systems like \emph{Folding@home} [@beberg_folding_2009] focus on small amounts of input data and heavy computational requirements instead,
+but have similar architectures where a central server distributes tasks to workers and collect results.
 
 On top of fast access to one dataset,
 indexing large public genomic databases also requires considering another axis:
@@ -37,56 +36,47 @@ multiple workers can be spawned in different computational infrastructure
 with potentially independent network connections.
 Then the limitation is how fast data can be served from the public genomic database being indexed;
 this is inherently a limitation of centralized data storage.
+Cloud solutions disguise these limitations by creating a single access point and rerouting requests to multiple servers,
+but accessing it outside the cloud provider infrastructure incurs additional costs.
 
-<!--
-CTB Q: How does this change if the datasets / genomic databases are in the cloud, and so are accessible from multiple independent compute servers? This is the "scale out" approach and avoids the 1000x slower speed of WAN access. Note data egress charges / zone specificity.
-
-Statement of what this chapter is about: soursigs and wort for exploring
-(crowdsourced?) ways of calculating signatures for large public databases.
--->
+This chapter explores these distributed architectures and methods for
+crowdsourcing signature calculation for large public genomic databases.
 
 ## Methods
 
+### Data sources and selection
+
+#### Sequence Read Archive
+
 The Sequence Read Archive [@leinonen_sequence_2011] stores raw sequence data for sequencing experiments,
-and is part of the International Nucleotide Sequence Database Collaboration (INSDC),
-with the European Nucleotide Archive (ENA) [@leinonen_european_2011] and the DNA Database of Japan (DDBJ) [@kaminuma_ddbj_2010] being other members.
+and is part of the International Nucleotide Sequence Database Collaboration (INSDC)
+with the European Nucleotide Archive (ENA) [@leinonen_european_2011] and the DNA Database of Japan (DDBJ) [@kaminuma_ddbj_2010].
 Submission to any of them are shared with the others,
 although with different methods for accessing and potentially distinct data formats.
 
-The Integrated Microbial Genomes and Microbiomes (IMG/M) [@chen_imgm_2019] contains assembled genomes and metagenomes for sequencing done at the Department of Energy's Joint Genome Institute,
+Given the large amount of data available and the biological diversity of the datasets,
+the initial prototype focused on single genome microbial datasets (excluding metagenomes).
+The datasets were selected with a query to the Sequence Read Archive to retrieve enough metadata for processing (dataset ID, size and download location),
+but this metadadata is not stored in the signatures.
+This avoids synchronization problems when the metadata is updated in the original source,
+and users should check them for more information.
+
+#### IMG
+
+The Integrated Microbial Genomes and Microbiomes (IMG/M) [@chen_imgm_2019] contains assembled genomes
+and metagenomes for sequencing done at the Department of Energy's Joint Genome Institute,
 focusing on environmental samples.
 Because the sequencing data is already assembled,
 it is closer to GenBank and RefSeq than the Sequence Read Archive,
 which hosts raw sequence data.
 
-<!-- ficus grant
-http://ivory.idyll.org/blog/2017-ficus-nersc-jgi-sourmash.html
--->
-
-### Data selection
-
-#### Sequence Read Archive
-
-Given the large amount of data available and the biological diversity of the datasets,
-the initial prototype focused on single genome microbial datasets (excluding metagenomes).
-The datasets were selected with a query to the Sequence Read Archive to retrieve enough metadata for processing (dataset ID, size and download location).
-`wort` doesn't aim to store and provide this metadata explicitly,
-instead opting to point to the original database metadata for more information.
-
-#### IMG
-
-Through a FICUS grant we also had access to the JGI IMG/M database,
-and access to the NERSC supercomputers to calculate signatures.
-<!-- size of IMG at that time
- - 65k genomes
- -->
-Metadata was provided independently of online access to IMG,
-and represented a snapshot of the data available on the database at that point. <!-- TODO: put date here? -->
+Through a "Facilities Integrating Collaborations for User Science" (FICUS) grant we also had access to the JGI IMG/M database,
+as well as to the NERSC supercomputers for computational resources.
+There were 65 thousand single genome datasets corresponding to the taxons represented in the database,
+and metadata was provided independently of online access to IMG.
+It represented a snapshot of the data available on the database in October 2017.
 The sequencing data was available in a shared storage unit,
 and processing was done through NERSC's Cori scheduling system.
-
-<!-- Link IMG snakemake repo
--->
 
 ### The worker
 
@@ -109,16 +99,16 @@ which leads to a larger signature (but still a fraction of the size of the origi
 
 ### Coordination
 
-The first prototype (named `soursigs`) used `snakemake` to
-1) query metadata from SRA
-2) for each dataset, spawn a worker job to process it and generate a signature
-3) upload the signature to permanent storage
-<!-- Link soursigs repo for initial prototype
-https://github.com/dib-lab/soursigs/
--->
+The first prototype (named `soursigs`, available at https://github.com/dib-lab/soursigs/)
+used the `snakemake` workflow management system [@koster_snakemakescalable_2012] to:
 
-This system was able to process 412k datasets over two weeks,
-...
+- query metadata from SRA and choose datasets;
+
+- for each dataset, spawn a worker job to process it and generate a signature;
+
+- upload the signature to permanent storage.
+
+This system was able to process 412k datasets and 28 TB of data over two weeks,
 <!-- link to soursigs posts?
 https://blog.luizirber.org/2016/12/28/soursigs-arch-1/
 http://ivory.idyll.org/blog/2017-sourmash-sra-microbial-wgs.html
@@ -127,9 +117,12 @@ but processing was still limited to one system executing all the workers jobs.
 Even with the system being a cluster and providing access to many compute nodes,
 the external network connection was still shared between all nodes.
 
-<!--
-Note: this initial prototype only read a small part of the stream. This was because our scientific goal was to identify novel data sets, and we could take advantage of the random nature of shotgun sequencing to yada yada. Ref syrah, scaled.
--->
+This initial prototype only read a small part of the streaming dataset,
+since the original scientific goal was to identify novel datasets after comparing them to a reference database.
+Due to the random nature of shotgun sequencing
+<!-- TODO  intro syrah, connect to scaled -->
+This was also necessary because at this point the Scaled MinHash introduced in chapter 1 was not available yet,
+and experiments with `soursigs` led to many of the insights that led to the Scaled MinHash development.
 
 ### Storage
 
@@ -141,16 +134,16 @@ since they are restricted systems and access can be revoked once projects are co
 For convenience,
 data was uploaded to Amazon S3,
 which makes it easier to share the data but also has drawbacks:
-	- Storage and data access incur additional costs,
-		especially if the data becomes a popular resource and used frequently.
-	- Even with all the infrastructure and level of service that AWS provides,
-		it is a single point of failure and is not easy to mirror in other places without generating new URLs
-		or using some sort of load balancer.
+
+- Storage and data access incur additional costs,
+  especially if the data becomes a popular resource and is used frequently.
+
+- Even with all the infrastructure and level of service that AWS provides,
+  it is a single point of failure and is not easy to mirror in other places without generating new URLs
+  or using some sort of load balancer.
 
 Other data repositories like Zenodo are better for archival purposes,
-but not as appropriate for a system that is frequently updated. (=> IPFS chp 4 motivation)
-
-<!-- data was also uploaded to IPFS, but maybe keep it to discuss in depth in the next section? -->
+but not as appropriate for a system that is frequently updated.
 
 ## From soursigs to wort
 
@@ -160,24 +153,27 @@ but not as appropriate for a system that is frequently updated. (=> IPFS chp 4 m
 <!--
 CTBQ: which limitation is being overcome? It's ok to repeat and be specific.
 -->
-`wort` was created to overcome this limitation and allow more computational systems to participate in the process,
+`wort` was created to fix some of the issues with the initial `soursigs` prototype
+and allow more computational systems to participate in the process,
 building an heterogeneous system that doesn't depend on similar resources being available for each worker.
-Two major changes for this:
-	1) encapsulate workers in a Docker container, which is also executable by Singularity.
-		 Docker containers are useful for cloud instances,
-		 but are usually not available in academic clusters.
-		 Similarly, Singularity tends to be present in academic clusters,
-		 but is not as convenient in cloud infrastructures.
-		 <!-- encapsulation is also easier to do because all dependencies are available on conda channels,
-		 especially bioconda and conda-forge -->
-	2) Use a messaging queue for job submission that can be accessed by workers in any computational system. <!-- (here note this is still centralized) -->
+The two major changes were:
+
+- encapsulate workers in a Docker container [@boettiger_introduction_2015],
+  which is also executable by Singularity [@kurtzer_singularity_2017].
+  Docker containers are useful for cloud instances,
+  but are usually not available in academic clusters.
+  Similarly, Singularity tends to be present in academic clusters,
+  but is not as convenient in cloud infrastructures.
+  While containers are more convenient for distribution,
+  all the software dependencies are also available via bioconda [@gruning_bioconda_2018] and conda-forge.
+
+- Use a messaging queue for job submission that can be accessed by workers in any computational system.
 
 Another goal for `wort` is creating a basic API for common tasks that allow external interactions without needing knowledge about internal implementation.
 Since the internal details are not exposed it allows refactoring and reimplementing the infrastructure with other technologies not used in the original version.
-
 In this sense,
 the original version is implemented in a more traditional (and centralized) approach,
-with a web application written in Flask serving the API and sending job requests to an Amazon SQS queue.
+with a web application written in Flask serving the API and sending job requests to an Amazon Web Services SQS queue.
 Workers connect to the queue and grab jobs for execution,
 and upload results to Amazon S3.
 
@@ -188,17 +184,13 @@ knitr::include_graphics('figure/arch.png')
 <!-- drop the "a little centralization goes a long way" paper here -->
 The coordination of the system is still centralized,
 but this new infrastructure allows workers to be executed in any system that has Docker or Singularity support,
-which includes most academic clusters and cloud providers,
+including most academic clusters and cloud providers,
 as well as local workstations and personal laptops.
 Since signature calculation is I/O bound,
 CPU resources consumption is proportional to how fast the network connection can provide data,
 and the CPU is idle waiting for data most of the time.
 
-<!--
-(Use "asymmetric" for the way data behaves: lots goes in, little goes out, compute is not actually that significant)
--->
-
-Since signature calculation jobs are independent of each other and don't have to communicate with each other,
+Since signature calculation jobs are independent of each other,
 the single point of failure of this approach is the centralized coordination.
 At the same time,
 developing a system is easier if there is no coordination required between most parts of the system,
@@ -210,11 +202,44 @@ and move to more decentralized approaches.
 Because the original version is already working,
 refactoring the internal implementation while keeping all tests working allow improvements to the system without breaking the public API and clients using `wort`.
 
-
 ## Results
 
-- 1M+ signatures
-- 2 TB compressed
+As of early June 2020,
+there are 1.2 million datasets in the SRA that fit the initial goal of
+calculating signatures for microbial genomes.
+These datasets represent around 14% of the 8.3 million public datasets in the SRA,
+<!--
+Total public datasets:
+https://www.ncbi.nlm.nih.gov/sra/?term=cluster_public%5Bprop%5D
+-->
+although this proportion is not representative of the total data size:
+this microbial subset contains 352.5 TB of data,
+around 2.2% of the 16 PB of publicly-accessible data.
+
+Around 16 thousand datasets weren't processed correctly,
+due to missing data in the SRA or because they are too large for the time
+allocated for workers and didn't finish downloading in time.
+Excluding these 16k datasets,
+the signatures represent 332 TB of the original data,
+stored in 2.4 TB of signature files.
+
+It is worth noting that signatures were calculated with a $\mathbf{scaled}=1000$,
+but $332/2.4=138$,
+more than expected if considering only final file size.
+Although each signature is using this scaled value,
+there are 3 Scaled MinHash sketches for each dataset (for $k={21,31,51}$),
+and each sketch is also tracking abundance for each hash,
+which doubles the storage requirements.
+
+`wort` focuses on providing an API for triggering further processing,
+and additional logic for updating the signature collection was implemented as
+scripts accessing the exposed API.
+They only need access to the public API,
+and don't need to be running in the same machine as `wort`.
+As an example,
+an external script that downloads metadata for datasets recently added to the
+SRA is executed everyday for the last two years
+
 
 ## Discussion
 

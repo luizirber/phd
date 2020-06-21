@@ -115,7 +115,7 @@ requirement means continuous storage or re-download of many petabytes of data.
 
 ## Scaled MinHash
 
-The Scaled MinHash is a mix of both $\mathbf{MIN}_n(W)$ and $\mathbf{MOD}_m(W)$.
+The Scaled MinHash is a mix of MinHash and ModHash.
 From the former it keeps the smallest elements,
 and from the latter it adopts the dynamic size to allow containment estimation.
 Instead of taking $0 \mod m$ elements like $\mathbf{MOD}_m(W)$,
@@ -198,12 +198,12 @@ Figure \ref{fig:minhashes} shows an example comparing MinHash, ModHash and Scale
 
 Once a Scaled MinHash is calculated there are many operation that can be applied without depending on the original data,
 saving storage space and allowing scaling analysis to thousands of datasets.
-Most of these operations are also possible with $\mathbf{MIN}_n(W)$ and $\mathbf{MOD}_m(W)$,
+Most of these operations are also possible with MinHash and ModHash,
 with caveats.
 One example of these operations is \emph{downsampling}:
-the contiguous value range for Scaled MinHash sketches allow deriving $\mathbf{SCALED}_{s'}(W)$ sketches for any $s' \gt s$ using only $\mathbf{SCALED}_{s}(W)$,
-$\mathbf{MIN}_n(W)$ and $\mathbf{MOD}_m(W)$ also support this operation,
-as long as $n' \lt n$ and $m'$ is a multiple of $m$.
+the contiguous value range for Scaled MinHash sketches allow deriving $\mathbf{SCALED}_{s'}(W)$ sketches for any $s' \ge s$ using only $\mathbf{SCALED}_{s}(W)$,
+MinHash and ModHash also support this operation,
+as long as $n' \le n$ and $m'$ is a multiple of $m$.
 
 Because Scaled MinHash sketches collect any value below a threshold this also guarantees that once a value is selected it is never discarded.
 This is useful in streaming contexts:

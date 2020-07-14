@@ -3,7 +3,7 @@ use std::io::{BufRead, BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use log::info;
+use log::{error, info};
 use rayon::prelude::*;
 use sourmash::signature::{Signature, SigsTrait};
 use sourmash::sketch::minhash::{max_hash_for_scaled, KmerMinHash};
@@ -43,7 +43,8 @@ fn search<P: AsRef<Path>>(
     threshold: f64,
     ksize: u8,
     scaled: usize,
-) -> Result<Vec<(String, String, f64)>, Box<dyn std::error::Error>> {
+    output: Option<P>,
+) -> Result<(), Box<dyn std::error::Error>> {
     info!("Loading queries");
 
     let querylist_file = BufReader::new(File::open(querylist)?);
@@ -96,7 +97,21 @@ fn search<P: AsRef<Path>>(
 
     let processed_sigs = AtomicUsize::new(0);
 
-    Ok(search_sigs
+    let (send, recv) = std::sync::mpsc::sync_channel(rayon::current_num_threads());
+
+    // Spawn a thread that is dedicated to printing to a buffered output
+    let out: Box<dyn Write + Send> = match output {
+        Some(path) => Box::new(BufWriter::new(File::create(path).unwrap())),
+        None => Box::new(std::io::stdout()),
+    };
+    let thrd = std::thread::spawn(move || {
+        let mut writer = BufWriter::new(out);
+        for (query, m, containment) in recv.into_iter() {
+            writeln!(&mut writer, "'{}','{}',{}", query, m, containment).unwrap();
+        }
+    });
+
+    let send = search_sigs
         .par_iter()
         .filter_map(|filename| {
             let i = processed_sigs.fetch_add(1, Ordering::SeqCst);
@@ -130,7 +145,17 @@ fn search<P: AsRef<Path>>(
             }
         })
         .flatten()
-        .collect())
+        .try_for_each_with(send, |s, m| s.send(m));
+
+    if let Err(e) = send {
+        error!("Unable to send internal data: {:?}", e);
+    }
+
+    if let Err(e) = thrd.join() {
+        eprintln!("Unable to join internal thread: {:?}", e);
+    }
+
+    Ok(())
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -138,22 +163,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let opts = Cli::from_args();
 
-    let matches = search(
+    search(
         opts.querylist,
         opts.siglist,
         opts.threshold,
         opts.ksize,
         opts.scaled,
+        opts.output,
     )?;
-
-    let mut out: Box<dyn Write> = match opts.output {
-        Some(path) => Box::new(BufWriter::new(File::create(path)?)),
-        None => Box::new(std::io::stdout()),
-    };
-
-    for m in matches {
-        writeln!(&mut out, "'{}','{}',{}", m.0, m.1, m.2)?;
-    }
 
     Ok(())
 }

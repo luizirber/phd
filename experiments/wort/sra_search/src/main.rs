@@ -106,6 +106,7 @@ fn search<P: AsRef<Path>>(
     };
     let thrd = std::thread::spawn(move || {
         let mut writer = BufWriter::new(out);
+        writeln!(&mut writer, "query,Run,containment").unwrap();
         for (query, m, containment) in recv.into_iter() {
             writeln!(&mut writer, "'{}','{}',{}", query, m, containment).unwrap();
         }
@@ -152,7 +153,7 @@ fn search<P: AsRef<Path>>(
     }
 
     if let Err(e) = thrd.join() {
-        eprintln!("Unable to join internal thread: {:?}", e);
+        error!("Unable to join internal thread: {:?}", e);
     }
 
     Ok(())

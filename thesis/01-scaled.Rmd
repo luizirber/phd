@@ -10,6 +10,13 @@ The {#rmd-basics} text after the chapter declaration will allow us to link throu
 
 ...
 
+<!--
+\todoin{
+- Note, can be narrow given the whole thesis introduction.
+- paragraph 1: what is the technical problem of interest? lightweight compositional queries? motivate briefly with some biology, maybe.
+- paragraph 2: motivate narrowing our focus to k-mer containment and minhash-based techniques. Will you consider dashing etc?
+}
+-->
 
 A data sketch is a representative proxy for the original data focused on queries for specific properties.
 It is also a probabilistic data structure since it uses hashing techniques to provide statistical guarantees on the precision of the answer for a query.
@@ -66,7 +73,7 @@ The containment is defined as the number of hashes from the MinHash $A$ present 
 divided by the size of $A$:
 $$C(A, B) = \frac{\vert \{\,h \in B \mid \forall h \in \mathbf{MIN}_n(W)\,\} \vert}{\vert \mathbf{MIN}_n(W) \vert}$$
 
-Since the Containment MinHash approach is not doing MinHash to MinHash comparisons,
+Since the Containment MinHash approach is not doing MinHash-to-MinHash comparisons,
 it also avoids needing to store a large set of hashes in order to keep the
 containment estimation within small error bounds (less than 1\%).
 
@@ -228,15 +235,52 @@ Other operations are adding and subtracting hash values from a Scaled MinHash sk
 allowing post-processing and filtering.
 Although possible for $\mathbf{MIN}_n(W)$,
 in practice this requires oversampling (using a larger $n$) to account for possibly having less than $n$ values after filtering.
+This is the approach taken by Finch [@bovee_finch:_2018],
+for example.
 
+<!--
+What is the difference with modulo hash (per Broder 1997)? Modulo is expensive vs less-than operator; convertible between minhash and modhash.
+address brad’s comment on f1000 paper: the existing modulo approach has no guarantees on equal-sized
+(or even equal-fraction as the manuscript claims elsewhere) sub-sampling
+
+Features of scaled:
+* subsampling to lower densities
+* streaming guarantees (never lose hash value - containment never decreases as you get more data)
+* add and subtract hash values (category, “operations directly on sketches”?)
+* abundance filter hash values (operations directly on sketches)
+* poisson statistics / random sequence foo
+  + “A value of 2000 means that we are 99.98% likely to choose one k-mer per 10kb window,
+    or to rephrase it, 9998 of 10000 windows of size 10kb will have at least one chosen k-mer in them.”
+ see [numbers from charcoal](https://github.com/dib-lab/charcoal/blob/master/stats/stats.ipynb).
+
+Could also alternatively phrase scaled as lossy compression, more so than minhash.
+
+-->
 
 ### Limitations
+
+A drawback of Scaled MinHash when compared to regular MinHash sketches is the size:
+the MinHash parameter $s$ sets an upper bound on the size of the sketch,
+independently of the size of the original data.
+Scaled MinHash sketches grow proportionally to the original data cardinality,
+and in the worst case can have up to $\frac{H}{s}$ items.
+
+Another limitation is loss of sensitivity to small datasets when using larger $s$ values.
+A biological example are viruses:
+at $s=1000$ many viruses are too small to consistently have a hashed value
+picked by the Scaled MinHash approach.
+
+
+
 
 \todoin{
 - increased size (compared with minhash, which is constant size)
 
 - detection threshold (viruses)
 }
+<!--
+- CTB: include poisson statistics and plot of how many windows are missed (from charcoal stats)
+-->
 
 ## Implementation
 
@@ -328,3 +372,12 @@ Instructions are available at https://github.com/luizirber/phd
 already -->
 
 ## Conclusion and Future Work
+
+\todoin{
+- CTB 2-3 paragraphs
+- our hashing approach is simple to implement, simple to analyze.
+- has some upsides - no need to reindex. summarize comparison with other techniques briefly.
+- Has some drawbacks, summarize briefly.
+- Building software ecosystem to allow practical application in many ways - gather, indices, etc. Discussed in following chapters.
+}
+

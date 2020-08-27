@@ -2,16 +2,14 @@
 
 \chaptermark {MHBT}
 
-## Abstract
-
 ## Introduction
 
-\todoin{
+<!-- TODO
  - Public genome databases
  - Exponential growth
  - Challenges in indexing, searching and updating the indices for collections of datasets
  - Methods for indexing genomic datasets
-}
+-->
 
 Searching for matches in large collection of datasets is challenging when hundreds of thousands of
 them are available,
@@ -19,10 +17,22 @@ especially if they are partitioned and the data is not all present at the same p
 or too large to even be stored in a single system.
 <!-- cite some methods, including SBT and Mantis -->
 
+<!-- 
+CTBQ: Additional points to raise: in-memory representation of sketches may be too big (!!),
+goal here is on disk storage/low minimum memory for "extremely large data" situation.
+Also/in addition, want ability to do incremental loading of things.
+Note we are not talking here about situations where the indices themselves are too big to download,
+could maybe include forward pointer to chp4.
+
+Note, in this chapter you could also include distinction in performance between SBT and LCA DB,
+to whit: large scaled works well with LCA (small DB, ~tolerable memory, load all at once, then quite fast)
+but low scaled may work (much) better with SBT.
+-->
+
 [@marchet_data_2019] classifies indexing strategies for querying large collections of
 sequencing datasets into $k$-mer aggregative methods and color aggregative methods.
 $k$-mer aggregative methods index the $k$-mer composition for each individual dataset,
-and then build structures for retrieving the datasets where query $k$-mers is present.
+and then build structures for retrieving the datasets where the query $k$-mers are present.
 Color aggregative methods index the full $k$-mer composition for all datasets,
 and then assign a color representing an intersection of datasets where a $k$-mer is present.
 This allows reduced space requirements,
@@ -37,6 +47,20 @@ while color aggregative methods tend to be more efficient for specific $k$-mer
 queries ("what datasets contain this query $k$-mer?").
 
 <!-- how to dive into hierarchical index and inverted index below? -->
+
+<!-- ctb mar 31
+
+CTBQ: Additional points to raise: in-memory representation of sketches may be
+too big (!!), goal here is on disk storage/low minimum memory for "extremely
+large data" situation. Also/in addition, want ability to do incremental loading
+of things. Note we are not talking here about situations where the indices
+themselves are too big to download, could maybe include forward pointer to chp4.
+
+Note, in this chapter you could also include distinction in performance between
+SBT and LCA DB, to whit: large scaled works well with LCA (small DB, ~tolerable
+memory, load all at once, then quite fast) but low scaled may work (much) better
+with SBT.
+-->
 
 ### Hierarchical index
 
@@ -82,16 +106,16 @@ containing a list of topics and in which page they are present.
 Information retrieval system use inverted index to find the occurrences of
 words in a text [@ziviani_compression_2000].
 
-In the signature collection indexing case,
+When indexing the $k$-mer decomposition of genomic datasets,
 the inverted index is a map of all hashes in the collection back to
-the signature from where they originated.
+the dataset from where they originated.
 Just as words can appear more than once in a text,
 hashes show up in more than one signature,
-so the inverted index maps a hash to a list of signatures IDs.
+so the inverted index maps a hash to a list of datasets.
 
 kraken has a similar index,
-but uses a taxonomic ID for each dataset.
-Datasets can share the same ID (taxon),
+but uses a taxonomic ID (taxon) for each dataset.
+Datasets can share the same ID,
 if they belong to the same taxon.
 Moreover,
 if a hash is present in more than one dataset
@@ -101,19 +125,34 @@ which leads to reduced memory usage.
 since more datasets are added to reference databases and the chance of a k-mer being present
 in multiple datasets increases.
 
-\todoin{
+Efficient storage of the list of signatures IDs can also be achieved via representation of the list as colors,
+where a color can represent one dataset or multiple datasets (if a hash is present in many of them).
+Mantis [@pandey_mantis:_2018] uses this hash to color mapping
+(and an auxiliary color table) to achieve reduced memory usage.
+
+## sourmash
+
+<!-- TODO
+- intro sourmash as a more featureful implementation of Scaled MinHash sketches
+- focused on user experience via CLI and Python API
+-->
+
+### Specialized indices for Scaled MinHash sketches
+<!-- TODO
 - mash screen has a similar index, but it is constructed on-the-fly using the
   distinct hashes in a sketch collection as keys,
   and the values are mapped to a hash occurrence counter in a query metagenome.
 
 - sourmash LCA index is the opposite: it stores the hashes, but allow
   reconstructing the original sketch collection.
-}
+-->
 
-Efficient storage of the list of signatures IDs can also be achieved via representation of the list as colors,
-where a color can represent one dataset or multiple datasets (if a hash is present in many of them).
-Mantis [@pandey_mantis:_2018] uses this hash to color mapping
-(and an auxiliary color table) to achieve reduced memory usage.
+<!--
+  CAMI 2 refseq, 141k signatures, scaled=2000
+  LCA: 18.3 GB
+  SBT: 524 MB
+    sig.name(): 5078 MB
+-->
 
 ### Converting between indices
 

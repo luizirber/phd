@@ -59,7 +59,7 @@ the initial prototype focused on single genome microbial datasets (excluding met
 The datasets were selected with a query to the Sequence Read Archive to retrieve enough metadata for processing (dataset ID, size and download location),
 but this metadadata is not stored in the signatures.
 This avoids synchronization problems when the metadata is updated in the original source,
-and users should check them for more information.
+guiding users to check the original source for more information.
 
 #### IMG
 
@@ -119,8 +119,9 @@ the external network connection was still shared between all nodes.
 
 This initial prototype only read a small part of the streaming dataset,
 since the original scientific goal was to identify novel datasets after comparing them to a reference database.
+<!-- TODO  intro syrah, connect to scaled
 Due to the random nature of shotgun sequencing
-<!-- TODO  intro syrah, connect to scaled -->
+-->
 This was also necessary because at this point the Scaled MinHash introduced in chapter 1 was not available yet,
 and experiments with `soursigs` led to many of the insights that led to the Scaled MinHash development.
 
@@ -150,9 +151,6 @@ but not as appropriate for a system that is frequently updated.
 <!-- how and why did soursigs evolve into wort? -->
 <!-- mirror structure from previous section, showing how things changed? -->
 
-<!--
-CTBQ: which limitation is being overcome? It's ok to repeat and be specific.
--->
 `wort` was created to fix some of the issues with the initial `soursigs` prototype
 and allow more computational systems to participate in the process,
 building an heterogeneous system that doesn't depend on similar resources being available for each worker.
@@ -164,12 +162,12 @@ The two major changes were:
   but are usually not available in academic clusters.
   Similarly, Singularity tends to be present in academic clusters,
   but is not as convenient in cloud infrastructures.
-  While containers are more convenient for distribution,
+  While containers make deployment easier and facilitate distribution,
   all the software dependencies are also available via bioconda [@gruning_bioconda_2018] and conda-forge.
 
 - Use a messaging queue for job submission that can be accessed by workers in any computational system.
 
-Another goal for `wort` is creating a basic API for common tasks that allow external interactions without needing knowledge about internal implementation.
+Another goal for `wort` is creating a basic API for common tasks that allow external interactions without needing knowledge about the internal implementation.
 Since the internal details are not exposed it allows refactoring and reimplementing the infrastructure with other technologies not used in the original version.
 In this sense,
 the original version is implemented in a more traditional (and centralized) approach,
@@ -181,7 +179,7 @@ and upload results to Amazon S3.
 knitr::include_graphics('figure/arch.png')
 ```
 
-<!-- drop the "a little centralization goes a long way" paper here -->
+<!-- TODO: drop the "a little centralization goes a long way" paper here? -->
 The coordination of the system is still centralized,
 but this new infrastructure allows workers to be executed in any system that has Docker or Singularity support,
 including most academic clusters and cloud providers,
@@ -204,6 +202,8 @@ refactoring the internal implementation while keeping all tests working allow im
 
 ## Results
 
+### Microbial single-genome datasets
+
 As of early June 2020,
 there are 1.2 million datasets in the SRA that fit the initial goal of
 calculating signatures for microbial genomes.
@@ -219,7 +219,7 @@ around 2.2% of the 16 PB of publicly-accessible data.
 Around 16 thousand datasets weren't processed correctly,
 due to missing data in the SRA or because they are too large for the time
 allocated for workers and didn't finish downloading in time.
-Excluding these 16k datasets,
+Excluding these 16,000 datasets,
 the signatures represent 332 TB of the original data,
 stored in 2.4 TB of signature files.
 
@@ -231,50 +231,199 @@ there are 3 Scaled MinHash sketches for each dataset (for $k={21,31,51}$),
 and each sketch is also tracking abundance for each hash,
 which doubles the storage requirements.
 
+### Datasets from metagenomic sources
+
 `wort` focuses on providing an API for triggering further processing,
 and additional logic for updating the signature collection was implemented as
-scripts accessing the exposed API.
-They only need access to the public API,
-and don't need to be running in the same machine as `wort`.
+scripts accessing this API.
+These scripts only need access to the public API,
+and can also to be running in any machine that has access to the `wort` HTTP API.
 As an example,
 an external script that downloads metadata for datasets recently added to the
-SRA is executed everyday for the last two years
+SRA is executed everyday for the last two years for the microbial subset.
 
+As long as no special processing is necessary for the datasets,
+other subsets of the SRA can be processed by creating similar scripts to submit SRA IDs for computation.
+One such subset are metagenomes,
+and a query for datasets from metagenomic sources (excluding amplicon, usually associated with 16S)
+in the SRA returns 569,475 datasets as of Aug 2020,
+with average size of 812 MB and maximum of 170 GB.
+Because most datasets are small and the machines running `wort` workers are very
+efficient for small datasets,
+processing the first 150 TB of data with the current infrastructure took 3 days,
+and after that longer datasets are typically processed at a rate of 2 TB/day.
+
+```{r wortMetagSizes, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="Metagenome dataset sizes"}
+knitr::include_graphics('figure/wortMetagSizes.png')
+```
+
+### Proof of concept: Searching for Metagenome-Assembled Genomes in the SRA
+
+448 thousand datasets from the metagenomic subset were processed from 237 TB of original sequencing data,
+totalling 2.1 TB of signatures.
+Building a sourmash index (either revindex or SBT) with this amount of data is
+prohibitive at the moment,
+since both indices load all the data in memory before writing the indices to storage.
+This is an implementation detail,
+and can be addressed in future versions of sourmash.
+
+In the same vein,
+executing sourmash operations over that many signatures is not an use case that was previously considered,
+so even operations over a list of signatures (and which don't strictly require indices)
+like `sourmash search` end up requiring too much memory when using hundreds of
+thousands of metagenome signatures.
+
+Nonetheless,
+since sourmash is implemented as a Rust core and a Python API/CLI it is possible to leverage the core
+features to prototype a large scale search method in Rust that can efficiently
+keep queries in memory and process batches of the metagenome signatures without
+needing to store them in memory first,
+loading on demand and releasing resources after they are queried.
+This approach also benefits from queries being effectively immutable,
+and so can be easily shared without data races by multiple processing threads.
+This sort of embarrassingly parallel work is a good fit for rayon,
+a Rust crate that implements a work-stealing scheduler for tasks and can
+parallelize tasks over many threads/CPU cores.
+
+An interesting class of queries for this approach are metagenome-assembled genomes (MAG).
+These are genomes derived from metagenomes by assembly of longer contigs from reads,
+followed by contig binning and evaluation of completeness and contamination of the bins.
+These MAGs sizes are usually in the range of hundreds of thousands to millions of basepairs,
+large enough for overcoming the Scaled MinHash sketches limitations when using a scaled of 1000.
+
+Large scaled MAG reconstruction in metagenomes is also a method to expand the number of known organisms,
+especially those that lack cultured representatives,
+like environmental microbial organisms.
+For example,
+[@tully_reconstruction_2018] recovered 2,631 draft MAGs from 234 metagenomic samples collected during the Tara Oceans expedition [@pesant_open_2015],
+with many from under-characterized taxonomic groups.
+These MAGs can be used as queries and searched against a collection of
+metagenomes to find additional sequencing data
+(for co-assembly and refinement)
+and improve the characterization of these organisms,
+including geographical distribution and pangenomics analysis.
+
+Executing the search took 11 hours to run,
+using less than 5GB of RAM and 24 threads.
+The machine used was a workstation with a AMD Ryzen 9 3900X 12-Core CPU running at 3.80 GHz,
+64 GB DDR4 2133 MHz of RAM and loading data from an external HDD enclosure connected via USB.
+If there is access to additional machines (in a cluster, for example)
+it is also possible to parallelize the search even further by splitting the metagenomes into groups,
+and running each group in a distinct machine.
+
+The search found 1,407 of the original 2,631 MAGs above 50% containment, in 2,938 metagenomes
+(after removing the Tara Oceans datasets from the results, since the MAGs were derived from them).
+The 50% threshold was chosen to account for sequencing errors and biological variability,
+since Scaled MinHash sketches use exact k-mer matching when calculating containment.
+
+These results can be used to check specific MAGs for further analysis:
+for example,
+the MAG identified as TOBG_NP-110 (Tara Ocean Binned Genome, North Pacific)
+was described in [@tully_reconstruction_2018] as an Archaeal organism from phylum Euryarchaeota,
+with a 70.3% completeness score and genome size of 1.24 Mbp,
+assembled in 39 contigs with a mean contig length of 31,750 bp.
+12 matches above 50% containment were found,
+with 5 of them coming from one specific SRA study,
+SRP044185.
+Samples for this study were collected from a column of water in a station in Manzanillo, Mexico.
+Another 3 matches come from study SRP003331,
+collected in the South Pacific ocean (in northern Chile).
+A third match,
+ERR3256923, also comes from the South Pacific.
+
+Table: (\#tab:mag-search) Results for MAG TOBG_NP-110, showing SRA sequencing runs and containment of the query in each of them.
+
+ SRA Run ID   Containment
+------------ -------------
+ SRR5868539     0.993755
+ SRR1509798     0.984387
+ SRR1509792     0.965652
+ SRR5868540     0.91491
+ SRR1509799     0.892272
+ SRR070081      0.850117
+ ERR3256923     0.805621
+ SRR070083      0.790008
+ SRR1509793     0.787666 
+ SRR304680      0.640906 
+ SRR070084      0.576893
+ SRR1509794     0.555816
+
+These results are available as a public git repo in https://github.com/luizirber/2020-07-22-mag-search/
+and include links to an interactive notebook that can be executed with Binder for easy exploration.
 
 ## Discussion
 
-<!--
-We set out to solve a problem...
+Making large collections of sequencing data searchable is an open problem,
+and approaches that work for smaller collections rarely scale well,
+even for current database sizes.
+New methods that take advantage of specific particularities of the query and
+desired answer can help bridge the gap between more general methods by allowing filtering large databases,
+resulting in more manageable subsets that can be used efficiently with current methods.
 
-We designed a system to take advantage of custom features of the task:
-asymmetric, etc.
+Scaled MinHash sketches allow calculating similarity and containment between
+datasets without the need to access the original datasets.
+Because only a fraction
+(controlled with the scaled parameter)
+of the original data need to be stored,
+they are good basic components in the implementation of systems that allow searching large collections of datasets.
 
-This system was centralized in the following way, but otherwise relied on independent workers.
+wort is a system that takes advantage of how Scaled MinHash sketches are
+computed to implement a distributed system where workers are independent of each
+other and can process data in an embarrassingly parallel manner.
+By using a centralized job queue that is accessible by workers running in
+heterogeneous systems (cloud, personal laptops, academic clusters) it allows
+horizontal scaling and participation by anyone that can share computational
+resources to accelerate data downloads from the original sequencing database.
 
-The system worked pretty well within its limitations. Processed XX YY ZZ etc etc.
+While planned as an exploration on how to organize such systems,
+wort has also successfully calculated over 3 million signatures from three
+major public databases: NCBI SRA, JGI IMG and NCBI assemblies (GenBank and
+RefSeq).
+Over 500 TB of sequencing data were processed,
+generating more than 5 TB of sourmash signatures and bringing new use cases and
+challenges for sourmash development,
+both operational as well as scientific.
 
-Challenges of centralization. Challenges of single database to
-access. Are there better solutions that rely on the central people to
-do things differently, e.g. allow docker containers running on their
-hardware? (Kind of what the cloud allows, sure. But you can make the
-point that no, not really, you're always limited by the centralized
-nature of the design.) So in chp4 we explore a different more
-decentralized approach.
+wort also provided the foundation for further questions about how to maintain
+such system working with limited resources,
+and in a way that is resilient to operational changes,
+transferable to other infrastructures,
+as well as allowing deploying it independently.
+These are not simple problems,
+and underlie most scientific tools exposed as web services,
+especially in bioinformatics.
+<!-- TODO: is there a paper that checks how many of these services go away over
+time? -->
+Cloud infrastructure,
+be it commercial like Amazon Web Services or academic/public like Jetstream,
+is one possible way to scale these systems,
+but the costs for maintaining a system running over time are often overlooked,
+and also out of reach for most scientific funding.
+Exploring solutions that allow resilience (to avoid the disappearance of the data from the network)
+while at the same time allowing faster performance when more resources (computational or financial)
+are available can lead to systems that are accessible for deployment and
+development for research groups without access to large grants.
 
-CTB: Attacks on this system by bad faith workers? Access restrictions on queue.
-
-Maybe reference "linda tuple space" in the paper somewhere?
-
-CTBQ: What points do you want to make here?
--->
+The MAG search prototype also serve to guide development of more robust commands to sourmash later.
+Being able to test solutions and explore the design space before committing to
+long term maintenance requires components that can be used either from a
+top-down perspective
+(scientific workflows coordinating different programs)
+or from a bottom-up approach
+(libraries that expose data types and functions that can be composed to create new programs).
+sourmash fits both approaches,
+using the command-line interface or the Python API for the top-down case,
+or the Python API and the Rust core
+(depending on the performance requirements)
+for the bottom-up case. 
+The MAG search can also be seen as a "reverse gather" operation:
+while gather focuses on decomposing a query metagenome into reference genomes from a collection,
+the MAG search uses a query genome (or large enough genomic dataset) to find metagenomes in a collection that contain the query.
+This operation allow use cases where a researcher wants to find a genome of interest in public databases,
+such as finding outbreaks of pathological organisms or,
+as in the Tara MAGs,
+mining for additional samples for an under-characterized organism.
 
 ## Conclusion
 
-<!--
-Distributed workers can be an efficient and effective solution but only insofar as the centralized database can scale to hand data to them fast enough.
 
-TODO:
-* pull text down from above into discussion as you think it makes sense
-* smoothen out additional text from CTB discussion, with extra points
-* move on to chp5
--->

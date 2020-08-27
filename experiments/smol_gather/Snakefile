@@ -27,6 +27,25 @@ rule download_reads:
       ftp://ftp.sra.ebi.ac.uk/vol1/fastq/SRR606/SRR606249/SRR606249_{wildcards.i}.fastq.gz
   """
 
+### Download mash simulated data (from screen paper)
+#   https://mash.readthedocs.io/en/latest/data.html#data-files
+rule download_simulated_reads:
+  output: "data/mash/art.fastq.gz"
+  shell: "wget -qO {output[0]} https://obj.umiacs.umd.edu/mash/screen/art.fastq.gz"
+
+rule download_tables:
+  output:
+    "data/mash/sra_meta_{mol}_95idy.tsv.gz",
+    "data/mash/sra_meta_{mol}_80idy_3x.tsv.gz"
+  shell: """
+    wget -qO {output[0]} https://obj.umiacs.umd.edu/mash/screen/tables/sra_meta_{wildcards.mol}_95idy.tsv.gz
+    wget -qO {output[1]} https://obj.umiacs.umd.edu/mash/screen/tables/sra_meta_{wildcards.mol}_80idy_3x.tsv.gz
+  """
+
+rule download_fig5_tsv:
+  output: "data/mash/fig5.tsv"
+  shell: "wget -qO {output} https://obj.umiacs.umd.edu/mash/screen/fig5/fig5.tsv"
+
 ### Download precomputed databases (might not need them)
 
 rule download_mash_screen_db:

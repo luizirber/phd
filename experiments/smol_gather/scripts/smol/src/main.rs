@@ -117,7 +117,7 @@ fn find_best_contained<'a, T: Gatherable>(
     let mut best_match = None;
 
     for sig in collection {
-        let containment = sig.containment(&query);
+        let containment = query.containment(&sig);
         if containment > best_containment {
             best_containment = containment;
             best_match = Some(sig);

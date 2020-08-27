@@ -10,7 +10,7 @@ They serve as reference for derived databases too,
 with RefSeq being an example:
 it is derived from GenBank,
 but with stricter quality controls and without a submission process,
-since it processes data submitted and accepted in GenBank.
+since it processes data submitted and accepted in GenBank first.
 On top of being responsible for quality control,
 NCBI also serves as the archival and canonical data source,
 which leads to a common pattern in bioinformatics services:
@@ -67,8 +67,6 @@ new power concentrations by different actors.
 Bitcoin is another example of this dynamic:
 one of the initial ideas was reducing the dependency on central banks and governments for currency and financial transactions,
 but the large computational requirements for proof-of-work mining concentrated most of the network in a small number of very large mining-farms.
-
-<!-- TODO: maybe this fits better in the discussion?
 At the same time,
 totally decentralized systems are usually less efficient,
 especially if consensus is necessary.
@@ -76,11 +74,26 @@ This is reflected in the enormous energy impact of proof-of-work in Bitcoin,
 equivalent to the yearly energy consumption of whole countries [@digiconomist_bitcoin_nodate].
 
 Adding some centralized coordination can improve the overall performance of a system [tsitsiklis_power_2011]
-without creating a bottleneck like in fully-centralized system,
--->
+without creating a bottleneck like in fully-centralized system.
+At the same time,
+some tasks are better executed by centralization,
+especially if they are activities deemed necessary but with high cost and not as valued by traditional market rules.
+Quality assurance and validation can be automated but still require human effort,
+but while everyone wants high-quality data,
+maintaining and validating these datasets is costly and frequently underfunded.
+Government and private foundations have resources to fund such approaches,
+but generating metrics to justify funding is challenging if there the results of the work are diffuse in the system.
 
+### Technological solutions for decentralizing systems
 
-### Content addressable storage
+#### Content addressable storage
+
+Content addressable storage uses the content of the data to generate an address to a dataset.
+This is distinct from location-addressed storage,
+where the data is store and a location is recorded for later retrieval of the data.
+The same data can be stored in two separate locations,
+but since the location defines the identity of the data,
+one copy doesn't see the other as a potential replica.
 
 One example of content-addressable storage is git.
 Every commit in git has a hash attached to it,
@@ -89,7 +102,7 @@ calculated based on the content plus some extra metadata
 creating a git object.
 <!-- mention other types of git objects? -->
 The hash is used to index and access the git objects in the repository history,
-and they are stored usually stored in the `.git/storage` directory.
+and they are usually stored in the `.git/storage` directory.
 The commit history is a directed acyclic graph (DAG) of these git objects.
 Since the parent commit hash is also included in the calculation this
 creates a structure where changing (or tampering) with a commit changes all the
@@ -110,7 +123,7 @@ Every git repository is self-contained
 and git provides operations to synchronize between repositories,
 but there is no networking layer for sharing automatically the data with other repositories:
 pushing and pulling changes are operations using a single remote,
-ant they need to be explicitly configured beforehand.
+and they need to be explicitly configured beforehand.
 
 git was originally created for the Linux kernel development,
 where change proposals are usually communicated through mailing lists,
@@ -120,23 +133,20 @@ GitHub is a centralized service for hosting repositories,
 and the majority of users don't synchronize changes with each other directly,
 opting to push and pull changes from GitHub instead.
 
-### Distributed Hash Tables (DHT)
+#### Distributed Hash Tables (DHT)
 
-DHTs originated from research in peer-to-peer (P2P) systems,
-<!-- TODO: cite dump -->
+DHTs originated from research in peer-to-peer (P2P) systems
+[@ratnasamy_scalable_2001] [@stoica_chord_2001] [@zhao_tapestry_2004] [@goos_pastry_2001], 
 with the goal of allowing queries for which node had a specific piece of data.
 It exposes a simple key-value store,
-but each node of the network is also responsible for storing a small chunk of
-the store,
+but each node of the network is also responsible for storing a small chunk of the store,
 with data available in multiple nodes for additional resiliency.
 In order to maintain an operational DHT,
 protocols for distributing the data between nodes,
-and dealing with network partitions (leading to node disconnection) are
-required.
+and dealing with network partitions (leading to node disconnection) are required.
 
 In the early 2000s P2P networks started using DHTs in large scale for distributing content,
 with BitTorrent as a representative example.
-<!-- TODO: cite? -->
 A torrent is a file containing metadata for any content being shared in the network,
 and includes information about size, blocks (pieces of the data) and checksums
 to verify that the data was transmitted without errors.
@@ -152,7 +162,7 @@ instead of storing peer information in a server,
 the torrent file was added to the DHT,
 and peers could announce (again at the DHT) which blocks of the torrent they have.
 
-### The Interplanetary File System (IPFS)
+#### The Interplanetary File System (IPFS)
 
 One drawback of using the torrent files as the unit of data is that creating
 another torrent file with the same content means that the two torrent files can't
@@ -176,19 +186,6 @@ like Bittorrent.
 
 ## Methods
 
-<!-- previous TODO:
-- The SBT index is amenable to content addressable approaches.
-  Leaf nodes are effectively immutable (since original datasets don't change),
-  and adding new leaf nodes to an existing tree doesn't change the other leaf
-  nodes. Some internal nodes are changed, but most also stay the same.
-
-- Allow operations to continue working if internal node data is not available
-  (with a performance hit, but doesn't fail)
-
-- Leaf-only SBT, basically the original MH collection with a tree structure,
-  but without internal node data. Allow reconstructing the full SBT.
--->
-
 ### The SBT index is amenable to content addressable approaches
 
 The SBT index introduced in chapter 2 has structural features that make it a
@@ -200,8 +197,9 @@ Signatures can also change if other parameters for calculating their sketches ar
 but having a default set of "good enough" parameters like the ones defined in `wort`
 allows general queries that can later be refined once a candidate subset of the database is found.
 
-<!-- TODO figure from recomb 2017 paper showing insertion changes for current method -->
-
+```{r sbtInsert, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="Inserting a dataset in an SBT"}
+knitr::include_graphics('figure/sbtmh_insert.png')
+```
 Insertion of new signatures to an SBT trigger changes in the path from new leaf
 location to root of the tree,
 but all other nodes are left unchanged.
@@ -222,7 +220,7 @@ and also prioritizes storage and distribution of a minimal amount of data,
 since the internal nodes content is redundant information (for allowing faster queries)
 and are potentially mutable (on new signature insertions to the index),
 
-While internal nodes are bad candidates for long-term archival,
+While internal nodes are bad candidates for long-term archival (given their size),
 they are still good candidates for short-term caching for performance,
 either locally or loaded from the network.
 A trade-off is making internal nodes available in the network,
@@ -259,11 +257,14 @@ and returns a byte buffer ready for consumption.
 
 ### sourmash operations using a decentralized index
 
-sourmash version 3.3.0 was used for the experiments.
-All experiments are running a `sourmash gather` command on an SBT index with 5914 signatures.
+In order to evaluate sourmash operations using the IPFS backend,
+six experiments were performed exploring different aspects:
+a full SBT index versus a leaf-only SBT index,
+with machines reflecting different levels of performance and network access.
+sourmash version 3.3.0 was used for the experiments,
+and all experiments are running a `sourmash gather` command on an SBT index with 5914 signatures.
 These signatures are a subset of the prepared GenBank database that sourmash provides,
-while the query signature is an iHMP metagenome.
-<!-- TODO: more info here, obvs) -->
+while the query signature is an iHMP metagenome [@integrative_hmp_ihmp_research_network_consortium_integrative_2014].
 
 The three machines used for the experiments reflect different levels of performance:
 
@@ -298,7 +299,7 @@ The three machines used for the experiments reflect different levels of performa
 Experiment 1) uses a Zipped SBT index,
 with a storage using a Zip file for holding the tree structure and all the nodes compressed data.
 This will be the default format in \emph{sourmash} 4,
-and is more convenient than the previous hidden dir storage.
+and is more convenient than the previous hidden directory storage.
 The goal of this experiment is to define a baseline to compare both each individual machine performance and the decentralizing approaches described in previous sections.
 
 Experiments 2) and 3) use the same SBT index as 1), but with an IPFS backend as storage.

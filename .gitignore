@@ -2,6 +2,7 @@
 thesis/_bookdown*
 thesis/thesis.log
 thesis/thesis.tdo
+thesis/bib/*.bib
 proposal/Proposal.*
 .snakemake
 **/.ipynb_checkpoints/

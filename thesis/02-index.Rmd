@@ -73,7 +73,7 @@ Instead of calculating the union of all Bloom Filters in the collection
 it defines a tree structure where the original Bloom Filters are leaves,
 and internal nodes are the union of all the Bloom Filters in their subtrees.
 Searching is based on a breadth-first search,
-with pruning when no matches are found at an internal level.
+with subtrees being pruned from the search when no matches are found at an internal level.
 Bloofi can also be partitioned in a network,
 with network nodes containing a subtree of the original tree and only being
 accessed if the search requires it.
@@ -99,12 +99,11 @@ http://www.texample.net/tikz/examples/merge-sort-recursion-tree/
 
 <!-- 'color- aggregative methods in (marchet 2019)' -->
 
-An inverted index is a mapping from words in a text back to its location inside
-the text.
-An example is the index in the back of a book,
-containing a list of topics and in which page they are present.
-Information retrieval system use inverted index to find the occurrences of
+An inverted index is a mapping from words in a document back to its location inside the document,
+and is commonly used in information retrieval system to find the occurrences of
 words in a text [@ziviani_compression_2000].
+Another example is the index in the back of a book,
+containing a list of topics and in which page they are present.
 
 When indexing the $k$-mer decomposition of genomic datasets,
 the inverted index is a map of all hashes in the collection back to
@@ -113,7 +112,7 @@ Just as words can appear more than once in a text,
 hashes show up in more than one signature,
 so the inverted index maps a hash to a list of datasets.
 
-kraken has a similar index,
+kraken [@wood_kraken:_2014] has a similar index,
 but uses a taxonomic ID (taxon) for each dataset.
 Datasets can share the same ID,
 if they belong to the same taxon.
@@ -130,14 +129,52 @@ where a color can represent one dataset or multiple datasets (if a hash is prese
 Mantis [@pandey_mantis:_2018] uses this hash to color mapping
 (and an auxiliary color table) to achieve reduced memory usage.
 
-## sourmash
-
-<!-- TODO
-- intro sourmash as a more featureful implementation of Scaled MinHash sketches
-- focused on user experience via CLI and Python API
--->
-
 ### Specialized indices for Scaled MinHash sketches
+
+sourmash [@titus_brown_sourmash:_2016] is a software for large-scale sequence data comparisons based on MinHash sketches.
+Initially implementing operations for computing,
+comparing and plotting distance matrices for MinHash sketches,
+in version 2 [@pierce_large-scale_2019] it introduced Scaled MinHash sketches
+and indices for this new sketch format.
+Indices support a common set of operations
+(insertion, search and returning all signatures are the main ones),
+allowing them to be used interchangeably depending on the use case,
+performance requirements and computational resources available.
+
+The simplest index is the `LinearIndex`,
+a list of signatures.
+Search operations are executed sequentially,
+and insertions append new signatures to the end of the list.
+Internally sourmash uses LinearIndex as the default index for lists of
+signatures provided in the command-line.
+
+#### MinHash Bloom Tree
+
+The MinHash Bloom Tree (`MHBT`) is a variation of the Sequence Bloom Tree (SBT)
+that uses Scaled MinHash sketches as leaf nodes instead of Bloom Filters as in
+the SBT. 
+The search operation in SBTs is defined as a breadth-first search starting in the root of the tree,
+using a threshold of the original k-mers in the query to decide when to prune the search.
+MHBTs use a query Scaled MinHash sketch instead,
+but keep the same search approach.
+The threshold of a query $Q$ approach introduced in [@solomon_fast_2016] is
+equivalent to the containment 
+$$C(Q, S) = \frac{\vert Q \cap S \vert }{\vert S \vert}$$
+described in [@broder_resemblance_1997],
+where $S$ is a Scaled MinHash sketch.
+For internal nodes $n$ (which are Bloom Filters) the containment of the query Scaled MinHash sketch $Q$ is
+$$C(Q, n) = \frac{\vert \{\,h \in n \mid \forall h \in Q\,\} \vert}{\vert Q \vert}$$.
+This is the same containment score defined in [@koslicki_improving_2019] for the Containment MinHash to Bloom Filter comparison.
+
+MHBT support both containment and similarity queries.
+For internal nodes the containment is used as a upper-bound of the similarity
+$$J(Q, n) = \frac{\vert Q \cap n \vert }{\vert Q \cup n \vert}$$
+since $\vert Q \cup n \vert \ge \vert Q \vert$.
+When a leaf node is reached then the similarity $J(Q, S)$ is calculated for the
+Scaled MinHash sketch $S$.
+
+#### LCA index
+
 <!-- TODO
 - mash screen has a similar index, but it is constructed on-the-fly using the
   distinct hashes in a sketch collection as keys,
@@ -154,6 +191,23 @@ Mantis [@pandey_mantis:_2018] uses this hash to color mapping
     sig.name(): 5078 MB
 -->
 
+## Results
+
+### Index construction and updating
+
+<!-- TODO
+- resource usage (time, cpu, mem)
+-->
+
+### Efficient similarity and containment queries
+
+<!-- TODO
+- discuss COST (cost of single thread)
+- sourmash indices benefit from more data. Inverted index
+-->
+
+## Discussion
+
 ### Converting between indices
 
 Both MHBT and LCA index can recover the original sketch collection.
@@ -165,35 +219,12 @@ This allows trade-offs between storage efficiency,
 distribution,
 updating and query performance.
 
-## Results
-
-### Efficient similarity and containment queries
-
-#### Index construction and updating
-
-\todoin{
-
-- 
-- resource usage (time, cpu, mem)
-
-}
-
-#### Querying
-
-\todoin{
-
-- discuss COST (cost of single thread)
-- sourmash indices benefit from more data. Inverted index
-}
-
-
-## Discussion
 
 ### Limitations
 
 ### Future directions
 
-\todoin{
+<!--
 - Other indices
   * Fundamentally a scaled minhash is a subset of the k-mer composition of a
   dataset, so any index from https://www.biorxiv.org/content/10.1101/866756v1
@@ -204,7 +235,7 @@ updating and query performance.
 
 - sourmash is currently single threaded, but that's an implementation detail.
   Parallel queries are possible (in a shared read-only index)
-}
+-->
 
 ### Summary/Conclusion
 
@@ -212,11 +243,11 @@ updating and query performance.
 
 ### Implementation
 
-sourmash is implemented in Rust for the core performance-critical functionality,
-and exposes a C API that is wrapped in Python for higher-level features.
-This includes a Python API for interactive use,
-as well as a command-line interface for more traditional bioinformatics workflows.
-
-
+Focused on the user experience via the command-line interface and Python API,
+it implemented the core data structures in C++ for efficiency and exposed it to
+Python with an extension (written in Cython).
+The Python API allows fast prototyping of new ideas and interoperability with
+the larger scientific Python ecosystem,
+as well as access to better tooling for testing and software distribution.
 
 ### Experiments

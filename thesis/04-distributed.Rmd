@@ -331,22 +331,36 @@ collected in the South Pacific ocean (in northern Chile).
 A third match,
 ERR3256923, also comes from the South Pacific.
 
-Table: (\#tab:mag-search) Results for MAG TOBG_NP-110, showing SRA sequencing runs and containment of the query in each of them.
+For validation of the SRA search results,
+the original data for each SRA run was downloaded and the metagenome reads mapped back to the MAG using minimap2
+[@li_minimap2_2018].
+New sourmash signatures for the mapped reads were also calculated and checked
+for containment against the original MAG signature.
+The containment of the MAG in the reads match the containment estimated with Scaled MinHash sketches,
+showing they are good proxies for this kind of search.
+The results are in table \@ref(tab:mag-search).
 
- SRA Run ID   Containment
------------- -------------
- SRR5868539     0.993755
- SRR1509798     0.984387
- SRR1509792     0.965652
- SRR5868540     0.91491
- SRR1509799     0.892272
- SRR070081      0.850117
- ERR3256923     0.805621
- SRR070083      0.790008
- SRR1509793     0.787666 
- SRR304680      0.640906 
- SRR070084      0.576893
- SRR1509794     0.555816
+Table: (\#tab:mag-search) Results for MAG TOBG_NP-110 (1,238,250 bp),
+showing SRA sequencing runs IDs,
+containment of the MAG query,
+containment of the MAG in the recovered reads,
+missed basepairs and percentage of missed basepairs,
+average coverage of the reads in MAG and total reads mapped from the metagenome to the MAG.
+
+| SRA Run ID   |   Containment search |   Containment reads |   Missed bp |   %bp missed |   Coverage |   Reads mapped |
+|:-------------|---------------------:|--------------------:|------------:|-------------:|-----------:|---------------:|
+| SRR5868539   |                 0.99 |                0.99 |       1,475 |        0.001 |      19.85 |        131,640 |
+| SRR1509798   |                 0.98 |                0.98 |       7,771 |        0.006 |      18.52 |        101,441 |
+| SRR1509792   |                 0.97 |                0.97 |      26,247 |        0.021 |       9.80 |         63,653 |
+| SRR5868540   |                 0.91 |                0.91 |      52,686 |        0.043 |       4.27 |         24,983 |
+| SRR1509799   |                 0.89 |                0.89 |      71,116 |        0.057 |       3.88 |         20,014 |
+| SRR070081    |                 0.85 |                0.85 |     109,714 |        0.089 |       3.00 |          9,755 |
+| ERR3256923   |                 0.81 |                0.81 |     117,748 |        0.095 |       4.08 |         32,130 |
+| SRR070083    |                 0.79 |                0.79 |     202,037 |        0.163 |       2.04 |          6,115 |
+| SRR1509793   |                 0.79 |                0.79 |     143,021 |        0.116 |       3.47 |         22,495 |
+| SRR304680    |                 0.64 |                0.64 |     359,648 |        0.290 |       1.35 |          4,181 |
+| SRR070084    |                 0.58 |                0.58 |     450,167 |        0.364 |       1.16 |          3,403 |
+| SRR1509794   |                 0.56 |                0.56 |     427,213 |        0.345 |       1.60 |          9,827 |
 
 These results are available as a public git repo in https://github.com/luizirber/2020-07-22-mag-search/
 and include links to an interactive notebook that can be executed with Binder for easy exploration.

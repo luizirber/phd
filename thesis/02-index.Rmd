@@ -167,11 +167,19 @@ $$C(Q, n) = \frac{\vert \{\,h \in n \mid \forall h \in Q\,\} \vert}{\vert Q \ver
 This is the same containment score defined in [@koslicki_improving_2019] for the Containment MinHash to Bloom Filter comparison.
 
 MHBT support both containment and similarity queries.
-For internal nodes the containment is used as a upper-bound of the similarity
-$$J(Q, n) = \frac{\vert Q \cap n \vert }{\vert Q \cup n \vert}$$
+For internal nodes the containment $C(Q,n)$ is used as an upper-bound of the similarity $J(Q, n)$:
+\begin{equation}
+\begin{split}
+  C(Q, n) &\ge J(Q, n) \\
+  \frac{\vert Q \cap n \vert }{\vert Q \vert} &\ge \frac{\vert Q \cap n \vert }{\vert Q \cup n \vert}
+\end{split}
+\end{equation}
 since $\vert Q \cup n \vert \ge \vert Q \vert$.
-When a leaf node is reached then the similarity $J(Q, S)$ is calculated for the
-Scaled MinHash sketch $S$.
+When a leaf node is reached then the similarity $J(Q, S)$ is calculated for the Scaled MinHash sketch $S$
+and declared a match if it is above the threshold $t$.
+Because the upper-bound is being used,
+this can lead to extra nodes being checked,
+but it simplifies implementation and provides better correctness guarantees.
 
 #### LCA index
 
@@ -208,21 +216,43 @@ Scaled MinHash sketch $S$.
 
 ## Discussion
 
+### Choosing an index
+
+The Linear index is appropriate for operations that must check every signature,
+since they don't have any indexing overhead.
+An example is building a distance matrix for comparing signatures all-against-all,
+but search operations greatly benefit from extra indexing structure.
+The MHBT index and $k$-mer aggregative methods in general are appropriate for threshold queries,
+like searching for similarity or containment of a query in a collection of datasets.
+The LCA index and color aggregative methods are appropriate for querying which datasets contain a specific query $k$-mer.
+
+As implemented in sourmash,
+the MHBT index is more memory efficient because the data can stay in external memory and only the tree structure for the index
+need to be loaded in memory,
+and data for the datasets and internal nodes can be loaded and unloaded on demand.
+The LCA index must be loaded in memory before it can be used,
+but once it is loaded it is faster,
+especially for operations that need to summarize $k$-mer assignments or required repeated searches.
+
+Due to these characteristics,
+and if memory usage is not a concern,
+then the LCA index is the most appropriate choice since it's faster.
+The MHBT index is currently recommended for smaller scaled values ($s\le2000$)
+or when there are a large number (hundreds of thousands or more) of datasets to index.
+It is also better behaved in situations were memory is limited.
+
 ### Converting between indices
 
 Both MHBT and LCA index can recover the original sketch collection.
 In the MHBT case,
 it outputs all the leaf nodes.
 In the LCA index,
-it reconstruct each sketch from the hash -> dataset ID mapping.
+it reconstruct each sketch from the hash-to-dataset-ID mapping.
 This allows trade-offs between storage efficiency,
 distribution,
 updating and query performance.
 
-
-### Limitations
-
-### Future directions
+### Limitations and future directions
 
 <!--
 - Other indices
@@ -237,7 +267,9 @@ updating and query performance.
   Parallel queries are possible (in a shared read-only index)
 -->
 
-### Summary/Conclusion
+## Conclusion
+
+
 
 ## Methods
 

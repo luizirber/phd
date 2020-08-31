@@ -21,6 +21,7 @@ rule build_thesis:
                    rmd=('index', '00-intro', '01-scaled', '02-index',
                         '03-gather', '04-distributed', '05-decentralized',
                         '06-conclusion', '07-appendix', '98-colophon', '99-references')),
+    templates="thesis/template.tex",
     bibliography='thesis/bib/thesis.bib'
   shell: """
       cd thesis

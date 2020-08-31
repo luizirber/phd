@@ -3,7 +3,7 @@
 title: "Decentralizing indices for genomic data"
 author: "Luiz Carlos Irber Junior"
 year: "2020"
-month: "March"
+month: "September"
 program: "COMPUTER SCIENCE"
 uccampus: "DAVIS"
 report: "DISSERTATION"

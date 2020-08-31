@@ -6,3 +6,4 @@ thesis/bib/*.bib
 proposal/Proposal.*
 .snakemake
 **/.ipynb_checkpoints/
+**/*.csv

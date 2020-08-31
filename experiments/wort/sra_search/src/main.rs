@@ -121,7 +121,8 @@ fn search<P: AsRef<Path>>(
             }
 
             let mut search_mh = None;
-            let search_sig = &Signature::from_path(&filename).unwrap()[0];
+            let search_sig = &Signature::from_path(&filename)
+                .unwrap_or_else(|_| panic!("Error processing {:?}", filename))[0];
             if let Some(sketch) = search_sig.select_sketch(&template) {
                 if let Sketch::MinHash(mh) = sketch {
                     search_mh = Some(mh);

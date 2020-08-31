@@ -1,20 +1,27 @@
 from pathlib import Path
 from itertools import chain
 
+rule all:
+  input:
+    "outputs/minimap/summary.txt",
+    "outputs/minimap/overlap/summary.txt",
+    "outputs/minimap/depth/summary.txt"
+
 rule download_sra_dataset:
   output:
      "outputs/01_RAW_FASTQ/{sra_id}.fastq.gz",
   conda: "env/sra.yml"
   shell: '''
-    fastq-dump --gzip \
-               --skip-technical  \
+    fastq-dump --skip-technical  \
                --readids \
                --read-filter pass \
                --dumpbase \
                --split-spot \
                --clip \
                -Z \
-               {wildcards.sra_id} > {output}
+               {wildcards.sra_id} | \
+               perl -ne 's/\.([12]) /\/$1 /; print $_' | \
+               gzip > {output}
   '''
 
 rule download_TOBG:

@@ -7,3 +7,4 @@ proposal/Proposal.*
 .snakemake
 **/.ipynb_checkpoints/
 **/*.csv
+**/outputs/**

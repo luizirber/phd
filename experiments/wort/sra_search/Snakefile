@@ -3,9 +3,9 @@ from itertools import chain
 
 rule all:
   input:
-    "outputs/minimap/summary.txt",
-    "outputs/minimap/overlap/summary.txt",
-    "outputs/minimap/depth/summary.txt"
+    "outputs/minimap/summary.csv",
+    "outputs/minimap/overlap/summary.csv",
+    "outputs/minimap/depth/summary.csv"
 
 rule download_sra_dataset:
   output:
@@ -82,7 +82,7 @@ rule samtools_depth:
   """
 
 rule summarize_mapping:
-  output: "outputs/minimap/summary.txt"
+  output: "outputs/minimap/summary.csv"
   input:
     expand("outputs/minimap/{sra_id}.stats",
            sra_id=("SRR1509798", "SRR1509792", "SRR1509799",
@@ -129,7 +129,7 @@ rule sig_overlaps:
   shell: "sourmash sig overlap -k 31 {input.mag} {input.metagenome} > {output}"
 
 rule summarize_sigs:
-  output: "outputs/minimap/overlap/summary.txt"
+  output: "outputs/minimap/overlap/summary.csv"
   input:
     expand("outputs/minimap/overlap/{sra_id}.txt",
            sra_id=("SRR1509798", "SRR1509792", "SRR1509799",
@@ -156,7 +156,7 @@ rule summarize_sigs:
     pd.DataFrame(runs).T.to_csv(output[0])
 
 rule summarize_depth:
-  output: "outputs/minimap/depth/summary.txt"
+  output: "outputs/minimap/depth/summary.csv"
   input:
     expand("outputs/minimap/depth/{sra_id}.txt",
            sra_id=("SRR1509798", "SRR1509792", "SRR1509799",

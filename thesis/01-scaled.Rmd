@@ -8,8 +8,6 @@ The {#rmd-basics} text after the chapter declaration will allow us to link throu
 
 ## Introduction
 
-...
-
 <!-- TODO
 - Note, can be narrow given the whole thesis introduction.
 - paragraph 1: what is the technical problem of interest? lightweight compositional queries? motivate briefly with some biology, maybe.

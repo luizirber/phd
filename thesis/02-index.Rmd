@@ -11,10 +11,13 @@
  - Methods for indexing genomic datasets
 -->
 
-Searching for matches in large collection of datasets is challenging when hundreds of thousands of
-them are available,
+Searching for matches in large collection of datasets is challenging when hundreds of thousands of them are available,
 especially if they are partitioned and the data is not all present at the same place,
 or too large to even be stored in a single system.
+
+Efficient methods for sequencing datasets use exact $k$-mer matching instead of relying on sequence alignment,
+but sensitivity is reduced since they can't deal with sequencing errors and biological variation as alignment-based methods can.
+
 <!-- cite some methods, including SBT and Mantis -->
 
 <!-- 
@@ -42,7 +45,7 @@ but needs extra structures for storing what datasets each color represents.
 Both strategies allow the same class of queries,
 but with different trade-offs and optimizations:
 $k$-mer aggregative methods favor threshold queries
-("what datasets contain more 60% of the query $k$-mers?")
+("what datasets contain more than 60% of the query $k$-mers?")
 while color aggregative methods tend to be more efficient for specific $k$-mer
 queries ("what datasets contain this query $k$-mer?").
 
@@ -66,7 +69,7 @@ with SBT.
 
 <!-- 'k-mer aggregative methods in (marchet 2019)' -->
 
-Bloofi [@crainiceanu_bloofi:_2015] is a hierarchical index structure that
+Bloofi [@crainiceanu_bloofi:_2015] is an example of an hierarchical index structure that
 extends the Bloom Filter basic query to collections of Bloom Filters.
 Instead of calculating the union of all Bloom Filters in the collection
 (which would allow answering if an element is present in any of them)
@@ -78,17 +81,18 @@ Bloofi can also be partitioned in a network,
 with network nodes containing a subtree of the original tree and only being
 accessed if the search requires it.
 
-The Sequence Bloom Tree [@solomon_fast_2016] adapts Bloofi for genomic contexts,
-rephrasing the problem as experiment discovery:
+For genomic contexts,
+an hierarchical index is a $k$-mer aggregative method,
+with datasets represented by the $k$-mer composition of the dataset and stored in a data structure that allows querying for $k$-mer presence.
+The Sequence Bloom Tree [@solomon_fast_2016] adapts Bloofi for genomics and rephrasing the search problem as experiment discovery:
 given a query sequence $Q$ and a threshold $\theta$,
 which experiments contain at least $\theta$ of the original query $Q$?
 Experiments are encoded in Bloom Filters containing the $k$-mer composition of transcriptomes,
 and queries are transcripts.
 
-Further developments focused on clustering similar datasets to prune search
+Further developments of the SBT approach focused on clustering similar datasets to prune search
 early [@sun_allsome_2017] and developing more efficient representations for the
-internal nodes [@solomon_improved_2017] [@harris_improved_2018] to use less
-storage space and memory.
+internal nodes [@solomon_improved_2017] [@harris_improved_2018] to use less storage space and memory.
 
 <!--
 example figure for SBT:
@@ -106,35 +110,35 @@ Another example is the index in the back of a book,
 containing a list of topics and in which page they are present.
 
 When indexing the $k$-mer decomposition of genomic datasets,
-the inverted index is a map of all hashes in the collection back to
+the inverted index is a color aggregative method,
+representable with a map of all hashed $k$-mers in the $k$-mer composition of the datasets in the collection back to
 the dataset from where they originated.
 Just as words can appear more than once in a text,
-hashes show up in more than one signature,
-so the inverted index maps a hash to a list of datasets.
+hashes can show up in more than one dataset,
+and so the inverted index maps a hash to a list of datasets.
 
-kraken [@wood_kraken:_2014] has a similar index,
-but uses a taxonomic ID (taxon) for each dataset.
-Datasets can share the same ID,
-if they belong to the same taxon.
-Moreover,
-if a hash is present in more than one dataset
-kraken also reduces the list of taxons to the lowest common ancestor (LCA),
-which leads to reduced memory usage.
+kraken [@wood_kraken:_2014] has a special case of this structure,
+using a taxonomic ID (taxon) for representing dataset identity.
+Datasets share the same ID if they belong to the same taxon,
+and if a hash is present in more than one dataset
+kraken reduces the list of taxons to the lowest common ancestor (LCA),
+which lowers memory requirements for storing the index.
 [@nasko_refseq_2018] explores how this LCA approach leads to decreased precision and sensitivity over time,
-since more datasets are added to reference databases and the chance of a k-mer being present
-in multiple datasets increases.
+since more datasets are frequently added to reference databases and the chance of a k-mer being present in multiple datasets increases.
 
 Efficient storage of the list of signatures IDs can also be achieved via representation of the list as colors,
-where a color can represent one dataset or multiple datasets (if a hash is present in many of them).
-Mantis [@pandey_mantis:_2018] uses this hash to color mapping
-(and an auxiliary color table) to achieve reduced memory usage.
+where a color can represent one or more datasets (if a hash is present in many of them).
+Mantis [@pandey_mantis:_2018] uses this hash-to-color mapping
+(and an auxiliary color table) to achieve reduced memory usage,
+as well as Counting Quotient Filters [@pandey_general-purpose_2017] to store the data,
+an alternative to Bloom Filters that also support counting and resizing.
 
 ### Specialized indices for Scaled MinHash sketches
 
 sourmash [@titus_brown_sourmash:_2016] is a software for large-scale sequence data comparisons based on MinHash sketches.
 Initially implementing operations for computing,
 comparing and plotting distance matrices for MinHash sketches,
-in version 2 [@pierce_large-scale_2019] it introduced Scaled MinHash sketches
+version 2 [@pierce_large-scale_2019] introduced Scaled MinHash sketches
 and indices for this new sketch format.
 Indices support a common set of operations
 (insertion, search and returning all signatures are the main ones),
@@ -183,13 +187,36 @@ but it simplifies implementation and provides better correctness guarantees.
 
 #### LCA index
 
-<!-- TODO
-- mash screen has a similar index, but it is constructed on-the-fly using the
-  distinct hashes in a sketch collection as keys,
-  and the values are mapped to a hash occurrence counter in a query metagenome.
+The LCA index in sourmash is an inverted index that stores a mapping from hashes
+in a collection of signatures to a list of IDs for signatures containing the hash.
+Despite the name,
+the list of signature IDs is not collapsed to the lowest common ancestor (as in kraken),
+with the LCA calculated as needed by downstream methods using the taxonomy information
+that is also stored separately in the LCA index.
 
-- sourmash LCA index is the opposite: it stores the hashes, but allow
-  reconstructing the original sketch collection.
+The mapping from hashes to signature IDs in the LCA index is an implicit representation of the original signatures used to build the index,
+and so returning the signatures is implemented by rebuilding the original signatures on-the-fly. 
+Search in an LCA index matches the $k$-mers in the query to the list of signatures IDs containing them,
+using a counter data structure to sort results by number of hashes per signature ID.
+The rebuilt signatures are then returned as matches based on the signature ID,
+with containment or similarity to the query calculated against the rebuild signatures.
+
+mash screen [@ondov_mash_2019] has a similar index,
+but it is constructed on-the-fly using the distinct hashes in a sketch collection as keys,
+and values are counters initialized set to zero.
+As the query is processed,
+matching hashes have their counts incremented,
+and after all hashes in the query is processed then all the sketches in the collection are
+checked in other again to quantify the containment/similarity of each sketch in the query.
+The LCA index uses the opposite approach,
+opting to reconstruct the sketches on-the-fly.
+
+## Results
+
+### Index construction and updating
+
+<!-- TODO
+- resource usage (time, cpu, mem)
 -->
 
 <!--
@@ -199,13 +226,6 @@ but it simplifies implementation and provides better correctness guarantees.
     sig.name(): 5078 MB
 -->
 
-## Results
-
-### Index construction and updating
-
-<!-- TODO
-- resource usage (time, cpu, mem)
--->
 
 ### Efficient similarity and containment queries
 
@@ -219,18 +239,18 @@ but it simplifies implementation and provides better correctness guarantees.
 ### Choosing an index
 
 The Linear index is appropriate for operations that must check every signature,
-since they don't have any indexing overhead.
-An example is building a distance matrix for comparing signatures all-against-all,
-but search operations greatly benefit from extra indexing structure.
-The MHBT index and $k$-mer aggregative methods in general are appropriate for threshold queries,
+since it doesn't have any indexing overhead.
+An example is building a distance matrix for comparing signatures all-against-all.
+Search operations greatly benefit from extra indexing structure.
+The MHBT index and $k$-mer aggregative methods in general are appropriate for searches with query thresholds,
 like searching for similarity or containment of a query in a collection of datasets.
 The LCA index and color aggregative methods are appropriate for querying which datasets contain a specific query $k$-mer.
 
 As implemented in sourmash,
 the MHBT index is more memory efficient because the data can stay in external memory and only the tree structure for the index
-need to be loaded in memory,
+need to be loaded in main memory,
 and data for the datasets and internal nodes can be loaded and unloaded on demand.
-The LCA index must be loaded in memory before it can be used,
+The LCA index must be loaded in main memory before it can be used,
 but once it is loaded it is faster,
 especially for operations that need to summarize $k$-mer assignments or required repeated searches.
 
@@ -252,6 +272,9 @@ This allows trade-offs between storage efficiency,
 distribution,
 updating and query performance.
 
+Because both are able to return the original sketch collection,
+it is also possible to convert one index into the other.
+
 ### Limitations and future directions
 
 <!--
@@ -265,6 +288,9 @@ updating and query performance.
 
 - sourmash is currently single threaded, but that's an implementation detail.
   Parallel queries are possible (in a shared read-only index)
+
+- The LCA index can be implemented in external memory by using memory-mapped files,
+avoiding the need to load it all in memory.
 -->
 
 ## Conclusion

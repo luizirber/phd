@@ -12,7 +12,7 @@ the requirements for having indexes with sizes of the same magnitude of the orig
 For example,
 NCBI provides BLAST search as a service on their website,
 but it uses specially prepared databases with a subset of the data stored in GenBank or similar databases.
-While NCBI does offer a similar service for each dataset in the SRA (sequence read archive),
+While NCBI does offer a similar service for each dataset in the SRA (Sequence Read Archive),
 there is no service to search across every dataset at once because of its size,
 which is on the order of petabytes of data and growing exponentially.
 
@@ -28,7 +28,7 @@ k-mers can be hashed and stored in integer datatypes,
 allowing for fast comparison and many opportunities for compression.
 Solomon and Kingsford's solution for the problem,
 the Sequence Bloom Tree,
-use these properties to define and store the k-mer composition of a dataset in a Bloom Filter [@bloom_spacetime_1970],
+uses these properties to define and store the k-mer composition of a dataset in a Bloom Filter [@bloom_spacetime_1970],
 a probabilistic data structure that allows insertion and checking if a value might be present.
 Bloom Filters can be tuned to reach a predefined false positive bound,
 trading off memory for accuracy.
@@ -50,17 +50,18 @@ The downside is the false positive increase,
 especially if both original filters are already reaching saturation.
 To account for that,
 Bloom Filters in a SBT need to be initialized with a size proportional to the cardinality of the combined datasets,
-which can be quite large for big collections.
+which can be quite large for large collections.
 Since Bloom Filters only generate false positives,
 and not false negatives,
-in the worst case there is degradation of the computational performance,
-(because more internal nodes need to be checked),
+in the worst case there is degradation of the computational performance because more internal nodes need to be checked,
 but the final results are unchanged.
 
 While Bloom Filters can be used to calculate similarity of dataset,
-there are data structures more efficient probabilistic data structures for this use case.
-A MinHash sketch [@broder_resemblance_1997] is a representation of a dataset that allows estimating the Jaccard similarity of the original dataset without requiring the original data to be available.
-The Jaccard similarity of two datasets is the size of the intersection of elements in both datasets divided by the size of the union of elements in both datasets.
+there are more efficient probabilistic data structures for this use case.
+A MinHash sketch [@broder_resemblance_1997] is a representation of a dataset allowing
+estimation of the Jaccard similarity between dataset without requiring the original data to be available.
+The Jaccard similarity of two datasets is the size of the intersection of elements in both datasets divided by the size of the union of elements in both datasets:
+$J(A, B)=\frac{\vert A \cup B \vert}{\vert A \cap B \vert}$.
 The MinHash sketch uses a subset of the original data as a proxy for the data -- in this case,
 hashing each element and taking the smallest values for each dataset.
 Broder defines two approaches for taking the smallest values:
@@ -74,7 +75,8 @@ The ModHash approach also allows calculating the containment of two datasets,
 how much of a dataset is present in another.
 It is defined as the size of the intersection divided by the size of the dataset,
 and so is asymmetrical
-(unlike the Jaccard similarity).
+(unlike the Jaccard similarity):
+$C(A, B)=\frac{\vert A \cup B \vert}{\vert A \vert}$.
 While the MinHash can also calculate containment,
 if the datasets are of distinct cardinalities the errors accumulate quickly.
 This is relevant for biological use cases,
@@ -117,7 +119,7 @@ and a new approach for containment estimation using Scaled MinHash sketches.
 
 **Chapter 2** describes indexing methods for sketches,
 focusing on a hierarchical approach optimized for storage access and low memory consumption (`MHBT`)
-and a fast inverted index optimized for fast retrieval but with larger memory consumption (`Revindex`).
+and a fast inverted index optimized for fast retrieval but with larger memory consumption (`LCA index`).
 It also introduces `sourmash`,
 a software implementing these indices and optimized Scaled MinHash sketches,
 as well as extended functionality for iterative and exploratory biological data analysis.
@@ -128,7 +130,7 @@ Comparisons with current taxonomic profiling methods using community-developed b
 assessments show that `gather` paired with taxonomic information outperforms other approaches,
 using a fraction of the computational resources and allowing analysis in platforms accessible to regular users (like laptops).
 
-**Chapter 4** describes wort,
+**Chapter 4** describes `wort`,
 a framework for distributed signature calculation,
 including discussions about performance and cost trade-offs for sketching public genomic databases,
 as well as distributed systems architectures allowing large scale processing of petabytes of data.

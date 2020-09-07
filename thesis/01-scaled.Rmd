@@ -120,7 +120,7 @@ because adding new sketches to the collection of references might introduce new 
 For large scale projects like reanalysis of all the SRA metagenomes this
 requirement means continuous storage or re-download of many petabytes of data.
 
-## Scaled MinHash
+## Scaled MinHash {#scaled-minhash}
 
 The Scaled MinHash is a mix of MinHash and ModHash.
 From the former it keeps the smallest elements,
@@ -131,7 +131,7 @@ $$\mathbf{SCALED}_s(W) = \{\,w \leq \frac{H}{s} \mid \forall w \in W\,\}$$,
 where $H$ is the largest possible value in the domain of $h(x)$ and
 $\frac{H}{s}$ is the \emph{maximum hash} value in the Scaled MinHash.
 
-Given an uniform hash function and $s=m$,
+Given an uniform hash function $h$ and $s=m$,
 the cardinalities of $\mathbf{SCALED}_s(W)$ and $\mathbf{MOD}_m(W)$ converge for large $\vert W \vert$.
 The main difference is the range of possible values in the hash space,
 since the Scaled MinHash range is contiguous and the ModHash range is not.

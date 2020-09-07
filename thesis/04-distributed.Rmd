@@ -2,6 +2,15 @@
 
 \chaptermark {wort}
 
+```{=latex}
+\begin{epigraphs}
+\qitem{You can have a second computer once you've shown you know how to use the first one.}%
+      {Paul Barham}
+\qitem{Workers of the world, unite!}%
+      {Flora Tristan}
+\end{epigraphs}
+```
+
 ## Introduction
 
 Signature calculation in sourmash is a low memory and streaming process,

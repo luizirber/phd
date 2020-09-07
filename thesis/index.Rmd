@@ -17,8 +17,15 @@ abstract: |
 acknowledgments: |
   "Na! Parents. Tio Elói e tia Ângela. Taqueria Davis."
 dedication: |
-  "*One thing to remember is to talk to the animals. If you do, they will talk back to you. But if you don’t talk to them, they won’t talk back to you, then you won’t understand. And when you don’t understand, you will fear, and when you fear, you will destroy the animals, and if you destroy the animals, you will destroy yourself*"    
-  (Chief Dan George, Tseil-Waututh Nation, North Vancouver)"
+  "*Another flaw in the human character is that everybody wants to build and nobody wants to do maintenance.*"
+  (Kurt Vonnegut)
+
+  "*The aim of science is not to open the door to infinite wisdom, but to set a limit to infinite error.*"
+  (Bertolt Brecht)
+
+  "*About ten years ago some computer scientists came by and said they heard we have some really cool problems. They showed that the problems are NP-complete and went away!*"
+  (Joseph Felsenstein)
+
 # End of UCD thesis fields
 knit: "bookdown::render_book"
 site: bookdown::bookdown_site

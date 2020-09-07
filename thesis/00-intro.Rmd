@@ -2,6 +2,10 @@
 
 \chaptermark{Introduction}
 
+```{=latex}
+\epigraph {To be whole is to be part; true voyage is return. -- Ursula K. Le Guin}
+```
+
 Genome sequencing generates data at increasing rates with lower costs than before,
 and the amount of data available for analysis requires new methods for storing,
 retrieving and processing it.

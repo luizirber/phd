@@ -99,7 +99,7 @@ example figure for SBT:
 http://www.texample.net/tikz/examples/merge-sort-recursion-tree/
 -->
 
-### Inverted index
+### Inverted index {#inverted-index}
 
 <!-- 'color- aggregative methods in (marchet 2019)' -->
 

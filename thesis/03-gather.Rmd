@@ -211,16 +211,25 @@ with 91.8 genomes present on each sample on average.
 Each sample is 5 GB in size,
 and both short-read (Illumina) and long-read (PacBio) sequencing data is available.
 
-
+<!--
 ```{r gatherCAMImgTable, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="100%", auto_pdf=TRUE, fig.cap="CAMI II Mouse Gut table"}
 knitr::include_graphics('figure/cami_ii_mg_table.png')
 ```
+-->
 
-<!-- TODO: reproduce fig 6 in CAMI tutorial preprint -->
-
-```{r gatherCAMImgSpider, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="100%", auto_pdf=TRUE, fig.cap="CAMI II Mouse Gut spider plot"}
-knitr::include_graphics('figure/cami_ii_mg_recall_precision.pdf')
+```{r gatherCAMImgSpider, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="75%", auto_pdf=TRUE, fig.cap='(ref:cami2caption)', fig.show="hold", fig.align="center"}
+knitr::include_graphics(c('figure/spider_plot_relative.pdf', 'figure/ranks_by_tool.pdf', 'figure/scores.pdf'))
 ```
+
+(ref:cami2caption) Update fig. 6 from [@meyer_tutorial_2020] including `sourmash`.
+Assessing profiling results on the CAMI II mouse gut data set.
+**a** Comparison per taxonomic rank of methods in terms of completeness, purity (1% filtered), and L1 norm.
+**b** Performance per method at all major taxonomic ranks, with the shaded bands showing the standard deviation of a metric.
+In **a** and **b**, completeness, purity, and L1 norm error range between 0 and 1.
+The L1 norm error is normalized to this range and is also known as Bray-Curtis distance.
+The higher the completeness and purity, and the lower the L1 norm, the better the profiling performance.
+**c** Methods rankings and scores obtained for the different metrics over all samples and taxonomic ranks.
+For score calculation, all metrics were weighted equally.
 
 The CAMI 2 RefSeq snapshot for reference genomes doesn't include viruses;
 this benefits `sourmash` because viral _Scaled MinHash_ sketches are usually not well supported for containment estimation,

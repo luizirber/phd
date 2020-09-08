@@ -121,6 +121,8 @@ and from binning,
 which aims to cluster reads or sequences into bins,
 possibly representing unknown organisms.
 
+<!--- TODO: bring back later, CAMI 2 is more interesting and enough for discussing results?
+
 #### CAMI 1 challenges
 
 CAMI 1 [@sczyrba_critical_2017] prepared three challenge datasets based on genome sequences from
@@ -140,23 +142,27 @@ including species with strain-level diversity,
 presence of viruses, plasmids and other circular elements,
 and genomes covering distinct evolutionary distances,
 with the goal of measuring how these characteristics impact the performance of each method.
+-->
 
 <!-- Urgent TODO: medium and high datasets!  -->
 
 <!-- TODO: comment results from CAMI 1 low -->
 
-```{r gatherCAMIlowTable, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="CAMI I Low table"}
+<!--
+```{r gatherCAMIlowTable, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="100%", auto_pdf=TRUE, fig.cap="CAMI I Low table"}
 knitr::include_graphics('figure/cami_i_low_table.png')
 ```
 
-```{r gatherCAMIlowSpider, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="CAMI I Low spider plot"}
+```{r gatherCAMIlowSpider, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="100%", auto_pdf=TRUE, fig.cap="CAMI I Low spider plot"}
 knitr::include_graphics('figure/cami_i_low_recall_precision.png')
 ```
+-->
 
 <!-- TODO
 - low and medium datasets have viruses, which are not in sourmash indices
 -->
 
+<!--
 The CAMI 1 challenge happened in 2015 and results were published in 2017.
 Since then more tools were developed and improved,
 as well as reference databases grew in size and diversity.
@@ -164,6 +170,8 @@ Even so,
 it is still a good benchmark because gold standards are available,
 but reproducing the running environment used by the original tools is challenging,
 even with all the focus on reproducibility by the organizers and community.
+
+-->
 
 #### CAMI 2 mouse gut metagenome dataset
 
@@ -203,22 +211,24 @@ with 91.8 genomes present on each sample on average.
 Each sample is 5 GB in size,
 and both short-read (Illumina) and long-read (PacBio) sequencing data is available.
 
-```{r gatherCAMImgTable, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="CAMI II Mouse Gut table"}
+
+```{r gatherCAMImgTable, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="100%", auto_pdf=TRUE, fig.cap="CAMI II Mouse Gut table"}
 knitr::include_graphics('figure/cami_ii_mg_table.png')
 ```
 
-<!-- TODO: Fig 6 in CAMI tutorial preprint -->
+<!-- TODO: reproduce fig 6 in CAMI tutorial preprint -->
 
-```{r gatherCAMImgSpider, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="CAMI II Mouse Gut spider plot"}
-knitr::include_graphics('figure/cami_ii_mg_recall_precision.png')
+```{r gatherCAMImgSpider, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="100%", auto_pdf=TRUE, fig.cap="CAMI II Mouse Gut spider plot"}
+knitr::include_graphics('figure/cami_ii_mg_recall_precision.pdf')
 ```
 
-<!-- TODO
-CAMI 2 refseq database also doesn't have viruses...
--->
+The CAMI 2 RefSeq snapshot for reference genomes doesn't include viruses;
+this benefits `sourmash` because viral _Scaled MinHash_ sketches are usually not well supported for containment estimation,
+since viral sequences require small scaled values to have enough hashes to be reliable.
 
 ## Discussion
 
+`gather` is a new method for decomposing datasets 
 <!-- TODO
 cmash and mash screen can do `gather` too,
 but still require the original data available.
@@ -295,11 +305,11 @@ genomes assembled from reads binned and clustered from metagenomes.
    $M \leftarrow \emptyset$\;
    $Q' \leftarrow Q$\;
    \Loop {
-       $best = \FindBestContainment(Q', C, T)$\;
-       \If{$best = \emptyset$ }{
+       $(best, M) \leftarrow \FindBestContainment(Q', C, T)$\;
+       \If{$M = \emptyset$ }{
            break\;
        }
-       $\AppendToMatches(M, best)$\;
+       $\AppendToMatches(M)$\;
        $Q' \leftarrow \Remove(M, Q')$\;
    }
    \KwRet{matches}
@@ -315,18 +325,18 @@ genomes assembled from reads binned and clustered from metagenomes.
   \Input{query $Q$}
   \Input{a list $C$ of reference datasets}
   \Input{a containment threshold $T$}
-  \Output{the match $m$ for $m \in C$ with best containment in $Q$, or $\emptyset$ if no match above threshold}
+  \Output{the containment $b$ and the match $m$ for $m \in C$ with best containment $b$ in $Q$, or $\emptyset$ if no match above threshold}
   \BlankLine
-  $best\_containment \leftarrow T$\;
+  $b \leftarrow T$\;
   $m \leftarrow \emptyset$\;
   \For{$c \in C$}{
      $containment \leftarrow \containment(c,Q)$\;
-     \If{$containment \ge best\_containment$ }{
-       $best\_containment \leftarrow containment$\;
+     \If{$containment \ge b$ }{
+       $b \leftarrow containment$\;
        $m \leftarrow c$\;
      }
   }
-  \KwRet{$m$}
+  \KwRet{$(b, m)$}
   \caption{a \emph{FindBestContainment} implementation for a list}
   \label{alg:list}
 \end{algorithm}
@@ -339,7 +349,7 @@ genomes assembled from reads binned and clustered from metagenomes.
 This ABC declares methods that any index in `sourmash` has to implement,
 but each index is allowed to implement it in the most efficient or performant way:
 
-  1. For `Linear` indices, the `FindBestContainment` operation is implemented as a linear scan over the list of signatures (as in Algorithm \@ref(alg:list));
+  1. For `Linear` indices, the `FindBestContainment` operation is implemented as a linear scan over the list of signatures (Algorithm \@ref(alg:list));
 
   2. For `MHBT` indices, `FindBestContainment` is implemented as a depth-first search that tracks the best containment found,
      and prunes the search if it the current estimated containment in an internal node is lower than the current best containment.
@@ -397,5 +407,5 @@ The analysis is contained in a Jupyter Notebook,
 and can be executed in any place where it is supported,
 including in a local installation or using Binder,
 a service that deploy a live Jupyter environment in cloud instances.
-Instructions are available at https://github.com/luizirber/phd
+Instructions are available at https://github.com/luizirber/2020-cami
 <!-- TODO: replace with zenodo archival DOI -->

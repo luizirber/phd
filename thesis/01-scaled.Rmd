@@ -18,7 +18,7 @@ A data sketch is a representative proxy for the original data focused on queries
 It is also a probabilistic data structure since it uses hashing techniques to provide statistical guarantees on the precision of the answer for a query.
 This allows a memory/accuracy trade-off:
 using more memory leads to more accurate results,
-but in memory-constrained situations it still bound results to an expected error rate.
+but in memory-constrained situations it still bounds results to an expected error rate.
 
 ### MinHash sketch: similarity and containment
 
@@ -127,7 +127,7 @@ From the former it keeps the smallest elements,
 and from the latter it adopts the dynamic size to allow containment estimation.
 Instead of taking $0 \mod m$ elements like $\mathbf{MOD}_m(W)$,
 a Scaled MinHash uses a parameter $s$ to select a subset of $W$:
-$$\mathbf{SCALED}_s(W) = \{\,w \leq \frac{H}{s} \mid \forall w \in W\,\}$$,
+$$\mathbf{SCALED}_s(W) = \{\,w \leq \frac{H}{s} \mid \forall w \in W\,\}$$
 where $H$ is the largest possible value in the domain of $h(x)$ and
 $\frac{H}{s}$ is the \emph{maximum hash} value in the Scaled MinHash.
 
@@ -208,7 +208,7 @@ saving storage space and allowing scaling analysis to thousands of datasets.
 Most of these operations are also possible with MinHash and ModHash,
 with caveats.
 One example of these operations is \emph{downsampling}:
-the contiguous value range for Scaled MinHash sketches allow deriving $\mathbf{SCALED}_{s'}(W)$ sketches for any $s' \ge s$ using only $\mathbf{SCALED}_{s}(W)$,
+the contiguous value range for Scaled MinHash sketches allow deriving $\mathbf{SCALED}_{s'}(W)$ sketches for any $s' \ge s$ using only $\mathbf{SCALED}_{s}(W)$.
 MinHash and ModHash also support this operation,
 as long as $n' \le n$ and $m'$ is a multiple of $m$.
 

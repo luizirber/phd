@@ -167,10 +167,10 @@ $$C(Q, S) = \frac{\vert Q \cap S \vert }{\vert S \vert}$$
 described in [@broder_resemblance_1997],
 where $S$ is a Scaled MinHash sketch.
 For internal nodes $n$ (which are Bloom Filters) the containment of the query Scaled MinHash sketch $Q$ is
-$$C(Q, n) = \frac{\vert \{\,h \in n \mid \forall h \in Q\,\} \vert}{\vert Q \vert}$$.
+$$C(Q, n) = \frac{\vert \{\,h \in n \mid \forall h \in Q\,\} \vert}{\vert Q \vert}$$
 This is the same containment score defined in [@koslicki_improving_2019] for the Containment MinHash to Bloom Filter comparison.
 
-MHBT support both containment and similarity queries.
+MHBTs support both containment and similarity queries.
 For internal nodes the containment $C(Q,n)$ is used as an upper-bound of the similarity $J(Q, n)$:
 \begin{equation}
 \begin{split}
@@ -191,7 +191,7 @@ The LCA index in sourmash is an inverted index that stores a mapping from hashes
 in a collection of signatures to a list of IDs for signatures containing the hash.
 Despite the name,
 the list of signature IDs is not collapsed to the lowest common ancestor (as in kraken),
-with the LCA calculated as needed by downstream methods using the taxonomy information
+the LCA calculated as needed by downstream methods using the taxonomy information
 that is also stored separately in the LCA index.
 
 The mapping from hashes to signature IDs in the LCA index is an implicit representation of the original signatures used to build the index,
@@ -199,7 +199,7 @@ and so returning the signatures is implemented by rebuilding the original signat
 Search in an LCA index matches the $k$-mers in the query to the list of signatures IDs containing them,
 using a counter data structure to sort results by number of hashes per signature ID.
 The rebuilt signatures are then returned as matches based on the signature ID,
-with containment or similarity to the query calculated against the rebuild signatures.
+with containment or similarity to the query calculated against the rebuilt signatures.
 
 mash screen [@ondov_mash_2019] has a similar index,
 but it is constructed on-the-fly using the distinct hashes in a sketch collection as keys,
@@ -257,9 +257,10 @@ especially for operations that need to summarize $k$-mer assignments or required
 Due to these characteristics,
 and if memory usage is not a concern,
 then the LCA index is the most appropriate choice since it's faster.
-The MHBT index is currently recommended for smaller scaled values ($s\le2000$)
+The MHBT index is currently recommended for situations where memory is
+limited, such as with smaller scaled values ($s\le2000$)
+that increase the size of signatures,
 or when there are a large number (hundreds of thousands or more) of datasets to index.
-It is also better behaved in situations were memory is limited.
 
 ### Converting between indices
 

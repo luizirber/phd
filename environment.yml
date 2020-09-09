@@ -5,7 +5,7 @@ channels:
   - defaults
 dependencies:
   - python=3.7
-  - snakemake-minimal=5.12
+  - snakemake-minimal=5.23
   - pandas=1.0.3
   - tabulate
   - matplotlib-base

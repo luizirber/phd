@@ -1,4 +1,4 @@
-name: CI
+name: Build PDF with bookdown
 
 on: [push]
 
@@ -11,20 +11,22 @@ jobs:
     - uses: actions/checkout@v1
     - name: install xelatex
       run: sudo apt install -y texlive-xetex texlive-science
-    - name: Update conda
-      run: conda update -q conda
-    - name: Install conda dependencies
-      run: conda env create --force --file environment.yml
+    - uses: goanpeca/setup-miniconda@v1
+      with:
+        python-version: 3.7
+        mamba-version: "*"
+        channels: conda-forge,bioconda,defaults
+        channel-priority: true
+        activate-environment: thesis
+        environment-file: environment.yml
     - name: Install aggiedown in R environment
+      shell: bash -l {0}
       run: |
-          export PATH="/usr/share/miniconda/bin:$PATH"
-          source activate thesis
-          snakemake -j 1 --use-conda install_deps
+          snakemake -j 1 --use-conda --conda-frontend mamba install_deps
     - name: Run pipeline
+      shell: bash -l {0}
       run: |
-          export PATH="/usr/share/miniconda/bin:$PATH"
-          source activate thesis
-          snakemake -j 1 --use-conda
+          snakemake -j 1 --use-conda --conda-frontend mamba
     - name: upload PDF to GH artifacts
       uses: actions/upload-artifact@v1
       with:

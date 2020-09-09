@@ -25,7 +25,7 @@ or coupled with unknown organisms clustered from metagenomes [@milanese_microbia
     [@wood_kraken:_2014] or variable $k$ and assigning multiple taxons per sequence,
     with an option to reduce it further to the LCA [@kim_centrifuge_2016].
 
-Once each sequence (from raw reads or assembled contigs) have a taxonomic assignment,
+Once each sequence (from raw reads or assembled contigs) has a taxonomic assignment,
 these methods resolve the final identity and abundance for each member of the community by summarizing the assignments to a specific taxonomic level.
 
 ### Decomposition of queries with gather
@@ -35,7 +35,7 @@ Instead of using taxonomic assignments at the sequence level,
 a top-down approach <!-- TODO ... -->
 
 
-`gather` is an example of such top-down approach:
+`gather` is an example of such a top-down approach:
 starting from the $k$-mer composition of the query,
 it iteratively finds a match in a collection of datasets with the largest _containment_ of the query (most elements in common),
 and create a new query by _removing elements_ in the match from the original query.
@@ -78,7 +78,7 @@ manipulate and share.
 _Scaled MinHash_ sketches can be stored in any data structure for representing the $k$-mer composition $M$ of a dataset [@marchet_data_2019],
 and as a subset of $M$ they can also be indexed by approaches for the complete $k$-mer composition.
 `sourmash` defines the MinHash Bloom Tree (_MHBT_) index,
-a $k$-mer aggregative method with explicit representation of datasets based on hierarchical indices and an specialization of the Sequence Bloom Tree [@solomon_fast_2016],
+a $k$-mer aggregative method with explicit representation of datasets based on hierarchical indices and a specialization of the Sequence Bloom Tree [@solomon_fast_2016],
 as well as the _LCA_ index,
 a color-aggregative method with implicit representation of the datasets based on inverted indices.
 

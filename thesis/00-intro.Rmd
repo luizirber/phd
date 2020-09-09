@@ -21,13 +21,13 @@ there is no service to search across every dataset at once because of its size,
 which is on the order of petabytes of data and growing exponentially.
 
 Approaches for indexing large collections of data instead focus on narrowing the problem that BLAST solves with tradeoffs in precision and accuracy.
-The experiment discovery problem [@solomon_fast_2016],
+The experiment discovery problem [@solomon_fast_2016]
 is phrased in terms of finding an experiment in a collection that shares content with a query up to or over a certain threshold.
 The content is defined as the k-mer composition of the datasets and query,
 where presence/absence of each k-mer in the query is checked,
 instead of performing local alignment like BLAST does.
 While this lowers the ability to deal with important biological features like variations,
-the exact nature of the k-mer comparisons has many computational benefits:
+the exact nature of k-mer comparisons has a substantial computational benefit:
 k-mers can be hashed and stored in integer datatypes,
 allowing for fast comparison and many opportunities for compression.
 Solomon and Kingsford's solution for the problem,
@@ -100,8 +100,8 @@ or exact k-mer assignments to taxons [@wood_kraken:_2014].
 These methods have many trade-offs in precision and sensitivity,
 number of reference genomes in their databases and computational resource required.
 The community composition problem can be compared to the experiment discovery problem:
-while the latter focus on computing the **similarity** of a query to other experiments,
-the former focus on computing the **containment** of organisms
+while the latter focuses on computing the **similarity** of a query to other experiments,
+the former focuses on computing the **containment** of organisms
 (represented as genomes in a reference database)
 in the metagenome sample query.
 
@@ -110,7 +110,7 @@ working with this data deluge is a significant challenge in most computational s
 Even keeping up with new submissions requires substantial network bandwidth to be able to download the data,
 let alone the computational resources to process the data into formats more amenable for specific analysis.
 At the same time,
-there is increasing pressure to the infrastructure for both storing and transferring the data in these public databases,
+there is increasing pressure on the infrastructure for both storing and transferring the data in these public databases,
 and system architectures that allow distributing the computational workload and decentralizing the storage and transfer of these resources
 are essential for maintaining and expanding scientific research.
 
@@ -119,7 +119,8 @@ are essential for maintaining and expanding scientific research.
 The rest of this dissertation is organized as follows:
 
 **Chapter 1** introduces containment queries for genomic data analysis,
-and a new approach for containment estimation using Scaled MinHash sketches.
+and a new approach for containment estimation using Scaled MinHash sketches,
+a modification of the ModHash approach.
 
 **Chapter 2** describes indexing methods for sketches,
 focusing on a hierarchical approach optimized for storage access and low memory consumption (`MHBT`)

@@ -121,11 +121,17 @@ and from binning,
 which aims to cluster reads or sequences into bins,
 possibly representing unknown organisms.
 
-<!--- TODO: bring back later, CAMI 2 is more interesting and enough for discussing results?
+The first set of CAMI challenges happened in 2015 and results were published in 2017.
+Since then more tools were developed and improved,
+as well as reference databases growing in size and diversity.
+Reproducing the running environment used by the original tools is challenging,
+even with all the focus on reproducibility by the organizers and community.
 
-#### CAMI 1 challenges
+<!--- TODO: bring back later, CAMI II is more interesting and enough for discussing results?
 
-CAMI 1 [@sczyrba_critical_2017] prepared three challenge datasets based on genome sequences from
+#### The first set of CAMI challenges
+
+The initial CAMI challenges [@sczyrba_critical_2017] included three datasets based on genome sequences from
 689 bacterial and archaeal isolates (cultured organisms) and 598 sequences derived from plasmids,
 viruses and other circular elements.
 Each challenge dataset simulates 150-bp paired-end reads with Illumina HighSeq error profiles,
@@ -146,7 +152,7 @@ with the goal of measuring how these characteristics impact the performance of e
 
 <!-- Urgent TODO: medium and high datasets!  -->
 
-<!-- TODO: comment results from CAMI 1 low -->
+<!-- TODO: comment results from CAMI low -->
 
 <!--
 ```{r gatherCAMIlowTable, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="100%", auto_pdf=TRUE, fig.cap="CAMI I Low table"}
@@ -162,18 +168,7 @@ knitr::include_graphics('figure/cami_i_low_recall_precision.png')
 - low and medium datasets have viruses, which are not in sourmash indices
 -->
 
-<!--
-The CAMI 1 challenge happened in 2015 and results were published in 2017.
-Since then more tools were developed and improved,
-as well as reference databases grew in size and diversity.
-Even so,
-it is still a good benchmark because gold standards are available,
-but reproducing the running environment used by the original tools is challenging,
-even with all the focus on reproducibility by the organizers and community.
-
--->
-
-#### CAMI 2 mouse gut metagenome dataset
+#### CAMI II mouse gut metagenome dataset
 
 <!-- TODO more intro -->
 
@@ -189,9 +184,9 @@ as well with an NCBI Taxonomy to minimize differences in taxonomic reports.
 Since challenges only release the gold standard after they are concluded and published,
 results for comparison with new methods are still pending.
 
-The CAMI 2 mouse gut metagenome [@meyer_tutorial_2020] is a toy dataset,
-used for preparing and calibrating tools for other CAMI 2 challenges.
-Similar to the concluded challenges from CAMI 1,
+The CAMI II mouse gut metagenome [@meyer_tutorial_2020] is a toy dataset,
+used for preparing and calibrating tools for other CAMI II challenges.
+Similar to the concluded challenges from CAMI,
 it provides gold standards for expected microbial community composition,
 including presence and relative abundance of organisms.
 Because the official challenges don't have gold standards published yet,
@@ -218,11 +213,12 @@ knitr::include_graphics('figure/cami_ii_mg_table.png')
 -->
 
 ```{r gatherCAMImgSpider, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="75%", auto_pdf=TRUE, fig.cap='(ref:cami2caption)', fig.show="hold", fig.align="center"}
-knitr::include_graphics(c('figure/spider_plot_relative.pdf', 'figure/ranks_by_tool.pdf', 'figure/scores.pdf'))
+knitr::include_graphics(c('../experiments/profiling/figures/spider_plot_relative.pdf',
+                          '../experiments/profiling/figures/ranks_by_tool.pdf',
+                          '../experiments/profiling/figures/scores.pdf'))
 ```
 
-(ref:cami2caption) Update fig. 6 from [@meyer_tutorial_2020] including `sourmash`.
-Assessing profiling results on the CAMI II mouse gut data set.
+(ref:cami2caption) Updated Fig. 6 from [@meyer_tutorial_2020] including `sourmash`.
 **a** Comparison per taxonomic rank of methods in terms of completeness, purity (1% filtered), and L1 norm.
 **b** Performance per method at all major taxonomic ranks, with the shaded bands showing the standard deviation of a metric.
 In **a** and **b**, completeness, purity, and L1 norm error range between 0 and 1.
@@ -231,7 +227,7 @@ The higher the completeness and purity, and the lower the L1 norm, the better th
 **c** Methods rankings and scores obtained for the different metrics over all samples and taxonomic ranks.
 For score calculation, all metrics were weighted equally.
 
-The CAMI 2 RefSeq snapshot for reference genomes doesn't include viruses;
+The CAMI II RefSeq snapshot for reference genomes doesn't include viruses;
 this benefits `sourmash` because viral _Scaled MinHash_ sketches are usually not well supported for containment estimation,
 since viral sequences require small scaled values to have enough hashes to be reliable.
 

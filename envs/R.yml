@@ -4,6 +4,7 @@ channels:
   - defaults
 dependencies:
   - pandoc=2.10.1
+  - tar
   - r-base=3.5.1
   - r-bitops=1.0
   - r-bookdown=0.9

@@ -135,7 +135,7 @@ an alternative to Bloom Filters that also support counting and resizing.
 
 ### Specialized indices for Scaled MinHash sketches
 
-sourmash [@titus_brown_sourmash:_2016] is a software for large-scale sequence data comparisons based on MinHash sketches.
+sourmash [@brown_sourmash:_2016] is a software for large-scale sequence data comparisons based on MinHash sketches.
 Initially implementing operations for computing,
 comparing and plotting distance matrices for MinHash sketches,
 version 2 [@pierce_large-scale_2019] introduced Scaled MinHash sketches

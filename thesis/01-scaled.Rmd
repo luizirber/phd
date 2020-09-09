@@ -276,6 +276,16 @@ picked by the Scaled MinHash approach.
 - CTB: include poisson statistics and plot of how many windows are missed (from charcoal stats)
 -->
 
+## Conclusion and Future Work
+
+<!-- TODO
+- CTB 2-3 paragraphs
+- our hashing approach is simple to implement, simple to analyze.
+- has some upsides - no need to reindex. summarize comparison with other techniques briefly.
+- Has some drawbacks, summarize briefly.
+- Building software ecosystem to allow practical application in many ways - gather, indices, etc. Discussed in following chapters.
+-->
+
 ## Implementation
 
 ### smol
@@ -358,18 +368,7 @@ The analysis is contained in a Jupyter Notebook,
 and can be executed in any place where it is supported,
 including in a local installation or using Binder,
 a service that deploy a live Jupyter environment in cloud instances.
-Instructions are available at https://github.com/luizirber/phd
-<!-- TODO: replace with zenodo archival DOI -->
+Instructions are available at https://doi.org/10.5281/zenodo.4012667
 
 <!-- TODO: related work section? It's sort of covered with cmash and mash screen
 already -->
-
-## Conclusion and Future Work
-
-<!-- TODO
-- CTB 2-3 paragraphs
-- our hashing approach is simple to implement, simple to analyze.
-- has some upsides - no need to reindex. summarize comparison with other techniques briefly.
-- Has some drawbacks, summarize briefly.
-- Building software ecosystem to allow practical application in many ways - gather, indices, etc. Discussed in following chapters.
--->

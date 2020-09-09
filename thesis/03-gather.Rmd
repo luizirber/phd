@@ -412,5 +412,4 @@ The analysis is contained in a Jupyter Notebook,
 and can be executed in any place where it is supported,
 including in a local installation or using Binder,
 a service that deploy a live Jupyter environment in cloud instances.
-Instructions are available at https://github.com/luizirber/2020-cami
-<!-- TODO: replace with zenodo archival DOI -->
+Instructions are available at https://doi.org/10.5281/zenodo.4012667

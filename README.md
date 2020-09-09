@@ -1,6 +1,7 @@
 # The PhD repo
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/luizirber/phd/master)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4012667.svg)](https://doi.org/10.5281/zenodo.4012667)
 
 ## Qualifying Exam
 

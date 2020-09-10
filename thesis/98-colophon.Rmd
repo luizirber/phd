@@ -9,16 +9,16 @@ This document was typeset using the pdfLaTeX typesetting system, and the Univers
 The source files for this thesis, along with all the data files, have been organised into a git repository available at https://github.com/luizirber/phd. A hard copy of the thesis can be found in the University of California Davis library.
 
 This version of the thesis was generated on `r Sys.time()`. The repository is currently at this commit:
-
-```{r echo = FALSE, eval = FALSE}
+```{r echo = FALSE, eval = TRUE, tidy=TRUE, tidy.opts=list(width.cutoff=50)}
 # I've set eval=FALSE to ensure Travis-CI can run
 # if you're not using Travis-CI, then eval=TRUE will be fine
-# library(git2r)
-# if ( git2r::in_repository() ) {
-#        summary(commits()[[1]]) 
-# } else { 
-#        message("We are not in a git repository") 
-# }
+library(git2r)
+if ( git2r::in_repository() ) {
+       #summary(commits()[[1]]) 
+       print(sha(last_commit()))
+} else { 
+       message("We are not in a git repository") 
+}
 ```
 
 The computational environment that was used to generate this version is as follows:

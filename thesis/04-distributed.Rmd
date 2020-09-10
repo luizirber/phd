@@ -1,6 +1,6 @@
 # Distributed signature calculation with wort
 
-\chaptermark {wort}
+\chaptermark {Distributed}
 
 ```{=latex}
 \begin{epigraphs}

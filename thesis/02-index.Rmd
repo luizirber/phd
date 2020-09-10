@@ -1,6 +1,6 @@
 # Efficient indexing of collections of signatures
 
-\chaptermark {MHBT}
+\chaptermark {Indexing}
 
 ## Introduction
 

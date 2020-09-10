@@ -206,12 +206,6 @@ with 91.8 genomes present on each sample on average.
 Each sample is 5 GB in size,
 and both short-read (Illumina) and long-read (PacBio) sequencing data is available.
 
-<!--
-```{r gatherCAMImgTable, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="100%", auto_pdf=TRUE, fig.cap="CAMI II Mouse Gut table"}
-knitr::include_graphics('figure/cami_ii_mg_table.png')
-```
--->
-
 ```{r gatherCAMImgSpider, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="75%", auto_pdf=TRUE, fig.cap='(ref:cami2caption)', fig.show="hold", fig.align="center"}
 knitr::include_graphics(c('../experiments/profiling/figures/spider_plot_relative.pdf',
                           '../experiments/profiling/figures/ranks_by_tool.pdf',
@@ -231,26 +225,61 @@ The CAMI II RefSeq snapshot for reference genomes doesn't include viruses;
 this benefits `sourmash` because viral _Scaled MinHash_ sketches are usually not well supported for containment estimation,
 since viral sequences require small scaled values to have enough hashes to be reliable.
 
+
+
 ## Discussion
 
-`gather` is a new method for decomposing datasets 
-<!-- TODO
-cmash and mash screen can do `gather` too,
-but still require the original data available.
-Scaled MinHash allows using the sketches for gather,
-which are a fraction of the original data in size.
-Additional benefit:
-if there are collection updates you don't need to recalculate the query sketch,
-and both cmash and mash screen would need the original data for the query
-again
+`gather` is a new method for decomposing datasets into its components,
 
+Other containment estimation methods described in Chapter [1](#chp-scaled),
+_CMash_ [@koslicki_improving_2019] and _mash screen_ [@ondov_mash_2019],
+can also implement `gather`.
+Running a search requires access to the original dataset (_mash screen_) for the query,
+or a Bloom Filter derived from the original dataset (_CMash_),
+and when the collection of reference sketches is updated the Bloom Filter from _CMash_ can be reused,
+but _mash screen_ again needs access to original dataset.
+
+Since _Scaled MinHash_ sketches allow using the sketch directly for `gather`,
+which are a fraction of the original data in size and also allow enumerating all the elements,
+an operation not possible with Bloom Filters,
+they can be stored and reused for large collections of sequencing datasets,
+including public databases like the Sequence Read Archive [@leinonen_sequence_2011].
+A service that calculate these _Scaled MinHash_ sketches and make them available can improve discoverability of these large collections,
+as well as support future use cases derived from the _Scaled MinHash_ functionalities.
+
+<!-- Scaling to large collections of references -->
+Taxonomic profiling is fundamentally limited by the availability of reference datasets,
+even if new reference datasets can be derived from clustering possible organisms based on sequence data in metagenomes [@milanese_microbial_2019].
+`gather` as implemented in `sourmash` is a method that can scale to increasingly larger collections of datasets
+due to multiple reasons:
+
+  - containment and similarity estimation with _Scaled MinHash_ sketches has
+    lower computational requirements than alignment over all reads of a dataset;
+
+  - since _Scaled MinHash_ sketches use a subset of the $k$-mer composition,
+    they also scale better than full representations,
+    requiring less space and reducing the number of elements to be computed;
+
+  - querying multiple databases can be done independently,
+    avoiding the need to merge,
+    update or reprocess databases when new datasets are available.
+    A new database with the new datasets can be constructed and queried together
+    with previous ones.
+
+<!-- dependency on taxonomic assignments -->
+Taxonomic profiling in `sourmash` is built as an extra step on top of the `gather` algorithm.
+
+<!-- Benchmarking -->
+<!-- TODO
+Despite the improvements to the metrics measure by CAMI benchmarks,
 Benchmarking is still an unsolved problem,
 despite CAMI efforts
 -->
 
-### Limitations
 
 <!--
+### Limitations
+
 - Viruses (scaled minhash too small).
   mash screen solves this by going for sensitivity (at the cost of precision),
   possible solution: scaled+num hashes, but would only allow mash screen-like method
@@ -286,7 +315,21 @@ it is probably an indicative that the query genome contains sequences from diffe
 It is especially useful for quality control and validation of metagenome-assembled genomes (MAGs),
 genomes assembled from reads binned and clustered from metagenomes.
 
+Improvements to the calculation of _Scaled MinHash_ sketches can also improve
+the taxonomic profiling use case.
+Exact $k$-mer matching is limited in phylogenetically distant organisms,
+since small nucleotide differences lead to distinct $k$-mers,
+breaking homology assumptions. <!-- TODO verify/cite? -->
+By considering methods like spaced $k$-mers [@leimeister_fast_2014] and minimizers [@roberts_reducing_2004] for computing the $k$-mer composition,
+as well as alternative encodings for the nucleotides using 6-frame translation to amino acid [@gish_identification_1993],
+Dayhoff [@dayhoff_model_1978] or other reduced alphabets [@peterson_reduced_2009],
+comparisons on longer evolutionary distances can also improve taxonomic profiling by increasing the sensitivity of the containment estimation.
+Fundamentally it also doesn't change the `gather` method,
+since it would still be based on the same *containment* and *remove element* operations.
+
 ### Conclusion
+
+
 
 ## Methods
 
@@ -371,34 +414,6 @@ also allows passing multiple indices to be searched,
 providing incremental support for rerunning with additional data without having to recompute,
 merge or update the original databases.
 
-#### smol
-
-`smol` is a minimal implementation for the Scaled MinHash sketch and the gather method for simulation and verifying results with more featureful tools.
-There are two compatible versions,
-one in Python and another in Rust,
-due to performance requirements when processing large datasets (like metagenomes).
-Both versions of the Scaled MinHash implementations use each language standard library sets
-(`set` for Python, `HashSet` for Rust)
-for storing hashes and efficient set operations (intersection and difference).
-Experiments used the Rust version for calculating Scaled MinHash sketches,
-and the Python version for running gather and reporting containment scores.
-Since they serialize the sketches to a compatible JSON format,
-they can be used interchangeably and while computing Scaled MinHash sketches is
-orders of magnitude faster in Rust,
-for gather running time are similar and in the order of seconds.
-
-The Python version has two external dependencies:
-`screed` for sequence parsing,
-and `mmh3` for the MurmurHash3 hash function.
-Other modules from the standard library are used for JSON serialization (`json`)
-and command line parsing (`argparse`).
-
-The Rust version has four direct external dependencies:
-`needletail` for sequence parsing and normalization
-(similar to what `screed` does in the Python version),
-`murmurhash3` for the MurmurHash3 hash function,
-`serde_json` for JSON serialization and `structopt` for command line parsing.
-
 #### CAMI Evaluation
 
 Experiments are implemented in `snakemake` workflows and use `conda` for
@@ -407,8 +422,12 @@ allowing reproducibility of the results with one command:
 `snakemake --use-conda`.
 This will download all data,
 install dependencies and generate the data used for analysis.
+OPAL and other CAMI-related commands are available in
+<!-- TODO: set up zenodo for CAMI repo -->
+https://github.com/luizirber/2020-cami/
+including further instructions to reproduce results.
 
-The analysis is contained in a Jupyter Notebook,
+Analysis and figure generation code is contained in a Jupyter Notebook,
 and can be executed in any place where it is supported,
 including in a local installation or using Binder,
 a service that deploy a live Jupyter environment in cloud instances.

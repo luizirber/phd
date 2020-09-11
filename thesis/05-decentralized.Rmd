@@ -143,7 +143,7 @@ opting to push and pull changes from GitHub instead.
 #### Distributed Hash Tables (DHT)
 
 DHTs originated from research in peer-to-peer (P2P) systems
-[@ratnasamy_scalable_2001] [@stoica_chord_2001] [@zhao_tapestry_2004] [@goos_pastry_2001], 
+[@ratnasamy_scalable_2001] [@stoica_chord_2001] [@zhao_tapestry_2004] [@goos_pastry_2001],
 with the goal of allowing queries for which node had a specific piece of data.
 It exposes a simple key-value store,
 but each node of the network is also responsible for storing a small chunk of the store,

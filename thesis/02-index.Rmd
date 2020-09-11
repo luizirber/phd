@@ -20,7 +20,7 @@ but sensitivity is reduced since they can't deal with sequencing errors and biol
 
 <!-- cite some methods, including SBT and Mantis -->
 
-<!-- 
+<!--
 CTBQ: Additional points to raise: in-memory representation of sketches may be too big (!!),
 goal here is on disk storage/low minimum memory for "extremely large data" situation.
 Also/in addition, want ability to do incremental loading of things.
@@ -156,13 +156,13 @@ signatures provided in the command-line.
 
 The MinHash Bloom Tree (`MHBT`) is a variation of the Sequence Bloom Tree (SBT)
 that uses Scaled MinHash sketches as leaf nodes instead of Bloom Filters as in
-the SBT. 
+the SBT.
 The search operation in SBTs is defined as a breadth-first search starting in the root of the tree,
 using a threshold of the original k-mers in the query to decide when to prune the search.
 MHBTs use a query Scaled MinHash sketch instead,
 but keep the same search approach.
 The threshold of a query $Q$ approach introduced in [@solomon_fast_2016] is
-equivalent to the containment 
+equivalent to the containment
 $$C(Q, S) = \frac{\vert Q \cap S \vert }{\vert S \vert}$$
 described in [@broder_resemblance_1997],
 where $S$ is a Scaled MinHash sketch.
@@ -195,7 +195,7 @@ the LCA calculated as needed by downstream methods using the taxonomy informatio
 that is also stored separately in the LCA index.
 
 The mapping from hashes to signature IDs in the LCA index is an implicit representation of the original signatures used to build the index,
-and so returning the signatures is implemented by rebuilding the original signatures on-the-fly. 
+and so returning the signatures is implemented by rebuilding the original signatures on-the-fly.
 Search in an LCA index matches the $k$-mers in the query to the list of signatures IDs containing them,
 using a counter data structure to sort results by number of hashes per signature ID.
 The rebuilt signatures are then returned as matches based on the signature ID,

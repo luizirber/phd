@@ -438,7 +438,7 @@ sourmash fits both approaches,
 using the command-line interface or the Python API for the top-down case,
 or the Python API and the Rust core
 (depending on the performance requirements)
-for the bottom-up case. 
+for the bottom-up case.
 The MAG search can also be seen as a "reverse gather" operation:
 while gather focuses on decomposing a query metagenome into reference genomes from a collection,
 the MAG search uses a query genome (or large enough genomic dataset) to find metagenomes in a collection that contain the query.

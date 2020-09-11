@@ -10,7 +10,7 @@
 
 Taxonomic profiling is a particular instance of this general problem.
 The goal of taxonomic profiling is to find the identity and relative abundance of microbial community elements
-at a specific taxonomic level (species, genus, family...),
+at a specific taxonomic rank (species, genus, family),
 especially in metagenomic samples [@sczyrba_critical_2017].
 
 Existing taxonomic profilers use different methods to solve this problem,
@@ -27,27 +27,26 @@ or coupled with unknown organisms clustered from metagenomes [@milanese_microbia
 
 Once each sequence (from raw reads or assembled contigs) has a taxonomic assignment,
 these methods resolve the final identity and abundance for each member of the community by summarizing the assignments to a specific taxonomic level.
+Taxonomic profiling is fundamentally limited by the availability of reference datasets to be used for assignments,
+and reporting what percentage of the sample is unassigned is important to assess results,
+especially in under characterized environments such as oceans and soil.
 
 ### Decomposition of queries with gather
 
-Methods that summarize taxonomic assignments from sequences in the query metagenome to calculate the profile for the community follow a bottom-up approach.
-Instead of using taxonomic assignments at the sequence level,
-a top-down approach <!-- TODO ... -->
-
-
-`gather` is an example of such a top-down approach:
+Methods summarizing taxonomic assignments from sequences in the query metagenome to calculate the profile for the community follow a bottom-up approach.
+`gather` is a new method following a top-down approach:
 starting from the $k$-mer composition of the query,
 it iteratively finds a match in a collection of datasets with the largest _containment_ of the query (most elements in common),
 and create a new query by _removing elements_ in the match from the original query.
 The process stop when the new query doesn't have any more matches in the collection,
 or a user-provided minimum detection threshold is reached.
-This approach also differs from previous methods because the co-occurrence of $k$-mers
+This approach differs from previous methods because the co-occurrence of $k$-mers
 in a match is considered a strong signal that they are coming from the same organism in the original sample,
-and is used instead of the LCA-based methods to resolve ambiguities in the taxonomic assignment of the $k$-mer.
+and is used instead of the LCA-based methods to resolve ambiguities in the taxonomic assignment of a sequence (or its $k$-mers).
 
 Any data structure supporting both the _containment_
 $C(A, B) = \frac{\vert A \cap B \vert }{\vert A \vert}$
-and _removing elements_ operations can be used as a query with `gather`.
+and _remove elements_ operations can be used as a query with `gather`.
 For example,
 a _set_ of the $k$-mer composition of the query supports element removal,
 and calculating containment can be done with regular set operations.
@@ -76,11 +75,35 @@ especially since they are only a small fraction of the original dataset size and
 manipulate and share.
 
 _Scaled MinHash_ sketches can be stored in any data structure for representing the $k$-mer composition $M$ of a dataset [@marchet_data_2019],
-and as a subset of $M$ they can also be indexed by approaches for the complete $k$-mer composition.
-`sourmash` defines the MinHash Bloom Tree (_MHBT_) index,
+and as a subset of $M$ they can also be indexed by approaches for the full $k$-mer composition.
+`sourmash` [@pierce_large-scale_2019] defines the MinHash Bloom Tree (_MHBT_) index,
 a $k$-mer aggregative method with explicit representation of datasets based on hierarchical indices and a specialization of the Sequence Bloom Tree [@solomon_fast_2016],
 as well as the _LCA_ index,
 a color-aggregative method with implicit representation of the datasets based on inverted indices.
+
+Compared to previous taxonomic profiling methods,
+_Scaled MinHash_ can also be seen as a mix of two other approaches:
+It uses exact $k$-mer matching and assignment,
+and the $k$-mers selected by the MinHashing process are equivalent to implicitly-defined markers.
+It differs from previous approaches because only a subset of the $k$-mer composition is used for matching,
+and traditional gene markers are explicitly chosen due to sequence conservation and low mutation rates,
+while hashing $k$-mers generates a randomized,
+but consistent across datasets,
+set of marker $k$-mers.
+
+### Taxonomic profiling with gather
+
+Taxonomic profiling in `sourmash` is built as an extra step on top of the `gather` algorithm.
+`gather` returns assignments to a dataset in a collection,
+and based on that assignment the extra step associates a taxonomic ID
+(based on some dataset identifier)
+and a taxonomic lineage (a path from root to taxonomic ID) derived from a specific taxonomy.
+After a lineage is available,
+each taxonomic rank is summarized based on the abundances under it.
+This information is used to build a profile in the CAMI profiling format,
+but can also be adapted for other uses and tools.
+
+<!-- TODO expand a bit -->
 
 <!-- TODO: a diagram here, leave the algorithm for the methods section -->
 <!-- Future paper TODO: demonstrate gather on top of other approaches? kraken/mantis/kProcessor? -->
@@ -90,14 +113,14 @@ a color-aggregative method with implicit representation of the datasets based on
 ### CAMI challenges
 
 The Critical Assessment of Metagenome Intepretation (CAMI) [@sczyrba_critical_2017] is a community-driven initiative
-bringing together tool developers and users to create standards for reproducible benchmarking metagenomic methods. 
+bringing together tool developers and users to create standards for reproducibly benchmarking metagenomic methods.
 Challenges are organized around datasets representing microbial communities of interest in metagenomics,
 like marine,
 high-strain and rhizosphere datasets.
 Sequencing data is generated by CAMISIM [@fritz_camisim_2019],
 a microbial community and metagenome simulator using a gold standard with a known community composition
 to model different aspects
-(diversity levels, abundances and sequencing technologies features among them)
+(diversity levels, abundances and sequencing technologies features)
 of these datasets.
 
 Each challenge typically includes three tasks:
@@ -221,15 +244,23 @@ The higher the completeness and purity, and the lower the L1 norm, the better th
 **c** Methods rankings and scores obtained for the different metrics over all samples and taxonomic ranks.
 For score calculation, all metrics were weighted equally.
 
+<!-- TODO: show results
+main points:
+- all tools used only the short reads datasets
+- highest completeness and purity
+- low L1-norm error (second, check this)
+-->
+
+<!--
 The CAMI II RefSeq snapshot for reference genomes doesn't include viruses;
 this benefits `sourmash` because viral _Scaled MinHash_ sketches are usually not well supported for containment estimation,
 since viral sequences require small scaled values to have enough hashes to be reliable.
-
-
+-->
 
 ## Discussion
 
-`gather` is a new method for decomposing datasets into its components,
+`gather` is a new method for decomposing datasets into its components, (...)
+<!-- TODO small summary -->
 
 Other containment estimation methods described in Chapter [1](#chp-scaled),
 _CMash_ [@koslicki_improving_2019] and _mash screen_ [@ondov_mash_2019],
@@ -237,7 +268,7 @@ can also implement `gather`.
 Running a search requires access to the original dataset (_mash screen_) for the query,
 or a Bloom Filter derived from the original dataset (_CMash_),
 and when the collection of reference sketches is updated the Bloom Filter from _CMash_ can be reused,
-but _mash screen_ again needs access to original dataset.
+but _mash screen_ needs access to original dataset again.
 
 Since _Scaled MinHash_ sketches allow using the sketch directly for `gather`,
 which are a fraction of the original data in size and also allow enumerating all the elements,
@@ -245,7 +276,7 @@ an operation not possible with Bloom Filters,
 they can be stored and reused for large collections of sequencing datasets,
 including public databases like the Sequence Read Archive [@leinonen_sequence_2011].
 A service that calculate these _Scaled MinHash_ sketches and make them available can improve discoverability of these large collections,
-as well as support future use cases derived from the _Scaled MinHash_ functionalities.
+as well as support future use cases derived from other _Scaled MinHash_ features.
 
 <!-- Scaling to large collections of references -->
 Taxonomic profiling is fundamentally limited by the availability of reference datasets,
@@ -257,7 +288,7 @@ due to multiple reasons:
     lower computational requirements than alignment over all reads of a dataset;
 
   - since _Scaled MinHash_ sketches use a subset of the $k$-mer composition,
-    they also scale better than full representations,
+    they also scale better than full $k$-mer composition representations,
     requiring less space and reducing the number of elements to be computed;
 
   - querying multiple databases can be done independently,
@@ -266,8 +297,22 @@ due to multiple reasons:
     A new database with the new datasets can be constructed and queried together
     with previous ones.
 
+<!-- TODO to make this point I need more info about the other databases used...
+I don't think they were calculated from the refseq snapshot
+https://github.com/CAMI-challenge/data/issues/2
+
+These aspects allowed the `sourmash` database to be include the largest number
+of reference datasets of all methods compared,
+-->
+
 <!-- dependency on taxonomic assignments -->
-Taxonomic profiling in `sourmash` is built as an extra step on top of the `gather` algorithm.
+Taxonomic profiling in `sourmash` is implemented as an extra step on top of `gather` results.
+Because these steps are independent of the dataset assignment that `gather` generates,
+updates to the taxonomy don't require re-executing `gather`,
+since the taxonomic information can be derived from the same dataset identifier
+(but potentially with a new associated taxonomic ID).
+This allows using new taxonomies derived from the same underlying datasets [@parks_standardized_2018],
+as well as updates to the original taxonomy used before.
 
 <!-- Benchmarking -->
 <!-- TODO
@@ -309,11 +354,13 @@ but it can applied to other biological problems too.
 If the query is a genome instead of a metagenome,
 `gather` can be used to detect possible contamination in the assembled genome by
 using a collection of genomes and removing the query genome from it (if it is present).
-This allows finding matches that contain the query genome and evaluation if they agree at specific taxonomic levels,
-and if they diverge too much (two different phyla are found, for example)
-it is probably an indicative that the query genome contains sequences from different organisms.
-It is especially useful for quality control and validation of metagenome-assembled genomes (MAGs),
-genomes assembled from reads binned and clustered from metagenomes.
+This allows finding matches that contain the query genome and evaluating if they agree at specific taxonomic levels,
+and in case of large divergence (two different phyla are found, for example)
+it is likely to indicative that the query genome contains sequences from different organisms.
+This is especially useful for quality control and validation of metagenome-assembled genomes (MAGs),
+genomes assembled from reads binned and clustered from metagenomes,
+as well as a verification during submission of new assembled genomes to public
+genomic databases like GenBank.
 
 Improvements to the calculation of _Scaled MinHash_ sketches can also improve
 the taxonomic profiling use case.
@@ -324,8 +371,9 @@ By considering methods like spaced $k$-mers [@leimeister_fast_2014] and minimize
 as well as alternative encodings for the nucleotides using 6-frame translation to amino acid [@gish_identification_1993],
 Dayhoff [@dayhoff_model_1978] or other reduced alphabets [@peterson_reduced_2009],
 comparisons on longer evolutionary distances can also improve taxonomic profiling by increasing the sensitivity of the containment estimation.
-Fundamentally it also doesn't change the `gather` method,
-since it would still be based on the same *containment* and *remove element* operations.
+These improvements don't fundamentally change the `gather` method,
+since it would still be based on the same *containment* and *remove element* operations,
+but show how `gather` works as a more general method that can leverage characteristics from different building blocks and explore new or improved use cases.
 
 ### Conclusion
 

@@ -22,11 +22,11 @@ jobs:
     - name: Install aggiedown in R environment
       shell: bash -l {0}
       run: |
-          snakemake -j 1 --use-conda --conda-frontend mamba install_deps
+          snakemake -j 1 --schedule greedy --use-conda --conda-frontend mamba install_deps
     - name: Run pipeline
       shell: bash -l {0}
       run: |
-          snakemake -j 1 --use-conda --conda-frontend mamba
+          snakemake -j 1 --schedule greedy --use-conda --conda-frontend mamba
     - name: upload PDF to GH artifacts
       uses: actions/upload-artifact@v1
       with:

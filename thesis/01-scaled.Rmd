@@ -51,7 +51,7 @@ growing with the complexity of the document.
 
 ### Mash and genomic minhash
 
-Mash [@ondov_mash:_2016] was the first implementation of MinHash in genomic contexts,
+Mash [@ondov_mash:_2016] is the first implementation of MinHash in genomic contexts,
 relating the $w$-shingling of a document to the $k$-mer composition of genomic datasets,
 and using the $\mathbf{MIN}_n(W)$ fixed-sized formulation for the signature.
 Mash needs extra information (the genome size for the organism being queried) to account for genomic complexity in datasets and derives a new score,
@@ -84,13 +84,13 @@ a use case not supported by Mash originally.
 In terms of repeated analysis of a query,
 \emph{CMash} has the advantage that the query only needs to be processed once into a Bloom Filter,
 and can later be reused when the collection of reference MinHash sketches is updated.
-This precludes the need to keep the original query,
+This precludes the need to keep the original data for the query,
 and since the Bloom Filter is much smaller than the original dataset in most cases
 that leads to storage savings for this use case.
 
 ### Containment score and mash screen
 
-[@ondov_mash_2019] introduces a new method to Mash (\emph{mash screen}) for calculating containment scores.
+\emph{mash screen} [@ondov_mash_2019] is a new method implemented in Mash for calculating containment scores.
 Given a collection of reference MinHash sketches and a query sequence mixture (a metagenome, for example),
 \emph{mash screen} builds a mapping of each distinct hash from the set of all hashes in the reference MinHash sketches to a count of how many times the hash was observed.
 The query sequence mixture is decomposed and hashed with the same parameters $k$
@@ -113,9 +113,9 @@ while the latter generates a Bloom Filter for the query first.
 \emph{mash screen} avoids repeated membership checks to a Bloom Filter by collecting all distinct hashes across the reference MinHash sketches first,
 and then updating a counter associated with each hash if it is observed in the query.
 After the query finishes streaming,
-then it is summarized again against the sketches in the collection.
+it is then summarized again against the sketches in the collection.
 
-\emph{mash screen} also needs the original data for the query during reanalysis,
+\emph{mash screen} needs the original data for the query during reanalysis,
 because adding new sketches to the collection of references might introduce new hashes not observed before.
 For large scale projects like reanalysis of all the SRA metagenomes this
 requirement means continuous storage or re-download of many petabytes of data.
@@ -200,8 +200,35 @@ Figure \ref{fig:minhashes} shows an example comparing MinHash, ModHash and Scale
 \label{fig:minhashes}
 \end{figure}
 
+## Results
+
+### Comparison with other containment estimation methods
+
+In this section the Scaled MinHash method is compared to CMash (containment
+MinHash) and mash screen (containment score).
+
+<!-- TODO
+- show method works, even if slow, lead to introduction of other indices
+
+- use exact and scaled=1000, show results are similar.
+
+- use podar dataset
+
+- compare with cmash/mash screen here?
+-->
+
+### Average Scaled MinHash sketch sizes across Genbank domains
+
+```{r scaledGenBankSizes, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, fig.width=4, fig.cap="Scaled MinHash sketch sizes over GenBank domains, s=2000.", out.width="400px"}
+knitr::include_graphics('../experiments/sizes/figures/sizes.png')
+```
+
+## Discussion
+
 ### Operations without the original data
-<!-- TODO: yuck, better subsection title -->
+<!-- TODO: yuck, better subsection title
+"Operating on sketches?"
+-->
 
 Once a Scaled MinHash is calculated there are many operation that can be applied without depending on the original data,
 saving storage space and allowing scaling analysis to thousands of datasets.
@@ -234,9 +261,8 @@ Note that Scaled MinHash is a proper weighted subsample
 Other operations are adding and subtracting hash values from a Scaled MinHash sketch,
 allowing post-processing and filtering.
 Although possible for $\mathbf{MIN}_n(W)$,
-in practice this requires oversampling (using a larger $n$) to account for possibly having less than $n$ values after filtering.
-This is the approach taken by Finch [@bovee_finch:_2018],
-for example.
+in practice this requires oversampling (using a larger $n$) to account for possibly having less than $n$ values after filtering
+(the approach taken by Finch [@bovee_finch:_2018]).
 
 <!--
 What is the difference with modulo hash (per Broder 1997)? Modulo is expensive vs less-than operator; convertible between minhash and modhash.
@@ -248,13 +274,8 @@ Features of scaled:
 * streaming guarantees (never lose hash value - containment never decreases as you get more data)
 * add and subtract hash values (category, “operations directly on sketches”?)
 * abundance filter hash values (operations directly on sketches)
-* poisson statistics / random sequence foo
-  + “A value of 2000 means that we are 99.98% likely to choose one k-mer per 10kb window,
-    or to rephrase it, 9998 of 10000 windows of size 10kb will have at least one chosen k-mer in them.”
- see [numbers from charcoal](https://github.com/dib-lab/charcoal/blob/master/stats/stats.ipynb).
 
 Could also alternatively phrase scaled as lossy compression, more so than minhash.
-
 -->
 
 ### Limitations
@@ -274,6 +295,10 @@ picked by the Scaled MinHash approach.
 - increased size (compared with minhash, which is constant size)
 - detection threshold (viruses)
 - CTB: include poisson statistics and plot of how many windows are missed (from charcoal stats)
+  * poisson statistics / random sequence foo
+    + “A value of 2000 means that we are 99.98% likely to choose one k-mer per 10kb window,
+      or to rephrase it, 9998 of 10000 windows of size 10kb will have at least one chosen k-mer in them.”
+   see [numbers from charcoal](https://github.com/dib-lab/charcoal/blob/master/stats/stats.ipynb).
 -->
 
 ## Conclusion and Future Work
@@ -286,9 +311,11 @@ picked by the Scaled MinHash approach.
 - Building software ecosystem to allow practical application in many ways - gather, indices, etc. Discussed in following chapters.
 -->
 
-## Implementation
+## Methods
 
-### smol
+### Implementation
+
+#### smol
 
 `smol` is a minimal implementation for the Scaled MinHash sketch and the gather method for simulation and verifying results with more featureful tools.
 There are two compatible versions,
@@ -316,7 +343,7 @@ The Rust version has four direct external dependencies:
 `murmurhash3` for the MurmurHash3 hash function,
 `serde_json` for JSON serialization and `structopt` for command line parsing.
 
-### exact
+#### exact
 
 `exact` is an exact k-mer counting implementation in Rust.
 It also uses the standard library `HashSet` to store the $k$-mer composition of
@@ -332,29 +359,6 @@ and so a more compatible serialization format
 (like JSON in the `smol` case)
 is not required.
 
-## Evaluation
-
-### Average Scaled MinHash sketch sizes across Genbank domains
-
-```{r scaledGenBankSizes, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, fig.width=4, fig.cap="Scaled MinHash sketch sizes over GenBank domains, s=2000.", out.width="400px"}
-knitr::include_graphics('../experiments/sizes/figures/sizes.png')
-```
-
-### Comparison with other containment estimation methods
-
-In this section the Scaled MinHash method is compared to CMash (containment
-MinHash) and mash screen (containment score).
-
-<!-- TODO
-- show method works, even if slow, lead to introduction of other indices
-
-- use exact and scaled=1000, show results are similar.
-
-- use podar dataset
-
-- compare with cmash/mash screen here?
--->
-
 ### Implementation for experiments
 
 Experiments are implemented in `snakemake` workflows and use `conda` for
@@ -369,6 +373,3 @@ and can be executed in any place where it is supported,
 including in a local installation or using Binder,
 a service that deploy a live Jupyter environment in cloud instances.
 Instructions are available at https://doi.org/10.5281/zenodo.4012667
-
-<!-- TODO: related work section? It's sort of covered with cmash and mash screen
-already -->

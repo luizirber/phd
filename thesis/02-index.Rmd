@@ -33,10 +33,10 @@ but low scaled may work (much) better with SBT.
 -->
 
 [@marchet_data_2019] classifies indexing strategies for querying large collections of
-sequencing datasets into $k$-mer aggregative methods and color aggregative methods.
-$k$-mer aggregative methods index the $k$-mer composition for each individual dataset,
+sequencing datasets into _$k$-mer aggregative_ methods and _color aggregative_ methods.
+_$k$-mer aggregative_ methods index the $k$-mer composition for each individual dataset,
 and then build structures for retrieving the datasets where the query $k$-mers are present.
-Color aggregative methods index the full $k$-mer composition for all datasets,
+_Color aggregative_ methods index the $k$-mer composition for all datasets,
 and then assign a color representing an intersection of datasets where a $k$-mer is present.
 This allows reduced space requirements,
 since each $k$-mer is stored only once,
@@ -44,9 +44,9 @@ but needs extra structures for storing what datasets each color represents.
 
 Both strategies allow the same class of queries,
 but with different trade-offs and optimizations:
-$k$-mer aggregative methods favor threshold queries
+_$k$-mer aggregative_ methods favor threshold queries
 ("what datasets contain more than 60% of the query $k$-mers?")
-while color aggregative methods tend to be more efficient for specific $k$-mer
+while _color aggregative_ methods tend to be more efficient for specific $k$-mer
 queries ("what datasets contain this query $k$-mer?").
 
 <!-- how to dive into hierarchical index and inverted index below? -->
@@ -58,18 +58,13 @@ too big (!!), goal here is on disk storage/low minimum memory for "extremely
 large data" situation. Also/in addition, want ability to do incremental loading
 of things. Note we are not talking here about situations where the indices
 themselves are too big to download, could maybe include forward pointer to chp4.
-
-Note, in this chapter you could also include distinction in performance between
-SBT and LCA DB, to whit: large scaled works well with LCA (small DB, ~tolerable
-memory, load all at once, then quite fast) but low scaled may work (much) better
-with SBT.
 -->
 
 ### Hierarchical index
 
 <!-- 'k-mer aggregative methods in (marchet 2019)' -->
 
-Bloofi [@crainiceanu_bloofi:_2015] is an example of an hierarchical index structure that
+Bloofi [@crainiceanu_bloofi:_2015] is an hierarchical index structure that
 extends the Bloom Filter basic query to collections of Bloom Filters.
 Instead of calculating the union of all Bloom Filters in the collection
 (which would allow answering if an element is present in any of them)
@@ -82,15 +77,15 @@ with network nodes containing a subtree of the original tree and only being
 accessed if the search requires it.
 
 For genomic contexts,
-an hierarchical index is a $k$-mer aggregative method,
+an hierarchical index is a _$k$-mer aggregative_ method,
 with datasets represented by the $k$-mer composition of the dataset and stored in a data structure that allows querying for $k$-mer presence.
-The Sequence Bloom Tree [@solomon_fast_2016] adapts Bloofi for genomics and rephrasing the search problem as experiment discovery:
+The Sequence Bloom Tree [@solomon_fast_2016] adapts Bloofi for genomics and rephrases the search problem as _experiment discovery_:
 given a query sequence $Q$ and a threshold $\theta$,
 which experiments contain at least $\theta$ of the original query $Q$?
 Experiments are encoded in Bloom Filters containing the $k$-mer composition of transcriptomes,
 and queries are transcripts.
 
-Further developments of the SBT approach focused on clustering similar datasets to prune search
+Further developments of the SBT approach focuses on clustering similar datasets to prune search
 early [@sun_allsome_2017] and developing more efficient representations for the
 internal nodes [@solomon_improved_2017] [@harris_improved_2018] to use less storage space and memory.
 
@@ -110,12 +105,15 @@ Another example is the index in the back of a book,
 containing a list of topics and in which page they are present.
 
 When indexing the $k$-mer decomposition of genomic datasets,
-the inverted index is a color aggregative method,
-representable with a map of all hashed $k$-mers in the $k$-mer composition of the datasets in the collection back to
+the inverted index is a _color aggregative_ method,
+representable with a map of all $k$-mers in the $k$-mer composition of the datasets in the collection back to
 the dataset from where they originated.
 Just as words can appear more than once in a text,
-hashes can show up in more than one dataset,
-and so the inverted index maps a hash to a list of datasets.
+$k$-mers can show up in more than one dataset,
+and so the inverted index maps a $k$-mer to a list of datasets.
+For efficiency,
+$k$-mers are typically hashed and its integer representation (_hash_) is used
+instead.
 
 kraken [@wood_kraken:_2014] has a special case of this structure,
 using a taxonomic ID (taxon) for representing dataset identity.
@@ -123,25 +121,25 @@ Datasets share the same ID if they belong to the same taxon,
 and if a hash is present in more than one dataset
 kraken reduces the list of taxons to the lowest common ancestor (LCA),
 which lowers memory requirements for storing the index.
-[@nasko_refseq_2018] explores how this LCA approach leads to decreased precision and sensitivity over time,
-since more datasets are frequently added to reference databases and the chance of a k-mer being present in multiple datasets increases.
+This LCA approach leads to decreased precision and sensitivity over time [@nasko_refseq_2018],
+since new datasets are frequently added to reference databases and the chance of a k-mer being present in multiple datasets increases.
 
 Efficient storage of the list of signatures IDs can also be achieved via representation of the list as colors,
 where a color can represent one or more datasets (if a hash is present in many of them).
 Mantis [@pandey_mantis:_2018] uses this hash-to-color mapping
 (and an auxiliary color table) to achieve reduced memory usage,
-as well as Counting Quotient Filters [@pandey_general-purpose_2017] to store the data,
+as well as storing the mapping in Counting Quotient Filters [@pandey_general-purpose_2017],
 an alternative to Bloom Filters that also support counting and resizing.
 
 ### Specialized indices for Scaled MinHash sketches
 
 sourmash [@brown_sourmash:_2016] is a software for large-scale sequence data comparisons based on MinHash sketches.
 Initially implementing operations for computing,
-comparing and plotting distance matrices for MinHash sketches,
-version 2 [@pierce_large-scale_2019] introduced Scaled MinHash sketches
+comparing and plotting distance matrices for _MinHash_ sketches,
+version 2 [@pierce_large-scale_2019] introduces _Scaled MinHash_ sketches
 and indices for this new sketch format.
 Indices support a common set of operations
-(insertion, search and returning all signatures are the main ones),
+(insertion, search, and returning all signatures are the main ones),
 allowing them to be used interchangeably depending on the use case,
 performance requirements and computational resources available.
 
@@ -154,7 +152,7 @@ signatures provided in the command-line.
 
 #### MinHash Bloom Tree
 
-The MinHash Bloom Tree (`MHBT`) is a variation of the Sequence Bloom Tree (SBT)
+The _MinHash Bloom Tree_ (_MHBT_) is a variation of the _Sequence Bloom Tree_ (_SBT_)
 that uses Scaled MinHash sketches as leaf nodes instead of Bloom Filters as in
 the SBT.
 The search operation in SBTs is defined as a breadth-first search starting in the root of the tree,
@@ -167,8 +165,8 @@ $$C(Q, S) = \frac{\vert Q \cap S \vert }{\vert S \vert}$$
 described in [@broder_resemblance_1997],
 where $S$ is a Scaled MinHash sketch.
 For internal nodes $n$ (which are Bloom Filters) the containment of the query Scaled MinHash sketch $Q$ is
-$$C(Q, n) = \frac{\vert \{\,h \in n \mid \forall h \in Q\,\} \vert}{\vert Q \vert}$
-This is the same containment score defined in [@koslicki_improving_2019] for the Containment MinHash to Bloom Filter comparison.
+$$C(Q, n) = \frac{\vert \{\,h \in n \mid \forall h \in Q\,\} \vert}{\vert Q \vert}$$
+the same containment score defined in [@koslicki_improving_2019] for the _Containment MinHash_ to _Bloom Filter_ comparison.
 
 MHBTs support both containment and similarity queries.
 For internal nodes the containment $C(Q,n)$ is used as an upper-bound of the similarity $J(Q, n)$:
@@ -191,7 +189,7 @@ The LCA index in sourmash is an inverted index that stores a mapping from hashes
 in a collection of signatures to a list of IDs for signatures containing the hash.
 Despite the name,
 the list of signature IDs is not collapsed to the lowest common ancestor (as in kraken),
-the LCA calculated as needed by downstream methods using the taxonomy information
+and is calculated as needed by downstream methods using the taxonomy information
 that is also stored separately in the LCA index.
 
 The mapping from hashes to signature IDs in the LCA index is an implicit representation of the original signatures used to build the index,
@@ -206,8 +204,8 @@ but it is constructed on-the-fly using the distinct hashes in a sketch collectio
 and values are counters initialized set to zero.
 As the query is processed,
 matching hashes have their counts incremented,
-and after all hashes in the query is processed then all the sketches in the collection are
-checked in other again to quantify the containment/similarity of each sketch in the query.
+and after all hashes in the query are processed then all the sketches in the collection are
+checked in the counters to quantify the containment/similarity of each sketch in the query.
 The LCA index uses the opposite approach,
 opting to reconstruct the sketches on-the-fly.
 
@@ -252,7 +250,7 @@ need to be loaded in main memory,
 and data for the datasets and internal nodes can be loaded and unloaded on demand.
 The LCA index must be loaded in main memory before it can be used,
 but once it is loaded it is faster,
-especially for operations that need to summarize $k$-mer assignments or required repeated searches.
+especially for operations that need to summarize $k$-mer assignments or require repeated searches.
 
 Due to these characteristics,
 and if memory usage is not a concern,

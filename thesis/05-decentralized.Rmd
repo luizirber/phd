@@ -31,13 +31,11 @@ Among the issues raised are budgetary constraints
 scalability of storing all the raw data being generated,
 and long term access to data already archived.
 
-Chapter 4 introduced wort,
-<!-- TODO internal link to chapter 4 -->
+Chapter [4](#distributed-signature-calculation-with-wort)) introduced wort,
 a distributed system for signature computation,
 and the challenges to efficiently retrieve data from public genomic databases.
 This chapter discusses alternatives for increasing resilience for storing and distributing data using decentralizing approaches,
 using indices and signatures for datasets in public genomic databases as a concrete problem.
-<!-- TODO: link indices to chp2, and signatures to chp1? -->
 This is achieved by extending sourmash and wort to implement these approaches,
 as well as discussing limitations and direction for further improvement.
 
@@ -68,7 +66,7 @@ At the same time,
 there is recentralization happening due to increased dependency on companies that already monopolize much of the internet infrastructure,
 and also raise issues about competition,
 since both companies have genomic data analysis services and possibly have conflicts with new (and smaller) companies that decide to use these databases.
-This decentralization and recentralization dynamic is characterized in [schneider_decentralization_2019]:
+This decentralization and recentralization dynamic is characterized in [@schneider_decentralization_2019]:
 for every push for decentralization there is potential for recentralization and
 new power concentrations by different actors.
 Bitcoin is another example of this dynamic:
@@ -78,16 +76,16 @@ At the same time,
 totally decentralized systems are usually less efficient,
 especially if consensus is necessary.
 This is reflected in the enormous energy impact of proof-of-work in Bitcoin,
-equivalent to the yearly energy consumption of whole countries [@digiconomist_bitcoin_nodate].
+equivalent to the yearly energy consumption of whole countries [@digiconomist_bitcoin_2020].
 
-Adding some centralized coordination can improve the overall performance of a system [tsitsiklis_power_2011]
+Adding some centralized coordination can improve the overall performance of a system [@tsitsiklis_power_2011]
 without creating a bottleneck like in fully-centralized system.
 At the same time,
-some tasks are better executed by centralization,
+some tasks are better executed by centralized systems,
 especially if they are activities deemed necessary but with high cost and not as valued by traditional market rules.
 Quality assurance and validation can be automated but still require human effort,
-but while everyone wants high-quality data,
-maintaining and validating these datasets is costly and frequently underfunded.
+while at the same time users demand high-quality data.
+Maintaining and validating these datasets is costly and frequently underfunded.
 Government and private foundations have resources to fund such approaches,
 but generating metrics to justify funding is challenging if there the results of the work are diffuse in the system.
 
@@ -193,39 +191,39 @@ like Bittorrent.
 
 ## Methods
 
-### The SBT index is amenable to content addressable approaches
+### The MHBT index is amenable to content addressable approaches
 
-The SBT index introduced in chapter 2 has structural features that make it a
+The MHBT index introduced in chapter [2](#minhash-bloom-tree) has structural features that make it a
 good fit for content-addressable approaches.
-Leaf nodes in an SBT are signatures for a specific dataset,
+Leaf nodes in an MHBT are signatures for a specific dataset,
 and are effectively immutable for public genomic databases,
 since any changes to a dataset in these databases generate a new version or identifier.
 Signatures can also change if other parameters for calculating their sketches are used,
 but having a default set of "good enough" parameters like the ones defined in `wort`
 allows general queries that can later be refined once a candidate subset of the database is found.
 
-```{r sbtInsert, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="500px", fig.width=4, fig.cap="Inserting a dataset in an SBT"}
+```{r sbtInsert, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="60%", fig.cap="Inserting a dataset in an MHBT"}
 knitr::include_graphics('figure/sbtmh_insert.png')
 ```
-Insertion of new signatures to an SBT trigger changes in the path from new leaf
+Insertion of new signatures to an MHBT trigger changes in the path from new leaf
 location to root of the tree,
 but all other nodes are left unchanged.
 Even if new methods for signature placement in the tree are developed in the future,
 in the worst case at most half of the total nodes (the internal nodes) would change,
 but the other half (the leaves) would stay the same.
 
-### Flexible and resilient indices with leaf-only SBTs
+### Flexible and resilient indices with leaf-only MHBTs
 
-Since SBTs follow a similar principle to Merkle DAGs,
+Since MHBTs follow a similar principle to Merkle DAGs,
 where the content of an internal node depends on the content of the subtree defined by using the internal node as the root,
-this also means that given only the leaves of a tree and their placement it is possible to reconstruct all the internal nodes (and so the full SBT).
-This opens the possibility of distributing SBT indices as leaf-only SBTs:
+this also means that given only the leaves of a tree and their placement it is possible to reconstruct all the internal nodes (and so the full MHBT).
+This opens the possibility of distributing MHBT indices as leaf-only MHBTs:
 a description of the tree structure with the leaves placement,
 and where to download the content for each leaf.
 This information is enough to reconstruct the full index,
 and also prioritizes storage and distribution of a minimal amount of data,
 since the internal nodes content is redundant information (for allowing faster queries)
-and are potentially mutable (on new signature insertions to the index),
+and are potentially mutable (on new signature insertions to the index).
 
 While internal nodes are bad candidates for long-term archival (given their size),
 they are still good candidates for short-term caching for performance,
@@ -243,9 +241,9 @@ this search turns into a linear scan over a list.
 
 ## Results
 
-### Hosting an SBT index on IPFS
+### Hosting an MHBT index on IPFS
 
-SBTs in \emph{sourmash} use a `Storage` instance to save and load data,
+MHBTs in \emph{sourmash} use a `Storage` instance to save and load data,
 with the default storage being a hidden directory with all the content for internal nodes and leaves and,
 in the future (version 4),
 Zip files.
@@ -266,10 +264,10 @@ and returns a byte buffer ready for consumption.
 
 In order to evaluate sourmash operations using the IPFS backend,
 six experiments were performed exploring different aspects:
-a full SBT index versus a leaf-only SBT index,
+a full MHBT index versus a leaf-only MHBT index,
 with machines reflecting different levels of performance and network access.
 sourmash version 3.3.0 was used for the experiments,
-and all experiments are running a `sourmash gather` command on an SBT index with 5914 signatures.
+and all experiments are running a `sourmash gather` command on an MHBT index with 5914 signatures.
 These signatures are a subset of the prepared GenBank database that sourmash provides,
 while the query signature is an iHMP metagenome [@integrative_hmp_ihmp_research_network_consortium_integrative_2014].
 
@@ -301,15 +299,15 @@ The three machines used for the experiments reflect different levels of performa
   and a regular laptop like rosewater because they show clearly what are the CPU/mem or network trade-offs.
 -->
 
-#### SBT index with an IPFS storage
+#### MHBT index with an IPFS storage
 
-Experiment 1) uses a Zipped SBT index,
+Experiment 1) uses a Zipped MHBT index,
 with a storage using a Zip file for holding the tree structure and all the nodes compressed data.
 This will be the default format in \emph{sourmash} 4,
 and is more convenient than the previous hidden directory storage.
 The goal of this experiment is to define a baseline to compare both each individual machine performance and the decentralizing approaches described in previous sections.
 
-Experiments 2) and 3) use the same SBT index as 1), but with an IPFS backend as storage.
+Experiments 2) and 3) use the same MHBT index as 1), but with an IPFS backend as storage.
 2) and 3) are the same experiment,
 with the only difference being that 3) is executed right after 2),
 and so all the data is already available in the local IPFS node and no network transfer is needed.
@@ -317,7 +315,7 @@ The goal is to show the performance impact of a cold start (experiment 2),
 and what is the overhead that IPFS imposes when used in conditions more similar to experiment 1),
 when all the data is available.
 
-Table: (\#tab:sbt-ipfs) Performance of SBT operations with IPFS storage. Units in seconds, with fold-difference to the baseline in parenthesis.
+Table: (\#tab:sbt-ipfs) Performance of MHBT operations with IPFS storage. Units in seconds, with fold-difference to the baseline in parenthesis.
 
 <!--
 sourmash index -k 51 --traverse-directory index.sbt.zip sigs/
@@ -365,14 +363,14 @@ being over a minute for this experiment.
      and connect to the same network. Alas, we are in the middle of a pandemic,
      and I want to avoid going there if possible =] -->
 
-#### Leaf-only SBTs
+#### Leaf-only MHBTs
 
-The goal of leaf-only SBTs is to increase resilience and reduce storage space,
+The goal of leaf-only MHBTs is to increase resilience and reduce storage space,
 trading it for performance costs.
-Experiments 4), 5) and 6) changes the SBT index to a leaf-only SBT,
+Experiments 4), 5) and 6) changes the MHBT index to a leaf-only MHBT,
 but otherwise they follow the same conditions as experiments 1-3.
 
-Table: (\#tab:leaf-ipfs) Performance of a leaf-only SBT operations with IPFS storage. Units in seconds, with fold-difference to the baseline in parenthesis.
+Table: (\#tab:leaf-ipfs) Performance of a leaf-only MHBT operations with IPFS storage. Units in seconds, with fold-difference to the baseline in parenthesis.
 
 <!--
 sourmash index -k 51 --sparseness 1 --traverse-directory index_leaf.sbt.zip sigs/
@@ -395,7 +393,7 @@ where all systems take twice as long to run when compared to experiment 1).
 Experiment 5) show a drawback of the leaf-only approach,
 combined with the sequential nature of sourmash storages:
 since all the leaves are required for reconstruction,
-it will potentially have to download more data than a query to an SBT fully loaded into an IPFS storage,
+it will potentially have to download more data than a query to an MHBT fully loaded into an IPFS storage,
 since it can't prune subtrees from the search space (and so avoid downloading them).
 `rosewater` is particularly impacted,
 with a runtime of more than 20 minutes.
@@ -403,7 +401,7 @@ with a runtime of more than 20 minutes.
 ## Discussion
 
 If there is a system for sharing the node contents,
-this means that users once users download an SBT index they can become new seeders for future users.
+this means that once users download an MHBT index they can become new seeders for future users.
 In the worst case,
 where only the initial seeder is available,
 it becomes a centralized system and the whole network depends on the resources and bandwidth that the seeder provides.
@@ -429,7 +427,7 @@ There is no protocol for merging changes if multiple users start from the same i
 This is an active area of research,
 but recent developments involving Conflict-Free Replicated Data Types (CRDTs) [@shapiro_conflict-free_2011],
 and especially Mergeable Replicated Data Types (MRDTs) [@kaki_mergeable_2019] point in promising directions,
-with the latter defining semantics for merging tree-like structures that are applicable to SBTs.
+with the latter defining semantics for merging tree-like structures that are applicable to MHBTs.
 
 While these methods can provide the technical means for fully decentralized indices,
 they don't solve organizational problems that also arise,
@@ -441,9 +439,9 @@ sharing a single index and updating each other local copies when any user add
 new signatures.
 
 `wort` initially focused in calculating signatures for public genomic databases,
-but since it already has the immutable parts of SBTs (the signatures) available
+but since it already has the immutable parts of MHBTs (the signatures) available
 on IPFS it is a good candidate for being extended and also provide leaf-only
-SBT indices for these databases.
+MHBT indices for these databases.
 
 <!-- TODO this might be better in chapter 4? -->
 While the `wort` service is currently implemented as a central server that coordinates new submissions and requests for computing new signatures,

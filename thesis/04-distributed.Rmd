@@ -155,7 +155,7 @@ which makes it easier to share the data but also has drawbacks:
 Other data repositories like Zenodo are better for archival purposes,
 but not as appropriate for a system that is frequently updated.
 
-## From soursigs to wort
+### From soursigs to wort
 
 <!-- how and why did soursigs evolve into wort? -->
 <!-- mirror structure from previous section, showing how things changed? -->
@@ -213,7 +213,7 @@ refactoring the internal implementation while keeping all tests working allow im
 
 ### Microbial single-genome datasets
 
-As of early June 2020,
+As of June 2020,
 there are 1.2 million datasets in the SRA that fit the initial goal of
 calculating signatures for microbial genomes.
 These datasets represent around 14% of the 8.3 million public datasets in the SRA,

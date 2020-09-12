@@ -14,16 +14,13 @@ at a specific taxonomic rank (species, genus, family),
 especially in metagenomic samples [@sczyrba_critical_2017].
 
 Existing taxonomic profilers use different methods to solve this problem,
-including:
-
-  - aligning sequences to a reference database [@huson_megan_2016];
-
-  - using marker genes derived from known organisms from reference databases [@segata_metagenomic_2012]
-or coupled with unknown organisms clustered from metagenomes [@milanese_microbial_2019];
-
-  - exact $k$-mer matching using fixed $k$ and lowest common ancestor (LCA) for resolving $k$-mer assignments matching multiple taxons from a reference database
-    [@wood_kraken:_2014] or variable $k$ and assigning multiple taxons per sequence,
-    with an option to reduce it further to the LCA [@kim_centrifuge_2016].
+including aligning sequences to a reference database [@huson_megan_2016],
+using marker genes derived from known organisms from reference databases [@segata_metagenomic_2012]
+or coupled with unknown organisms clustered from metagenomes [@milanese_microbial_2019],
+and exact $k$-mer matching using fixed $k$ and lowest common ancestor (LCA) for resolving
+$k$-mer assignments matching multiple taxons from a reference database
+[@wood_kraken:_2014] or variable $k$ and assigning multiple taxons per sequence,
+with an option to reduce it further to the LCA [@kim_centrifuge_2016].
 
 Once each sequence (from raw reads or assembled contigs) has a taxonomic assignment,
 these methods resolve the final identity and abundance for each member of the community by summarizing the assignments to a specific taxonomic level.
@@ -87,7 +84,7 @@ It uses exact $k$-mer matching and assignment,
 and the $k$-mers selected by the MinHashing process are equivalent to implicitly-defined markers.
 It differs from previous approaches because only a subset of the $k$-mer composition is used for matching,
 and traditional gene markers are explicitly chosen due to sequence conservation and low mutation rates,
-while hashing $k$-mers generates a randomized,
+while MinHashing $k$-mers generates a randomized,
 but consistent across datasets,
 set of marker $k$-mers.
 
@@ -212,11 +209,6 @@ used for preparing and calibrating tools for other CAMI II challenges.
 Similar to the concluded challenges from CAMI,
 it provides gold standards for expected microbial community composition,
 including presence and relative abundance of organisms.
-Because the official challenges don't have gold standards published yet,
-it is currently the only alternative for using the CAMI benchmarking tools to evaluate new methods with updated datasets.
-Curated metadata for multiple tools is also available,
-and users can submit their tools for inclusion too.
-
 The simulated mouse gut metagenome (_MGM_) was derived from 791 bacterial and archaeal genomes,
 representing 8 phyla,
 18 classes,
@@ -228,6 +220,12 @@ and 549 species.
 with 91.8 genomes present on each sample on average.
 Each sample is 5 GB in size,
 and both short-read (Illumina) and long-read (PacBio) sequencing data is available.
+
+Because the official challenges don't have gold standards published yet,
+it is currently the only alternative for using the CAMI benchmarking tools to evaluate new methods with updated datasets.
+Curated metadata for multiple tools is also available,
+and users can submit their tools for inclusion.
+All tools currently in the curated metadata repository use the short-read samples.
 
 ```{r gatherCAMImgSpider, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="75%", auto_pdf=TRUE, fig.cap='(ref:cami2caption)', fig.show="hold", fig.align="center"}
 knitr::include_graphics(c('../experiments/profiling/figures/spider_plot_relative.pdf',
@@ -244,11 +242,47 @@ The higher the completeness and purity, and the lower the L1 norm, the better th
 **c** Methods rankings and scores obtained for the different metrics over all samples and taxonomic ranks.
 For score calculation, all metrics were weighted equally.
 
+
 <!-- TODO: show results
 main points:
 - all tools used only the short reads datasets
 - highest completeness and purity
 - low L1-norm error (second, check this)
+
+- for running times: run kraken2 to serve as a base and compare with running
+  times from the tutorial paper?
+  - can't really build the standard db, check with minikraken...
+
+  data from tutorial:
+
+		Taxonomic binner Time (hh:mm) Memory (kbytes)
+		MetaPhlAn 2.9.21 18:44 5,139,172
+		MetaPhlAn 2.2.0 12:30 1,741,304
+		Bracken 2.5 (only Bracken) 0:01 24,472
+		Bracken 2.5 (Kraken and Bracken) 3:03 39,439,796
+		FOCUS 0.31 13:27 5,236,199
+		CAMIARKQuikr 1.0.0 16:19 27,391,555
+		mOTUs 1.1 19:50 1,251,296
+		mOTUs 2.5.1 14:29 3,922,448
+		MetaPalette 1.0.0 76:49 27,297,132
+		TIPP 2.0.0 151:01 70,789,939
+		MetaPhyler 1.25 119:30 2,684,720
+
+  kraken2 (mem doesn't match, so runtime probably doesn't match either...)
+    117 seconds per sample, with 8 cores and 8.1 GB of RAM.
+		3:03 = 10803s
+		117 * 64 = 7488s
+		"correction factor" = 10803 / 7488 = 1.44
+
+  trying with metaphlan 2.9.21.
+    643 seconds per sample, with 8 cores and 3.46 GB of RAM.
+    18:44 = 64844
+    643 * 64 = 41152
+    "correction factor" = 64844 / 41152 = 1.57
+
+  sourmash
+    38251 seconds, with 1 core and 5.62 GB of RAM
+    after correction: 38251 * 1.57 = 60054
 -->
 
 <!--
@@ -367,10 +401,11 @@ the taxonomic profiling use case.
 Exact $k$-mer matching is limited in phylogenetically distant organisms,
 since small nucleotide differences lead to distinct $k$-mers,
 breaking homology assumptions. <!-- TODO verify/cite? -->
-By considering methods like spaced $k$-mers [@leimeister_fast_2014] and minimizers [@roberts_reducing_2004] for computing the $k$-mer composition,
-as well as alternative encodings for the nucleotides using 6-frame translation to amino acid [@gish_identification_1993],
-Dayhoff [@dayhoff_model_1978] or other reduced alphabets [@peterson_reduced_2009],
-comparisons on longer evolutionary distances can also improve taxonomic profiling by increasing the sensitivity of the containment estimation.
+Different approaches for converting the datasets into a set to be hashed (_shingling_) than computing the nucleotide $k$-mer composition,
+such as spaced $k$-mers [@leimeister_fast_2014] and minimizers [@roberts_reducing_2004]
+and alternative encodings for the nucleotides using 6-frame translation to amino acid [@gish_identification_1993]
+or other reduced alphabets [@peterson_reduced_2009],
+can allow comparisons on longer evolutionary distances and so improve taxonomic profiling by increasing the sensitivity of the containment estimation.
 These improvements don't fundamentally change the `gather` method,
 since it would still be based on the same *containment* and *remove element* operations,
 but show how `gather` works as a more general method that can leverage characteristics from different building blocks and explore new or improved use cases.

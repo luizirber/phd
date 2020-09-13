@@ -25,6 +25,7 @@ $endif$
 \usepackage{color}
 \usepackage{setspace}
 \usepackage{fancyvrb}
+\usepackage{fvextra}
 \usepackage{array}
 \usepackage{ifxetex,ifluatex}
 \usepackage{etoolbox}
@@ -37,6 +38,18 @@ $endif$
 
 %% for the per mil symbol
 \usepackage[nointegrals]{wasysym}
+
+%% break long lines in code
+\usepackage{listings} 
+\let\verbatim\undefined 
+\let\verbatimend\undefined 
+\lstnewenvironment{verbatim}{\lstset{basicstyle=\ttfamily,columns=fullflexible,breaklines=true,}}{}
+
+\usepackage{minted}
+\usepackage{mdframed}
+%\usepackage[newfloat]{minted}
+%\newenvironment{code}{\captionsetup{type=listing}}{}
+%\SetupFloatingEnvironment{listing}{name=Source Code}
 
 % tikz
 \usepackage{tikz}
@@ -126,6 +139,9 @@ $endif$
 \setlength\oddsidemargin{0.25 in} \setlength\evensidemargin{0.25 in} \setlength\textwidth{6.25 in} \setlength\textheight{8.50 in}
 \setlength\footskip{0.25 in} \setlength\topmargin{0 in} \setlength\headheight{0.25 in} \setlength\headsep{0.25 in}
 
+%---Set table of contents depth------------------------------------------------------
+\setcounter{tocdepth}{2} % + subsections
+
 %%%---DOCUMENT---%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
 
@@ -177,7 +193,7 @@ $endif$
   
   % ACKNOWLEDGEMENTS
   
-\begin{acknowledgements}
+  \begin{acknowledgements}
     $acknowledgments$
   \end{acknowledgements}
 

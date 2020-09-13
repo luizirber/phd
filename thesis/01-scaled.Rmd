@@ -49,7 +49,7 @@ $\mathbf{MOD}_m(W)$ supports both similarity and containment,
 with the drawback of not being fixed-sized anymore,
 growing with the complexity of the document.
 
-### Mash and genomic minhash
+### Mash and genomic MinHash
 
 Mash [@ondov_mash:_2016] is the first implementation of MinHash in genomic contexts,
 relating the $w$-shingling of a document to the $k$-mer composition of genomic datasets,
@@ -359,7 +359,7 @@ and so a more compatible serialization format
 (like JSON in the `smol` case)
 is not required.
 
-### Implementation for experiments
+### Experiments
 
 Experiments are implemented in `snakemake` workflows and use `conda` for
 managing dependencies,

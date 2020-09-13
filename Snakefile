@@ -26,6 +26,16 @@ rule build_thesis:
   shell: """
       cd thesis
       rm -f _main.Rmd
-      R -e "options(tinytex.verbose = TRUE); bookdown::render_book('index.Rmd', aggiedown::thesis_pdf(latex_engine = 'pdflatex'))"
+      R -e "options(tinytex.engine_args = '-shell-escape'); options(tinytex.verbose = TRUE); bookdown::render_book('index.Rmd', aggiedown::thesis_pdf(latex_engine = 'pdflatex'))"
       mv _book/_main.pdf _book/thesis.pdf
   """
+
+rule extract_title_page:
+  output: 'filing/title_page.pdf'
+  input: 'thesis/_book/thesis.pdf'
+  shell: "pdfjam {input} 1 -o {output}"
+
+rule extract_abstract:
+  output: 'filing/01_abstract.pdf'
+  input: 'thesis/_book/thesis.pdf'
+  shell: "pdfjam {input} 5 -o {output}"

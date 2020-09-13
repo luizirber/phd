@@ -446,7 +446,3 @@ This operation allow use cases where a researcher wants to find a genome of inte
 such as finding outbreaks of pathological organisms or,
 as in the Tara MAGs,
 mining for additional samples for an under-characterized organism.
-
-## Conclusion
-
-

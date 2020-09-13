@@ -6,16 +6,20 @@ It was written in R Markdown and \LaTeX, and rendered into PDF using [aggiedown]
 
 This document was typeset using the pdfLaTeX typesetting system, and the University of California Thesis class. Under the hood, the elements of the document formatting source code have been taken from the [Latex, Knitr, and RMarkdown templates for UC Berkeley's graduate thesis](https://github.com/stevenpollack/ucbthesis), and [Dissertate: a LaTeX dissertation template to support the production and typesetting of a PhD dissertation at Harvard, Princeton, and NYU](https://github.com/suchow/Dissertate)
 
-The source files for this thesis, along with all the data files, have been organised into a git repository available at https://github.com/luizirber/phd. A hard copy of the thesis can be found in the University of California Davis library.
+The source files for this dissertation,
+along with all the data files,
+have been organised into a git repository archived at
+[https://doi.org/10.5281/zenodo.4012667](https://doi.org/10.5281/zenodo.4012667).
+A hard copy of the dissertation can be found in the University of California Davis library.
 
-This version of the thesis was generated on `r Sys.time()`. The repository is currently at this commit:
+This version of the dissertation was generated on `r Sys.time()`. The repository is currently at this commit:
 ```{r echo = FALSE, eval = TRUE, tidy=TRUE, tidy.opts=list(width.cutoff=50)}
 # I've set eval=FALSE to ensure Travis-CI can run
 # if you're not using Travis-CI, then eval=TRUE will be fine
 library(git2r)
 if ( git2r::in_repository() ) {
-       #summary(commits()[[1]]) 
-       print(sha(last_commit()))
+       summary(commits()[[1]]) 
+       #print(sha(last_commit()))
 } else { 
        message("We are not in a git repository") 
 }

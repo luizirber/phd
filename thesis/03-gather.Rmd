@@ -2,6 +2,13 @@
 
 \chaptermark{Gather}
 
+```{=latex}
+\begin{epigraphs}
+  \qitem{The aim of science is not to open the door to infinite wisdom, but to set a limit to infinite error.}%
+        {Bertolt Brecht}
+\end{epigraphs}
+```
+
 ## Introduction
 
 <!--

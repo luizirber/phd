@@ -3,7 +3,10 @@
 \chaptermark{Introduction}
 
 ```{=latex}
-\epigraph {To be whole is to be part; true voyage is return. -- Ursula K. Le Guin}
+\begin{epigraphs}
+  \qitem{About ten years ago some computer scientists came by and said they heard we have some really cool problems. They showed that the problems are NP-complete and went away!}%
+        {Joseph Felsenstein}
+\end{epigraphs}
 ```
 
 Genome sequencing generates data at increasing rates with lower costs than before,
@@ -106,7 +109,7 @@ the former focuses on computing the **containment** of organisms
 in the metagenome sample query.
 
 Since public databases are growing to petabyte-scale levels,
-working with this data deluge is a significant challenge in most computational systems available to the average researcher. 
+working with this data deluge is a significant challenge in most computational systems available to the average researcher.
 Even keeping up with new submissions requires substantial network bandwidth to be able to download the data,
 let alone the computational resources to process the data into formats more amenable for specific analysis.
 At the same time,

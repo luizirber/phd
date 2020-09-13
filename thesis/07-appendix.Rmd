@@ -1,14 +1,43 @@
 `r if(knitr:::is_latex_output()) '\\appendix'`
 
-`r if(!knitr:::is_latex_output()) '# (APPENDIX) Appendix {-}'` 
+`r if(!knitr:::is_latex_output()) '# (APPENDIX) Appendix {-}'`
 
 <!--
 If you feel it necessary to include an appendix, it goes here.
 -->
 
-# smol source code
+## smol source code
 
-<!-- TODO: include 
-experiments/smol_gather/scripts/smol/src/main.rs
-experiments/smol_gather/scripts/smol/Cargo.toml
--->
+<!-- TODO: intro to code -->
+
+```{=latex}
+\begin{mdframed}
+\linespread{1.0}
+\inputminted[breaklines]{rust}{../experiments/smol_gather/scripts/smol/src/main.rs}
+\end{mdframed}
+```
+
+```{=latex}
+\begin{mdframed}
+\linespread{1.0}
+\inputminted[breaklines]{toml}{../experiments/smol_gather/scripts/smol/Cargo.toml}
+\end{mdframed}
+```
+
+## SRA search source code
+
+<!-- TODO: intro to code -->
+
+```{=latex}
+\begin{mdframed}
+\linespread{1.0}
+\inputminted[breaklines]{rust}{../experiments/wort/sra_search/src/main.rs}
+\end{mdframed}
+```
+
+```{=latex}
+\begin{mdframed}
+\linespread{1.0}
+\inputminted[breaklines]{toml}{../experiments/wort/sra_search/Cargo.toml}
+\end{mdframed}
+```

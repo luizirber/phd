@@ -1,10 +1,10 @@
 ---
 # UCD thesis fields
-title: "Decentralizing indices for genomic data"
+title: "Decentralizing Indices for Genomic Data"
 author: "Luiz Carlos Irber Junior"
 year: "2020"
 month: "September"
-program: "COMPUTER SCIENCE"
+program: "Computer Science"
 uccampus: "DAVIS"
 report: "DISSERTATION"
 degree: "DOCTOR OF PHILOSOPHY"
@@ -12,25 +12,32 @@ chair: "C. Titus Brown"
 signature1: "Cindy Rubio González"
 signature2: "David M Koslicki"
 signature3: "Sam Díaz-Muñoz"
+
+dedication: |
+  Na!
+  Parents.
+  Tio Elói
+
+acknowledgments: |
+  ```{=latex}
+  \begin{epigraphs}
+    \qitem{To be whole is to be part; true voyage is return.}%
+          {Ursula K. Le Guin}
+  \end{epigraphs}
+  ```
+
+  Taqueria Davis,
+  Phil and Taylor and everyone on #TeamSourmash
+  Lab colleagues, present and past (Michael, Likit, Jiarong, ...)
+
 abstract: |
   "TODO TODO TODO"
-acknowledgments: |
-  "Na! Parents. Tio Elói e tia Ângela. Taqueria Davis."
-dedication: |
-  "*Another flaw in the human character is that everybody wants to build and nobody wants to do maintenance.*"
-  (Kurt Vonnegut)
-
-  "*The aim of science is not to open the door to infinite wisdom, but to set a limit to infinite error.*"
-  (Bertolt Brecht)
-
-  "*About ten years ago some computer scientists came by and said they heard we have some really cool problems. They showed that the problems are NP-complete and went away!*"
-  (Joseph Felsenstein)
 
 # End of UCD thesis fields
 knit: "bookdown::render_book"
 site: bookdown::bookdown_site
-output: 
-  aggiedown::thesis_pdf: 
+output:
+  aggiedown::thesis_pdf:
     latex_engine: pdflatex
 #  aggiedown::thesis_gitbook: default
 #  aggiedown::thesis_word: default

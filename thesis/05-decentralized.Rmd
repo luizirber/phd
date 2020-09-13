@@ -3,10 +3,14 @@
 \chaptermark {Decentralizing}
 
 ```{=latex}
-\epigraph {A complex system that works is invariably found to have evolved from a
-simple system that worked. A complex system designed from scratch never works
-and cannot be patched up to make it work. You have to start over with a working
-simple system. – John Gall}
+\begin{epigraphs}
+  \qitem{A complex system that works is invariably found to have evolved from a simple system that worked.
+         A complex system designed from scratch never works and cannot be patched up to make it work.
+         You have to start over with a working simple system.}%
+        {John Gall}
+  \qitem{Another flaw in the human character is that everybody wants to build and nobody wants to do maintenance.}%
+        {Kurt Vonnegut}
+\end{epigraphs}
 ```
 
 ## Introduction
@@ -453,5 +457,3 @@ Moreover,
 there is also a command-line interface (CLI) that currently communicates directly with the central API for downloading data,
 but following the same principle of the public interface of the CLI not changing
 if the implementation changes it can serve as a minimal shim over more decentralized approaches.
-
-## Conclusion

@@ -1,22 +1,56 @@
+<!--
 `r if(knitr:::is_latex_output()) '\\appendix'`
 
 `r if(!knitr:::is_latex_output()) '# (APPENDIX) Appendix {-}'`
+\chaptermark {Appendix}
+-->
 
 <!--
 If you feel it necessary to include an appendix, it goes here.
 -->
+```{=latex}
+\begin{appendices}
+```
 
-## smol source code
+# smol source code
 
-<!-- TODO: intro to code -->
+`smol` is a minimal implementation for the Scaled MinHash sketch and the gather method for simulation and verifying results with more featureful tools.
+There are two compatible versions,
+one in Python and another in Rust,
+due to performance requirements when processing large datasets (like metagenomes).
+Both versions of the Scaled MinHash implementations use each language standard library sets
+(`set` for Python, `HashSet` for Rust)
+for storing hashes and efficient set operations (intersection and difference).
+Since they serialize the sketches to a compatible JSON format,
+they can be used interchangeably and while computing Scaled MinHash sketches is
+orders of magnitude faster in Rust,
+for gather running time are similar and in the order of seconds.
 
+## Python
+
+The Python version has two external dependencies:
+`screed` for sequence parsing,
+and `mmh3` for the MurmurHash3 hash function.
+Other modules from the standard library are used for JSON serialization (`json`)
+and command line parsing (`argparse`).
+
+`smol.py`:
 ```{=latex}
 \begin{mdframed}
 \linespread{1.0}
-\inputminted[breaklines]{rust}{../experiments/smol_gather/scripts/smol/src/main.rs}
+\inputminted[breaklines]{python}{../experiments/smol_gather/scripts/smol.py}
 \end{mdframed}
 ```
 
+## Rust
+
+The Rust version has four direct external dependencies:
+`needletail` for sequence parsing and normalization
+(similar to what `screed` does in the Python version),
+`murmurhash3` for the MurmurHash3 hash function,
+`serde_json` for JSON serialization and `structopt` for command line parsing.
+
+`smol/Cargo.toml`:
 ```{=latex}
 \begin{mdframed}
 \linespread{1.0}
@@ -24,10 +58,40 @@ If you feel it necessary to include an appendix, it goes here.
 \end{mdframed}
 ```
 
-## SRA search source code
+`smol/src/main.rs`:
+```{=latex}
+\begin{mdframed}
+\linespread{1.0}
+\inputminted[breaklines]{rust}{../experiments/smol_gather/scripts/smol/src/main.rs}
+\end{mdframed}
+```
 
-<!-- TODO: intro to code -->
+# SRA search source code
 
+`SRA search` uses external crates for specific functionality:
+`rayon` for parallelization of the signature loading and searching functions,
+`niffler` for loading compressed data,
+`structopt` for command line parsing,
+`serde` and `serde_json` for loading `sourmash` signatures,
+`env_logger` and `log` for reporting progress,
+and `sourmash` for the Scaled MinHash implementation.
+
+The code is structured to load a set of query signatures in memory as read-only,
+and spawning multiple threads for loading a chunk of the metagenome queries per thread
+and perform containment queries.
+Results are sent using a multiple-producer, single-consumer channel to a specific thread responsible for writing the output,
+avoiding garbled output due to multiple writers.
+Output is formatted as a comma-separated values file.
+
+`sra_search/Cargo.toml`:
+```{=latex}
+\begin{mdframed}
+\linespread{1.0}
+\inputminted[breaklines]{toml}{../experiments/wort/sra_search/Cargo.toml}
+\end{mdframed}
+```
+
+`sra_search/src/main.rs`:
 ```{=latex}
 \begin{mdframed}
 \linespread{1.0}
@@ -36,8 +100,5 @@ If you feel it necessary to include an appendix, it goes here.
 ```
 
 ```{=latex}
-\begin{mdframed}
-\linespread{1.0}
-\inputminted[breaklines]{toml}{../experiments/wort/sra_search/Cargo.toml}
-\end{mdframed}
+\end{appendices}
 ```

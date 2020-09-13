@@ -373,6 +373,7 @@ average coverage of the reads in MAG and total reads mapped from the metagenome 
 
 These results are available as a public git repo in https://github.com/luizirber/2020-07-22-mag-search/
 and include links to an interactive notebook that can be executed with Binder for easy exploration.
+Full source for the SRA search Rust code is available in [Appendix B](#sra-search-source-code).
 
 ## Discussion
 

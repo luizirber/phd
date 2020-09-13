@@ -4,6 +4,7 @@ thesis/thesis.log
 thesis/thesis.tdo
 thesis/bib/phd.bib
 thesis/bib/minhash.bib
+thesis/_minted-thesis/
 proposal/Proposal.*
 .snakemake
 **/.ipynb_checkpoints/

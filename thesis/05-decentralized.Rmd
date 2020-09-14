@@ -35,7 +35,7 @@ Among the issues raised are budgetary constraints
 scalability of storing all the raw data being generated,
 and long term access to data already archived.
 
-Chapter [4](#distributed-signature-calculation-with-wort)) introduced wort,
+Chapter [4](#distributed-signature-calculation-with-wort) introduced wort,
 a distributed system for signature computation,
 and the challenges to efficiently retrieve data from public genomic databases.
 This chapter discusses alternatives for increasing resilience for storing and distributing data using decentralizing approaches,
@@ -52,7 +52,7 @@ In 2019 the Sequence Read Archive adopted this approach
 (on top of maintaining their own existing infrastructure)
 with both Amazon Web Service (AWS) and Google Cloud Platform (GCP) serving as storage.
 This relieves the pressure on their current infrastructure,
-as well as expands bandwidth and throughput for accessing the data,
+as well as expanding bandwidth and throughput for accessing the data,
 since both AWS and GCP already have extensive infrastructure in place for their cloud offerings.
 Companies also benefit from these arrangements because data is more readily available for their existing users,
 and it also attracts new users because there are financial incentives to avoid transferring data out of their cloud infrastructure.
@@ -128,7 +128,7 @@ even if there are many other copies spread around the network
 (or even other copies already exist locally in the machine).
 
 Every git repository is self-contained
-(can operate only with a local copy of the data)
+(in that it can operate only with a local copy of the data)
 and git provides operations to synchronize between repositories,
 but there is no networking layer for sharing automatically the data with other repositories:
 pushing and pulling changes are operations using a single remote,
@@ -197,7 +197,7 @@ like Bittorrent.
 
 ### The MHBT index is amenable to content addressable approaches
 
-The MHBT index introduced in chapter [2](#minhash-bloom-tree) has structural features that make it a
+The MHBT index introduced in Chapter [2](#minhash-bloom-tree) has structural features that make it a
 good fit for content-addressable approaches.
 Leaf nodes in an MHBT are signatures for a specific dataset,
 and are effectively immutable for public genomic databases,
@@ -316,7 +316,7 @@ Experiments 2) and 3) use the same MHBT index as 1), but with an IPFS backend as
 with the only difference being that 3) is executed right after 2),
 and so all the data is already available in the local IPFS node and no network transfer is needed.
 The goal is to show the performance impact of a cold start (experiment 2),
-and what is the overhead that IPFS imposes when used in conditions more similar to experiment 1),
+and to measure is the overhead that IPFS imposes when used in conditions more similar to experiment 1,
 when all the data is available.
 
 Table: (\#tab:sbt-ipfs) Performance of MHBT operations with IPFS storage. Units in seconds, with fold-difference to the baseline in parenthesis.

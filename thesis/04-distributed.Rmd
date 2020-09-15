@@ -18,7 +18,7 @@ since a signature retains a much smaller subset of the original data
 and once a chunk of the data is processed it is not necessary to keep it or refer to it again.
 The calculation process is frequently I/O bound on reading data,
 unless very fast access to the data is available,
-when it becomes CPU-bound by the hashing algorithm.
+when it becomes CPU-bound on hashing algorithm.
 sourmash signatures are also typically small,
 with input sizes in the order of hundreds of times larger than the final signature.
 This creates opportunities for approaches where distributed workers do all the expensive data access,
@@ -81,7 +81,7 @@ which hosts raw sequence data.
 
 Through a "Facilities Integrating Collaborations for User Science" (FICUS) grant we also had access to the JGI IMG/M database,
 as well as to the NERSC supercomputers for computational resources.
-There were 65 thousand single genome datasets corresponding to the taxons represented in the database,
+There were 65,000 single genome datasets corresponding to the taxons represented in the database,
 and metadata was provided independently of online access to IMG.
 It represented a snapshot of the data available on the database in October 2017.
 The sequencing data was available in a shared storage unit,
@@ -387,8 +387,8 @@ resulting in more manageable subsets that can be used efficiently with current m
 Scaled MinHash sketches allow calculating similarity and containment between
 datasets without the need to access the original datasets.
 Because only a fraction
-(controlled with the scaled parameter)
 of the original data need to be stored,
+(controlled with the scaled parameter)
 they are good basic components in the implementation of systems that allow searching large collections of datasets.
 
 wort is a system that takes advantage of how Scaled MinHash sketches are

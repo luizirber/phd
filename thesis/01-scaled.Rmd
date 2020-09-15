@@ -208,10 +208,11 @@ and Mash Screen (_Containment Score_) for containment queries.
 and doesn't include many required features for working with real biological data,
 but its smaller code base makes it a more readable and concise example of the method.
 
-Experiments were run for $k={21, 31, 51}$,
+Experiments use $k={21, 31, 51}$
 (except for Mash, which only supports $k \le 32$).
-For Mash and CMash they were run with $n={1000, 100000}$
-to evaluate the containment estimates when using larger sketches.
+For Mash and CMash they were run with $n={1000, 10000}$
+to evaluate the containment estimates when using larger sketches with sizes
+comparable to the Scaled MinHash sketches with $scaled=1000$.
 The truth set is calculated using an exact $k$-mer counter implemented with a
 _HashSet_ data structure in the Rust programming language.
 
@@ -239,9 +240,31 @@ since `Mash` doesn't support $k>32$.
 
 ### Average Scaled MinHash sketch sizes across Genbank domains
 
-```{r scaledGenBankSizes, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, fig.width=4, fig.cap="Scaled MinHash sketch sizes over GenBank domains, s=2000.", out.width="400px"}
-knitr::include_graphics('../experiments/sizes/figures/sizes.png')
+514,209 assembled genomes (
+5,234 Archaea,
+464,485 Bacteria,
+6,984 Fungi,
+1,093 Protozoa and
+36,413 Viral genomes)
+from GenBank.
+Scaled MinHash sketches were calculated with $scaled=2000$ and $k=21$.
+
+```{r scaledGenBankSizesBoxen, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, fig.cap='(ref:genbank-sizes-boxen)', out.width="100%", fig.show="hold", fig.align="center"}
+knitr::include_graphics('../experiments/sizes/figures/sizes.pdf')
 ```
+
+(ref:genbank-sizes-boxen) Letter-value plot [@hofmann_letter-value_2017] of _Scaled MinHash_
+sketch sizes ($scaled=2000, k=21$) for 514,209 assembled genomes in GenBank,
+separated by domain.
+
+
+```{r scaledGenBankSizesScatter, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, fig.cap='(ref:genbank-sizes-scatter)', out.width="100%", fig.show="hold", fig.align="center"}
+knitr::include_graphics('../experiments/sizes/figures/sizes_bp_unique.png')
+```
+
+(ref:genbank-sizes-scatter) Scaled MinHash sketch sizes ($scaled=2000, k=21$) over GenBank domains.
+**A** Using number of base pairs in the original genome (including repeats).
+**B** Using unique 21-mers instead. Line is expected sketch size for $scaled=2000$.
 
 ## Discussion
 

@@ -224,9 +224,8 @@ differences from containment estimate to ground truth (exact).
 Each method is evaluated for $k=\{21,31,51\}$,
 except for `Mash` with $k=51$,
 since `Mash` doesn't support $k>32$.
-**A**: `Mash` and `CMash` using $n=1000$, _Scaled MinHash_ using $scaled=1000$
-**B**: $n=1000$, $scaled=1000$, excluding low coverage genomes.
-**C** and **D**: same as **A** and **B**, but with $n=10000$ for `Mash` and `CMash`.
+**A**: Using all 68 reference genomes found in previous articles.
+**B**: Excluding low coverage genomes identified in previous articles.
 
 <!-- TODO
 - show method works, even if slow, lead to introduction of other indices

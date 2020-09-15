@@ -8,15 +8,14 @@ The {#rmd-basics} text after the chapter declaration will allow us to link throu
 
 ## Introduction
 
-<!-- TODO
-- Note, can be narrow given the whole thesis introduction.
-- paragraph 1: what is the technical problem of interest? lightweight compositional queries? motivate briefly with some biology, maybe.
-- paragraph 2: motivate narrowing our focus to k-mer containment and minhash-based techniques. Will you consider dashing etc?
--->
+New computational methods that can leverage the increasing availability
+of sequencing data due to lower costs are required to analyze this data,
+since traditional methods like alignment don't scale well to this data magnitude.
 
-A data sketch is a representative proxy for the original data focused on queries for specific properties.
-It is also a probabilistic data structure since it uses hashing techniques to provide statistical guarantees on the precision of the answer for a query.
-This allows a memory/accuracy trade-off:
+An interesting class of algorithms are sketches [@gibbons_synopsis_1999],
+a sublinear space representation of the original data focused on queries for specific properties
+using hashing techniques to provide statistical guarantees on the precision of the answer for a query.
+These probabilistic data structures allow a memory/accuracy trade-off:
 using more memory leads to more accurate results,
 but in memory-constrained situations it still bounds results to an expected error rate.
 
@@ -25,16 +24,14 @@ but in memory-constrained situations it still bounds results to an expected erro
 The MinHash sketch [@broder_resemblance_1997] was developed at Altavista in the context of document clustering and deduplication.
 It provides an estimate of the Jaccard similarity
 (called **resemblance** in the original article)
-and the **containment** of two documents,
+$$ J(A, B) = \frac{\vert A \cap B \vert }{\vert A \cup B \vert} $$
+and the **containment** of two documents
+$$C(A, B) = \frac{\vert A \cap B \vert }{\vert A \vert}$$
 estimating how much of document $A$ is contained in document $B$.
-<!-- TODO:
-J(A, B) = frac{\vert A \cup B \vert }{\vert A \cap B \vert}
-C(A, B) = frac{\vert A \cup B \vert }{\vert A \vert}
--->
 These estimates depend on two processes:
-converting documents to sets ("Shingling"),
+converting documents to sets (*Shingling*),
 and transforming large sets into short signatures,
-while preserving similarity ("Min-Hashing").
+while preserving similarity (*Min-Hashing*).
 In the original use case the *$w$-shingling* $\Omega$ of a document $D$ is defined as the set of all continuous subsequence of $w$ words contained in $D$.
 *Min-hashing* is the process of creating $W = \{\,h(x) \mid \forall x \in \Omega\,\}$,
 where $h(x)$ is an uniform hash function,
@@ -88,11 +85,11 @@ This precludes the need to keep the original data for the query,
 and since the Bloom Filter is much smaller than the original dataset in most cases
 that leads to storage savings for this use case.
 
-### Containment score and mash screen
+### Containment score and Mash Screen
 
-\emph{mash screen} [@ondov_mash_2019] is a new method implemented in Mash for calculating containment scores.
+\emph{Mash Screen} [@ondov_mash_2019] is a new method implemented in Mash for calculating containment scores.
 Given a collection of reference MinHash sketches and a query sequence mixture (a metagenome, for example),
-\emph{mash screen} builds a mapping of each distinct hash from the set of all hashes in the reference MinHash sketches to a count of how many times the hash was observed.
+\emph{Mash Screen} builds a mapping of each distinct hash from the set of all hashes in the reference MinHash sketches to a count of how many times the hash was observed.
 The query sequence mixture is decomposed and hashed with the same parameters $k$
 (from the $k$-mer composition) and $h$ (the hash function) used to generate the reference MinHash sketches,
 and for each hash in the query also present in the mapping the counter is updated.
@@ -107,15 +104,15 @@ the Mash Containment,
 to model the $k$-mer survival
 -->
 
-Comparing \emph{mash screen} to \emph{CMash},
+Comparing \emph{Mash Screen} to \emph{CMash},
 the main difference is that the former streams the query as raw sequencing data,
 while the latter generates a Bloom Filter for the query first.
-\emph{mash screen} avoids repeated membership checks to a Bloom Filter by collecting all distinct hashes across the reference MinHash sketches first,
+\emph{Mash Screen} avoids repeated membership checks to a Bloom Filter by collecting all distinct hashes across the reference MinHash sketches first,
 and then updating a counter associated with each hash if it is observed in the query.
 After the query finishes streaming,
 it is then summarized again against the sketches in the collection.
 
-\emph{mash screen} needs the original data for the query during reanalysis,
+\emph{Mash Screen} needs the original data for the query during reanalysis,
 because adding new sketches to the collection of references might introduce new hashes not observed before.
 For large scale projects like reanalysis of all the SRA metagenomes this
 requirement means continuous storage or re-download of many petabytes of data.
@@ -204,8 +201,32 @@ Figure \ref{fig:minhashes} shows an example comparing MinHash, ModHash and Scale
 
 ### Comparison with other containment estimation methods
 
-In this section the Scaled MinHash method is compared to CMash (containment
-MinHash) and mash screen (containment score).
+In this section the _Scaled MinHash_ method implemented in `smol`
+is compared to CMash (_Containment MinHash_)
+and Mash Screen (_Containment Score_) for containment queries.
+`smol` is a minimal implementation of _Scaled MinHash_ for demonstration of the method
+and doesn't include many required features for working with real biological data,
+but its smaller code base makes it a more readable and concise example of the method.
+
+Experiments were run for $k={21, 31, 51}$,
+(except for Mash, which only supports $k \le 32$).
+For Mash and CMash they were run with $n={1000, 100000}$
+to evaluate the containment estimates when using larger sketches.
+The truth set is calculated using an exact $k$-mer counter implemented with a
+_HashSet_ data structure in the Rust programming language.
+
+```{r minhash1000, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="100%", auto_pdf=TRUE, fig.cap='(ref:minhash1000)', fig.show="hold", fig.align="center"}
+knitr::include_graphics('../experiments/smol_gather/figures/containment.pdf')
+```
+
+(ref:minhash1000) Letter-value plot [@hofmann_letter-value_2017] of the
+differences from containment estimate to ground truth (exact).
+Each method is evaluated for $k=\{21,31,51\}$,
+except for `Mash` with $k=51$,
+since `Mash` doesn't support $k>32$.
+**A**: `Mash` and `CMash` using $n=1000$, _Scaled MinHash_ using $scaled=1000$
+**B**: $n=1000$, $scaled=1000$, excluding low coverage genomes.
+**C** and **D**: same as **A** and **B**, but with $n=10000$ for `Mash` and `CMash`.
 
 <!-- TODO
 - show method works, even if slow, lead to introduction of other indices

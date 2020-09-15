@@ -319,7 +319,14 @@ The goal is to show the performance impact of a cold start (experiment 2),
 and what is the overhead that IPFS imposes when used in conditions more similar to experiment 1),
 when all the data is available.
 
-Table: (\#tab:sbt-ipfs) Performance of MHBT operations with IPFS storage. Units in seconds, with fold-difference to the baseline in parenthesis.
+Table: (\#tab:sbt-ipfs) Performance of MHBT operations with IPFS storage.
+Units in seconds, with fold-difference to the baseline in parenthesis.
+
+| Experiment     | takver | datasilo   | rosewater   |
+|:---------------|-------:|-----------:|------------:|
+| 1) Local (ZIP) | 9      | 43 (4.7x)  | 14 (1.5x)   |
+| 2) IPFS        | 12     | 115 (9.5x) | 415 (34.5x) |
+| 3) IPFS rerun  | 12     | 64 (5.5x)  | 23 (1.9x)   |
 
 <!--
 sourmash index -k 51 --traverse-directory index.sbt.zip sigs/
@@ -328,12 +335,6 @@ sourmash storage convert -b ipfs index.sbt.json
 
 time to download zipped DB: 1m53s
 -->
-
- experiment              takver      datasilo        rosewater
--------------           --------  --------------  ------------------
-1) local (zip)              9        43 (4.7x)        14 (1.5x)
-2) ipfs                    12       115 (9.5x)       415 (34.5x)
-3) ipfs again              12        64 (5.5x)        23 (1.9x)
 
 Experiment 1) is a measure of raw processing power,
 and as expected `takver` is the fastest one.
@@ -376,6 +377,12 @@ but otherwise they follow the same conditions as experiments 1-3.
 
 Table: (\#tab:leaf-ipfs) Performance of a leaf-only MHBT operations with IPFS storage. Units in seconds, with fold-difference to the baseline in parenthesis.
 
+| Experiment              | takver | datasilo    | rosewater    |
+|:------------------------|-------:|------------:|-------------:|
+| 4) Leaf-only (zip)      | 20     | 92 (4.6x)   | 35 (1.7x)    |
+| 5) Leaf-only IPFS       | 31     | 307 (14.6x) | 1267 (40.8x) |
+| 6) Leaf-only IPFS rerun | 31     | 170 (5.4x)  | 63 (2x)      |
+
 <!--
 sourmash index -k 51 --sparseness 1 --traverse-directory index_leaf.sbt.zip sigs/
 sourmash index -k 51 --sparseness 1 --traverse-directory index_leaf.sbt.json sigs/
@@ -383,12 +390,6 @@ sourmash storage convert -b ipfs index_leaf.sbt.json
 
 time to download zipped DB: 51s
 -->
-
- experiment              takver      datasilo        rosewater
--------------           --------  --------------  ------------------
-4) leaf-only (zip)         20        92 (4.6x)        35 (1.7x)
-5) leaf-only ipfs          31       307 (14.6x)     1267 (40.8x)
-6) leaf-only ipfs again    31       170 (5.4x)        63 (2x)
 
 The relative performance difference shows a 2-3 times slowdown when comparing experiments 4-6 to their counterparts in the previous section.
 We can see more clearly the performance impact of reconstructing the internal nodes in experiment 4),

@@ -203,10 +203,18 @@ Figure \ref{fig:minhashes} shows an example comparing MinHash, ModHash and Scale
 
 In this section the _Scaled MinHash_ method implemented in `smol`
 is compared to CMash (_Containment MinHash_)
-and Mash Screen (_Containment Score_) for containment queries.
+and Mash Screen (_Containment Score_) for containment queries
+in the Shakya dataset [@shakya_comparative_2013],
+a synthetic mock metagenomic bacterial and archaeal community where the organisms are known,
+including low-coverage and contaminant genomes described in [@awad_evaluating_2017] and [@ondov_mash_2019].
+
 `smol` is a minimal implementation of _Scaled MinHash_ for demonstration of the method
 and doesn't include many required features for working with real biological data,
 but its smaller code base makes it a more readable and concise example of the method.
+For _Mash Screen_ the ratio of hashes matched by total hashes is used instead of the _Containment Score_,
+since the latter uses a $k$-mer survival process modeled as a Poisson process
+first introduced in the _Mash distance_ [@ondov_mash:_2016] and later adapted as
+the _Containment score_ [@ondov_mash_2019].
 
 Experiments use $k={21, 31, 51}$
 (except for Mash, which only supports $k \le 32$).
@@ -228,35 +236,54 @@ since `Mash` doesn't support $k>32$.
 **A**: Using all 68 reference genomes found in previous articles.
 **B**: Excluding low coverage genomes identified in previous articles.
 
+All methods are within 1\% of the exact containment on average (Figure \ref{fig:minhash1000} A),
+with `CMash` consistently underestimating for all $k$ values.
+`Mash Screen` with $n=10000$ has the smallest difference to ground truth for $k=\{21, 31\}$,
+followed by `smol` with `scaled=1000` and `Mash Screen` with $n=1000$.
+
+In order to evaluate the effect of the low-coverage and contaminant genomes
+previously detected in this dataset,
+(Figure \ref{fig:minhash1000} B) shows results with these genomes removed.
+The number of outliers is greatly reduced,
+with all methods mostly within 1\% absolute difference to the ground truth.
+`CMash` still have some outliers with up to 8\% difference to the ground truth.
+
 <!-- TODO
-- show method works, even if slow, lead to introduction of other indices
-
-- use exact and scaled=1000, show results are similar.
-
-- use podar dataset
-
-- compare with cmash/mash screen here?
+  * runtimes?
 -->
 
-### Average Scaled MinHash sketch sizes across Genbank domains
+### Scaled MinHash sketch sizes across GenBank domains
 
+In order to compare sketch sizes across assembled genomes and where they are too
+small to be properly estimate containment and similarity,
 514,209 assembled genomes (
 5,234 Archaea,
 464,485 Bacteria,
 6,984 Fungi,
 1,093 Protozoa and
 36,413 Viral genomes)
-from GenBank.
-Scaled MinHash sketches were calculated with $scaled=2000$ and $k=21$.
+from GenBank [@benson_genbank_2017] were used for computing _Scaled MinHash_ sketches with $scaled=2000$ and $k=21$.
+Figure \ref{fig:scaledGenBankSizesBoxen} show letter-value plots [@hofmann_letter-value_2017] for the sketch sizes.
+The mean sketch size ranges from 20 for viruses to 18,115 for protozoans,
+indicating that _Scaled MinHash_ sketches at $scaled=2000$ are too small for accurate containment and similarity estimates
+in most viral genomes,
+but are large enough for archaea ($mean=767$) and larger organisms.
 
 ```{r scaledGenBankSizesBoxen, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, fig.cap='(ref:genbank-sizes-boxen)', out.width="100%", fig.show="hold", fig.align="center"}
 knitr::include_graphics('../experiments/sizes/figures/sizes.pdf')
 ```
 
-(ref:genbank-sizes-boxen) Letter-value plot [@hofmann_letter-value_2017] of _Scaled MinHash_
+(ref:genbank-sizes-boxen) Letter-value plot of _Scaled MinHash_
 sketch sizes ($scaled=2000, k=21$) for 514,209 assembled genomes in GenBank,
 separated by domain.
 
+Figure \ref{fig:scaledGenBankSizesScatter} uses the same data from Figure \ref{fig:scaledGenBankSizesBoxen}
+but using a scatter plot compared to the number of base pairs and unique 21-mers
+for each genome.
+The line in subfigure **B** shows the expected sketch size $size = \frac{unique}{scaled}$ for $scaled=2000$,
+noting how the actual size converges to the line for larger genomes.
+Subfigures **A** and **B** differ due to repetitive genomic sequences and the
+number of base pairs not representing the number of unique $k$-mers of a genome.
 
 ```{r scaledGenBankSizesScatter, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, fig.cap='(ref:genbank-sizes-scatter)', out.width="100%", fig.show="hold", fig.align="center"}
 knitr::include_graphics('../experiments/sizes/figures/sizes_bp_unique.png')
@@ -279,7 +306,7 @@ Most of these operations are also possible with MinHash and ModHash,
 with caveats.
 One example of these operations is \emph{downsampling}:
 the contiguous value range for Scaled MinHash sketches allow deriving $\mathbf{SCALED}_{s'}(W)$ sketches for any $s' \ge s$ using only $\mathbf{SCALED}_{s}(W)$.
-MinHash and ModHash also support this operation,
+MinHash and ModHash can also support this operation,
 as long as $n' \le n$ and $m'$ is a multiple of $m$.
 
 Because Scaled MinHash sketches collect any value below a threshold this also guarantees that once a value is selected it is never discarded.
@@ -329,10 +356,18 @@ independently of the size of the original data.
 Scaled MinHash sketches grow proportionally to the original data cardinality,
 and in the worst case can have up to $\frac{H}{s}$ items.
 
-Another limitation is loss of sensitivity to small datasets when using larger $s$ values.
+_Scaled MinHash_ sketches offer a fixed range of possible hash values,
+but with reduced sensitivity for small datasets when using larger $s$ (scaled) values.
 A biological example are viruses:
-at $s=1000$ many viruses are too small to consistently have a hashed value
-picked by the Scaled MinHash approach.
+at $s=2000$ many viruses are too small to consistently have a hashed value
+selected by the _Scaled MinHash_ approach.
+Other _MinHash_ approaches sidestep the problem by using hashing and streaming the query dataset (`Mash Screen`)
+or loading the query dataset into an approximate query membership data structure (`CMash`) to allow comparisons
+with the variable range of possible hash values,
+but both solutions require the original data or a more limited data representation than _Scaled MinHash_.
+The consistency of operating in the same data structure also allows further
+methods to be develop using only _Scaled MinHash_ sketches and their features,
+especially if large collections of _Scaled MinHash_ sketches are available.
 
 <!-- TODO
 - increased size (compared with minhash, which is constant size)
@@ -346,13 +381,24 @@ picked by the Scaled MinHash approach.
 
 ## Conclusion and Future Work
 
-<!-- TODO
-- CTB 2-3 paragraphs
-- our hashing approach is simple to implement, simple to analyze.
-- has some upsides - no need to reindex. summarize comparison with other techniques briefly.
-- Has some drawbacks, summarize briefly.
-- Building software ecosystem to allow practical application in many ways - gather, indices, etc. Discussed in following chapters.
--->
+_Scaled MinHash_ sketches are simple to implement and analyze,
+with consistent guarantees for the range of values and subsetting properties when
+applied to datasets.
+Containment and similarity operations between _Scaled MinHash_ sketches
+avoid the need to access the original data or more limited representations that only allow membership query,
+and serve as a proxy for large scale comparisons between hundreds or thousands of datasets.
+
+Small genomes require low scaled values in order to properly estimate containment and similarity,
+and exact $k$-mer matching is brittle when considering evolutionarily-diverged organisms.
+While some of these problems can be overcome in future work,
+_Scaled MinHash_ sketches can serve as a prefilter for more accurate and
+computationally expensive applications,
+allowing these methods to be used in larger scales by avoiding processing data
+that is unlikely to return usable results.
+
+_Scaled MinHash_ sketches are effective basic building blocks for creating a software
+ecosystem that allow practical applications,
+including taxonomic classification in metagenomes and large scale indexing and searching in public genomic databases.
 
 ## Methods
 
@@ -393,7 +439,7 @@ Full source is available in [Appendix A](#smol-source-code).
 `exact` is an exact k-mer counting implementation in Rust.
 It also uses the standard library `HashSet` to store the $k$-mer composition of
 a dataset,
-and Needletail for sequence parsing.
+and `Needletail` for sequence parsing.
 It differs from `smol` because it stores all canonical $k$-mers,
 instead of a subset.
 The `bincode` library is used for serialization,

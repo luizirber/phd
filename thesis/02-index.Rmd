@@ -442,17 +442,40 @@ and approaches for increasing the resilience and shareability of biological
 sequencing data,
 described in Chapter [5](#chp-decentralizing).
 
-<!--
 ## Methods
 
 ### Implementation
 
-Focused on the user experience via the command-line interface and Python API,
-it implemented the core data structures in C++ for efficiency and exposed it to
-Python with an extension (written in Cython).
-The Python API allows fast prototyping of new ideas and interoperability with
-the larger scientific Python ecosystem,
-as well as access to better tooling for testing and software distribution.
+`sourmash` is a software package implemented in Python for the command-line
+interface and API for data exploration,
+and Rust for the core data structures and performance improvements.
+
+Both _Scaled_ and regular _MinHash_ sketches are available,
+calculated using the _MurmurHash3_ hash function
+(lower 64-bits from the 128-bits version) with a $seed=42$
+and stored in a sorted vector in memory.
+Serialization and deserialization to JSON is implemented using the `serde` crate,
+and sketches also support abundance tracking for the hashes.
+
+The _LCA_ and _MHBT_ indices are implemented at the Python level,
+and the _MHBT_ supports multiple storage backends
+(hidden dir, Zip files, IPFS and Redis)
+depending on the use case requirements.
+The _MHBT_ is implemented as a specialization of an _SBT_,
+replacing the Bloom Filters in the leaf nodes from the latter with _Scaled MinHash_ 
+sketches.
 
 ### Experiments
--->
+
+Experiments are implemented in `snakemake` workflows and use `conda` for
+managing dependencies,
+allowing reproducibility of the results with one command:
+`snakemake --use-conda`.
+This will download all data,
+install dependencies and generate the data used for analysis.
+
+The analysis and figure generation code is contained in a Jupyter Notebook,
+and can be executed in any place where it is supported,
+including in a local installation or using Binder,
+a service that deploy a live Jupyter environment in cloud instances.
+Instructions are available at https://doi.org/10.5281/zenodo.4012667

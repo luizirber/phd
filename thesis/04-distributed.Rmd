@@ -347,7 +347,7 @@ New sourmash signatures for the mapped reads were also calculated and checked
 for containment against the original MAG signature.
 The containment of the MAG in the reads match the containment estimated with Scaled MinHash sketches,
 showing they are good proxies for this kind of search.
-The results are in table \@ref(tab:mag-search).
+The results are in Table \@ref(tab:mag-search).
 
 Table: (\#tab:mag-search) Results for MAG TOBG_NP-110 (1,238,250 bp),
 showing SRA sequencing runs IDs,

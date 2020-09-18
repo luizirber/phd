@@ -1,4 +1,4 @@
-# Compositional analysis with Scaled MinHash and gather
+# Compositional analysis with Scaled MinHash and gather {#chp-gather}
 
 \chaptermark{Gather}
 

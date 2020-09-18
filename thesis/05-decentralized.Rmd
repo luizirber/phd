@@ -1,4 +1,4 @@
-# Decentralizing indices for public genomic data
+# Decentralizing indices for public genomic data {#chp-decentralizing}
 
 \chaptermark {Decentralizing}
 

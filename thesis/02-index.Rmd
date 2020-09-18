@@ -14,9 +14,8 @@
 Searching for matches in large collection of datasets is challenging when hundreds of thousands of them are available,
 especially if they are partitioned and the data is not all present at the same place,
 or too large to even be stored in a single system.
-
 Efficient methods for sequencing datasets use exact $k$-mer matching instead of relying on sequence alignment,
-but sensitivity is reduced since they can't deal with sequencing errors and biological variation as alignment-based methods can.
+but sensitivity is reduced since they can't deal with sequencing errors and biological variation as well as alignment-based methods can.
 
 <!-- cite some methods, including SBT and Mantis -->
 
@@ -131,7 +130,7 @@ Mantis [@pandey_mantis:_2018] uses this hash-to-color mapping
 as well as storing the mapping in Counting Quotient Filters [@pandey_general-purpose_2017],
 an alternative to Bloom Filters that also support counting and resizing.
 
-### Specialized indices for Scaled MinHash sketches
+## Specialized indices for Scaled MinHash sketches
 
 sourmash [@brown_sourmash:_2016] is a software for large-scale sequence data comparisons based on MinHash sketches.
 Initially implementing operations for computing,
@@ -151,6 +150,8 @@ Internally sourmash uses LinearIndex as the default index for lists of
 signatures provided in the command-line.
 
 #### MinHash Bloom Tree
+
+<!-- TODO: discuss insertion? -->
 
 The _MinHash Bloom Tree_ (_MHBT_) is a variation of the _Sequence Bloom Tree_ (_SBT_)
 that uses Scaled MinHash sketches as leaf nodes instead of Bloom Filters as in
@@ -185,6 +186,8 @@ but it simplifies implementation and provides better correctness guarantees.
 
 #### LCA index
 
+<!-- TODO: discuss insertion? -->
+
 The LCA index in sourmash is an inverted index that stores a mapping from hashes
 in a collection of signatures to a list of IDs for signatures containing the hash.
 Despite the name,
@@ -211,11 +214,62 @@ opting to reconstruct the sketches on-the-fly.
 
 ## Results
 
-### Index construction and updating
+### Index construction
 
-<!-- TODO
-- resource usage (time, cpu, mem)
--->
+In order to evaluate MHBT and LCA indices construction a GenBank snapshot from July 18, 2020,
+containing 725,331 assembled genomes (
+5,282 Archaea,
+673,414 Bacteria,
+6,601 Fungi
+933 Protozoa and
+39,101 Viral) <!-- TODO add total data size here? need to calculate... -->
+was used to measure runtime,
+memory consumption and final index size.
+MHBT indices were built with $scaled=1000$,
+and LCA indices used $scaled=10000$.
+Table \@ref(tab:lca-index) shows the results for the LCA index,
+and Table \@ref(tab:mhbt-index) for the MHBT index.
+
+Table: (\#tab:lca-index) Results for LCA indexing,
+with $scaled=10000$ and $k=21$.
+
+| Domain   | Runtime (s) | Memory (MB)| Size (MB) |
+|:---------|------------:|-----------:|----------:|
+| Viral    | 57          |         33 |         2 |
+| Archaea  | 58          |         30 |         5 |
+| Protozoa | 231         |          3 |        17 |
+| Fungi    | 999         |          3 |        65 |
+| Bacteria | 12,717      |        857 |       446 |
+
+Table: (\#tab:mhbt-index) Results for MHBT indexing,
+with $scaled=1000$, $k=21$ and internal nodes (Bloom Filters)
+using 10000 slots for storage.
+
+| Domain   | Runtime (s) | Memory (MB)| Size (MB) |
+|:---------|------------:|-----------:|----------:|
+| Viral    | 126         | 326        | 77        |
+| Archaea  | 111         | 217        | 100       |
+| Protozoa | 206         | 753        | 302       |
+| Fungi    | 1,161       | 3,364      | 1,585     |
+| Bacteria | 32,576      | 47,445     | 24,639    |
+
+Index sizes are more affected by the number of genomes inserted than the
+individual _Scaled MinHash_ sizes.
+Despite Protozoan and Fungal _Scaled MinHash_ sketches being larger individually,
+the Bacterial indices are an order of magnitude larger for both indices since
+they contain two orders of magnitude more genomes.
+
+Comparing between LCA and MHBT index sizes must account for their different scaled parameters,
+but as shown in Chapter [1](#chp-scaled) a _Scaled MinHash_ with $scaled=1000$ when downsampled to $scaled=10000$
+is expected to be ten times smaller.
+Even so,
+MHBT indices are more than ten times larger than their LCA counterparts,
+since they store extra caching information
+(the internal nodes)
+to avoid loading all the data to memory during search.
+LCA indices also contain extra data
+(the list of datasets containing a hash),
+but this is lower than the storage requirements for the MHBT internal nodes.
 
 <!--
   CAMI 2 refseq, 141k signatures, scaled=2000
@@ -224,12 +278,73 @@ opting to reconstruct the sketches on-the-fly.
     sig.name(): 5078 MB
 -->
 
+### Similarity queries on sourmash indices
 
-### Efficient similarity and containment queries
+<!--
+/usr/bin/time -v -o timings/bacteria_lca.txt -- sourmash search -k 21 --scaled 10000 sigs/bacteria/GCA_002846625.1.sig lca/genbank-bacteria-k21-scaled10k.lca.json.gz
+/usr/bin/time -v -o timings/bacteria_sbt.txt -- sourmash search -k 21 --scaled 1000 sigs/bacteria/GCA_002846625.1.sig sbt/genbank-bacteria-x1e4-k21.sbt.zip
 
-<!-- TODO
-- discuss COST (cost of single thread)
-- sourmash indices benefit from more data. Inverted index
+/usr/bin/time -v -o timings/fungi_lca.txt -- sourmash search -k 21 --scaled 10000 sigs/fungi/GCA_900069095.1.sig lca/genbank-fungi-k21-scaled10k.lca.json.gz
+/usr/bin/time -v -o timings/fungi_sbt.txt -- sourmash search -k 21 --scaled 1000 sigs/fungi/GCA_900069095.1.sig sbt/genbank-fungi-x1e4-k21.sbt.zip
+
+/usr/bin/time -v -o timings/protozoa_lca.txt -- sourmash search -k 21 --scaled 10000 sigs/protozoa/GCA_013420745.1.sig lca/genbank-protozoa-k21-scaled10k.lca.json.gz
+/usr/bin/time -v -o timings/protozoa_sbt.txt -- sourmash search -k 21 --scaled 1000 sigs/protozoa/GCA_013420745.1.sig sbt/genbank-protozoa-x1e4-k21.sbt.zip
+
+/usr/bin/time -v -o timings/archaea_lca.txt -- sourmash search -k 21 --scaled 10000 sigs/archaea/GCA_000230485.1.sig lca/genbank-archaea-k21-scaled10k.lca.json.gz
+/usr/bin/time -v -o timings/archaea_sbt.txt -- sourmash search -k 21 --scaled 1000 sigs/archaea/GCA_000230485.1.sig sbt/genbank-archaea-x1e4-k21.sbt.zip
+
+/usr/bin/time -v -o timings/viral_lca.txt -- sourmash search -k 21 --scaled 10000 sigs/viral/GCA_006401735.1.sig lca/genbank-viral-k21-scaled10k.lca.json.gz
+/usr/bin/time -v -o timings/viral_sbt.txt -- sourmash search -k 21 --scaled 1000 sigs/viral/GCA_006401735.1.sig sbt/genbank-viral-x1e4-k21.sbt.zip
+-->
+
+For the purpose of evaluating the performance characteristics of MHBT and LCA indices when performing searches,
+each of the previously described indices generated from GenBank domains was used
+to execute similarity searches (finding datasets in a collection that are similar to a query)
+using appropriate queries for each domain.
+All queries were selected from the relevant domain and queried against both MHBT ($scaled=1000$) and LCA ($scaled=10000$),
+for $k=21$.
+
+Table: (\#tab:search-runtime) Running time for similarity search
+using LCA ($scaled=10000$) and MHBT ($scaled=1000$) indices.
+
+|           | Viral      | Archaea    | Protozoa   | Fungi        | Bacteria      |
+|:----------|-----------:|-----------:|-----------:|-------------:|--------------:|
+| LCA       | 1.06       | 1.42       | 5.40       | 26.92        | 231.26        |
+| SBT       | 1.32       | 3.77       | 43.51      | 244.77       | 3,185.88      |
+
+Table: (\#tab:search-memory) Memory consumption for similarity search
+using LCA ($scaled=10000$) and MHBT ($scaled=1000$) indices.
+
+|           | Viral   | Archaea | Protozoa | Fungi     | Bacteria      |
+|:----------|--------:|--------:|---------:|----------:|--------------:|
+| LCA       | 223,484 | 240,088 | 797,816  | 3,274,388 | 20,925,984    |
+| SBT       | 162,628 | 125,280 | 332,080  | 1,655,788 | 2,289,904     |
+
+Table \@ref(tab:search-runtime) shows running time for both indices.
+For small indices (Viral and Archaea) the LCA running time is dominated by loading the index in memory,
+but for larger indices the cost is amortized due to the faster running times.
+This situation is clearer for the Bacteria indices,
+where the LCA search completes in 3 minutes and 51 seconds,
+while the SBT search takes 54 minutes.
+
+When comparing memory consumption,
+the situation is reversed.
+Table \@ref(tab:search-memory) shows how the LCA index consistently uses twice the memory for all domains,
+but for larger indices like Bacteria it uses as much as 10 times the memory as
+the MHBT index for the same data.
+
+For both runtime and memory consumption,
+it is worth pointing that the LCA index is a tenth of the data indexed by the MHBT.
+This highlights the trade-off between speed and memory consumption for both approaches,
+especially for larger indices.
+
+<!--
+### Specificity of taxonomic $k$-mer assignments
+
+ - k=21,31,51
+ - scaled=10k
+ - using genbank bacteria 2020.07.18
+ - TODO: weird bump for superkingdom with k=21
 -->
 
 ## Discussion
@@ -276,26 +391,49 @@ it is also possible to convert one index into the other.
 
 ### Limitations and future directions
 
-<!--
-- Other indices
-  * Fundamentally a scaled minhash is a subset of the k-mer composition of a
-  dataset, so any index from https://www.biorxiv.org/content/10.1101/866756v1
-  ("Data structures based on k-mers for querying large collections of sequencing datasets")
-  can be used to scale,
-  and given that gather is defined over a collection of signatures the indices
-  can also be used to improve gather performance.
+_Scaled MinHash_ sketches are fundamentally a subset of the $k$-mer composition of a dataset,
+and so any of the techniques described in [@marchet_data_2019] are potential
+candidates for improving current indices or implementing new ones.
+The MHBT index can be improved by using more efficient representations for the internal nodes [@solomon_improved_2017]
+and constructing the MHBT by clustering [@harris_improved_2018],
+and the LCA index can use more efficient storage of the list of signatures IDs by representing the list as colors [@pandey_mantis:_2018].
+The memory consumption of the LCA index can also be tackled by implementing it in
+external memory using memory-mapped files,
+letting the operating system cache and unload pages as needed.
 
-- sourmash is currently single threaded, but that's an implementation detail.
-  Parallel queries are possible (in a shared read-only index)
-
-- The LCA index can be implemented in external memory by using memory-mapped files,
-avoiding the need to load it all in memory.
--->
+Current indices are also single-threaded,
+and don't benefit from multicore systems.
+Both indices can be used in parallel by loading as read-only and sharing for multiple searches,
+but is is also possible to explore parallelization for single queries by
+partitioning the LCA and assigning each partition to a thread,
+as well as using a work-stealing thread pool for expanding the search frontier in the MHBT in parallel.
+In any case,
+the current implementations serve as a baseline for future scalability and can
+be used to guide optimization and avoid extraneous overhead and common failings
+of such projects [@mcsherry_scalability_2015].
 
 ## Conclusion
 
+_Scaled MinHash_ sketches allow scaling analysis to thousands of datasets,
+but efficiently searching and sharing them can benefit from data structures that
+index and optimize these use cases.
+This chapter introduces an index abstraction that can be trivially implementing
+using a list of sketches (_Linear index_) and more advanced implementations
+based on inverted indices (_LCA index_) and hierarchical indices (_MHBT_)
+providing options for fast and memory-efficient operations,
+as well as making it easier to share and analyze collections of sketches.
+All these functionalities are implemented in `sourmash`,
+a software package exposing these features as a command-line program as well as
+a Python API for data exploration and methods prototyping.
 
+These indices also serve as another set of building blocks for constructing more advanced
+methods for solving other relevant biological problems like taxonomic profiling,
+described in Chapter [3](#chp-gather),
+and approaches for increasing the resilience and shareability of biological
+sequencing data,
+described in Chapter [5](#chp-decentralizing).
 
+<!--
 ## Methods
 
 ### Implementation
@@ -308,3 +446,4 @@ the larger scientific Python ecosystem,
 as well as access to better tooling for testing and software distribution.
 
 ### Experiments
+-->

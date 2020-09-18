@@ -216,13 +216,13 @@ since the latter uses a $k$-mer survival process modeled as a Poisson process
 first introduced in the _Mash distance_ [@ondov_mash:_2016] and later adapted as
 the _Containment score_ [@ondov_mash_2019].
 
-Experiments use $k={21, 31, 51}$
+Experiments use $k=\{21, 31, 51\}$
 (except for Mash, which only supports $k \le 32$).
-For Mash and CMash they were run with $n={1000, 10000}$
+For Mash and CMash they were run with $n=\{1000, 10000\}$
 to evaluate the containment estimates when using larger sketches with sizes
 comparable to the Scaled MinHash sketches with $scaled=1000$.
 The truth set is calculated using an exact $k$-mer counter implemented with a
-_HashSet_ data structure in the Rust programming language.
+_HashSet_ data structure in the Rust programming language [@matsakis_rust_2014].
 
 ```{r minhash1000, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="100%", auto_pdf=TRUE, fig.cap='(ref:minhash1000)', fig.show="hold", fig.align="center"}
 knitr::include_graphics('../experiments/smol_gather/figures/containment.pdf')
@@ -237,7 +237,7 @@ since `Mash` doesn't support $k>32$.
 **B**: Excluding low coverage genomes identified in previous articles.
 
 All methods are within 1\% of the exact containment on average (Figure \ref{fig:minhash1000} A),
-with `CMash` consistently underestimating for all $k$ values.
+with `CMash` consistently underestimating the containment for all $k$ values.
 `Mash Screen` with $n=10000$ has the smallest difference to ground truth for $k=\{21, 31\}$,
 followed by `smol` with `scaled=1000` and `Mash Screen` with $n=1000$.
 
@@ -246,7 +246,7 @@ previously detected in this dataset,
 (Figure \ref{fig:minhash1000} B) shows results with these genomes removed.
 The number of outliers is greatly reduced,
 with all methods mostly within 1\% absolute difference to the ground truth.
-`CMash` still have some outliers with up to 8\% difference to the ground truth.
+`CMash` still has some outliers with up to 8\% difference to the ground truth.
 
 <!-- TODO
   * runtimes?

@@ -4,19 +4,20 @@
 
 ```{=latex}
 \begin{epigraphs}
-  \qitem{The aim of science is not to open the door to infinite wisdom, but to set a limit to infinite error.}%
-        {Bertolt Brecht}
+  \qitem{I seldom end up where I wanted to go, but almost always end up where I need to be.}%
+        {Douglas Adams}
 \end{epigraphs}
 ```
 
 ## Introduction
 
-<!--
- - What are the goals of compositional analysis in biological systems?
--->
-
-Taxonomic profiling is a particular instance of this general problem.
-The goal of taxonomic profiling is to find the identity and relative abundance of microbial community elements
+Compositional data analysis is the study of the parts of a whole using relative abundances [@aitchison_statistical_1982].
+This is a general problem with applications across many scientific fields [@aitchison_compositional_2005],
+and examples in biology include RNA-Seq [@quinn_field_2019-1],
+metatranscriptomics [@macklaim_rna-seq_2018],
+microbiome and metagenomics [@li_microbiome_2015].
+Taxonomic profiling is a particular instance of this general problem
+with the goal of finding the identity and relative abundance of microbial community elements
 at a specific taxonomic rank (species, genus, family),
 especially in metagenomic samples [@sczyrba_critical_2017].
 
@@ -30,7 +31,7 @@ $k$-mer assignments matching multiple taxons from a reference database
 with an option to reduce it further to the LCA [@kim_centrifuge_2016].
 
 Once each sequence (from raw reads or assembled contigs) has a taxonomic assignment,
-these methods resolve the final identity and abundance for each member of the community by summarizing the assignments to a specific taxonomic level.
+these methods resolve the final identity and abundance for each member of the community by summarizing the assignments to a specific taxonomic rank,
 Taxonomic profiling is fundamentally limited by the availability of reference datasets to be used for assignments,
 and reporting what percentage of the sample is unassigned is important to assess results,
 especially in under characterized environments such as oceans and soil.
@@ -197,8 +198,6 @@ knitr::include_graphics('figure/cami_i_low_recall_precision.png')
 
 #### CAMI II mouse gut metagenome dataset
 
-<!-- TODO more intro -->
-
 The CAMI initiative released new challenges in 2019 (marine, high-strain and pathogen detection)
 and 2020 (rhizosphere),
 with updated processes for submission,
@@ -249,13 +248,73 @@ The higher the completeness and purity, and the lower the L1 norm, the better th
 **c** Methods rankings and scores obtained for the different metrics over all samples and taxonomic ranks.
 For score calculation, all metrics were weighted equally.
 
+Figure \@ref(fig:gatherCAMImgSpider) is an updated version of Figure 6 from [@meyer_tutorial_2020] including `sourmash`,
+comparing 10 different methods for taxonomic profiling and their characteristics at each taxonomic rank. 
+While previous methods show reduced completeness,
+the ratio of taxa correctly identified in the ground truth,
+below the genus level,
+`sourmash` can reach 88.7\% completeness at the species level with the highest
+purity (the ratio of correctly predicted taxa over all predicted taxa) across
+all methods:
+95.9\% when filtering predictions below 1\% abundance,
+and 97\% for unfiltered results.
+`sourmash` also has the lowest L1-norm error
+(the sum of the absolute difference between the true and predicted abundances at
+a specific taxonomic rank),
+the highest number of true positives and the lowest number of false positives.
+
+Table: (\#tab:gather-cami2) Updated Supplementary Table 12 from [@meyer_tutorial_2020].
+Elapsed (wall clock) time (h:mm) and maximum resident set size
+(kbytes) of taxonomic profiling methods on the 64 short read samples of the CAMI II mouse
+gut data set. The best results are shown in bold. Bracken requires to run Kraken, hence the times
+required to run Bracken and both tools are shown. The taxonomic profilers were run on a
+computer with an Intel Xeon E5-4650 v4 CPU (virtualized to 16 CPU cores, 1 thread per core)
+and 512 GB (536.870.912 kbytes) of main memory.
+
+| Taxonomic binner                | Time (hh:mm) | Memory (kbytes) |
+|:--------------------------------|-------------:|----------------:|
+| MetaPhlAn 2.9.21                | 18:44        | 5,139,172       |
+| MetaPhlAn 2.2.0                 | 12:30        | 1,741,304       |
+| Bracken 2.5 (only Bracken)      | **0:01**     | **24,472**      |
+| Bracken 2.5 (Kraken and Bracken)| **3:03**     | 39,439,796      |
+| FOCUS 0.31                      | 13:27        | 5,236,199       |
+| CAMIARKQuikr 1.0.0              | 16:19        | 27,391,555      |
+| mOTUs 1.1                       | 19:50        | **1,251,296**   |
+| mOTUs 2.5.1                     | 14:29        | 3,922,448       |
+| MetaPalette 1.0.0               | 76:49        | 27,297,132      |
+| TIPP 2.0.0                      | 151:01       | 70,789,939      |
+| MetaPhyler 1.25                 | 119:30       |  2,684,720      |
+| sourmash 3.4.0                  | 16:41        |  5,760,922      |
+
+When considering resource consumption and running times,
+`sourmash` used 5.62 GB of memory with an _LCA index_ built from the
+RefSeq snapshot (141,677 genomes) with $scaled=10000$ and $k=51$.
+Each sample took 597 seconds to run (on average),
+totalling 10 hours and 37 minutes for 64 samples.
+MetaPhlan 2.9.21 was also executed in the same machine,
+a workstation with an AMD Ryzen 9 3900X 12-Core CPU running at 3.80 GHz,
+64 GB DDR4 2133 MHz of RAM and loading data from an NVMe SSD,
+in order to compare to previously reported times in Table \@ref(tab:gather-cami2) [@meyer_tutorial_2020].
+MetaPhlan took 11 hours and 25 minutes to run for all samples,
+compared to 18 hours and 44 minutes previously reported,
+and correcting the `sourmash` running time by this factor it would likely take
+16 hours and 41 minutes in the machine used in the original comparison.
+After correction,
+`sourmash` has similar runtime and memory consumption to the other best performing tools
+(_mOTUs_ and _MetaPhlAn_),
+both gene marker and alignment based tools.
+
+Additional points are that `sourmash` is a single-threaded program,
+so it didn't benefit from the 16 available CPU cores,
+and it is the only tool that could use the full RefSeq snapshot,
+while the other tools can only scale to a smaller fraction of it
+(or need custom databases).
+The CAMI II RefSeq snapshot for reference genomes also doesn't include viruses;
+this benefits `sourmash` because viral _Scaled MinHash_ sketches are usually not well supported for containment estimation,
+since viral sequences require small scaled values to have enough hashes to be reliable.
 
 <!-- TODO: show results
 main points:
-- all tools used only the short reads datasets
-- highest completeness and purity
-- low L1-norm error (second, check this)
-
 - for running times: run kraken2 to serve as a base and compare with running
   times from the tutorial paper?
   - can't really build the standard db, check with minikraken...
@@ -292,16 +351,13 @@ main points:
     after correction: 38251 * 1.57 = 60054
 -->
 
-<!--
-The CAMI II RefSeq snapshot for reference genomes doesn't include viruses;
-this benefits `sourmash` because viral _Scaled MinHash_ sketches are usually not well supported for containment estimation,
-since viral sequences require small scaled values to have enough hashes to be reliable.
--->
-
 ## Discussion
 
-`gather` is a new method for decomposing datasets into its components, (...)
-<!-- TODO small summary -->
+`gather` is a new method for decomposing datasets into its components that
+outperforms current method when using synthetic datasets with known composition.
+By leveraging _Scaled MinHash_ sketches and efficient indexing data structures
+it can scale the number of reference datasets used by over an order of magnitude when compared
+to existing methods.
 
 Other containment estimation methods described in Chapter [1](#chp-scaled),
 _CMash_ [@koslicki_improving_2019] and _mash screen_ [@ondov_mash_2019],
@@ -356,36 +412,46 @@ This allows using new taxonomies derived from the same underlying datasets [@par
 as well as updates to the original taxonomy used before.
 
 <!-- Benchmarking -->
-<!-- TODO
-Despite the improvements to the metrics measure by CAMI benchmarks,
-Benchmarking is still an unsolved problem,
-despite CAMI efforts
--->
+Despite improvements to standardization and reproducibility of previous analysis,
+benchmarking taxonomic profiling tools is still challenging,
+since tools can generate their reference databases from multiple sources and
+choosing only one source can bias or make it impossible to evaluate them properly. 
+This is especially true for real metagenomic datasets derived from samples
+collected from soil and marine environments,
+where the number of unknown organisms is frequently larger than those contained in
+reference databases.
+With the advent of metagenome-assembled genomes (MAGs) there are more resources
+available for usage as reference datasets,
+even if they are usually incomplete or draft quality.
+`sourmash` is well positioned to include these new references to taxonomic
+profiling given the minimal requirements (a _Scaled MinHash_ sketch of the
+original dataset) and support for indexing hundreds of thousands of datasets.
 
-
-<!--
 ### Limitations
 
-- Viruses (scaled minhash too small).
-  mash screen solves this by going for sensitivity (at the cost of precision),
-  possible solution: scaled+num hashes, but would only allow mash screen-like method
+`gather` as implemented in `sourmash` has the same limitations as _Scaled MinHash_ sketches,
+including reduced sensitivity to small genomes/sequences such as viruses.
+_Scaled MinHash_ sketches don't preserve information about individual sequences,
+and short sequences using large scaled values have increasingly smaller chances of having any of its
+$k$-mers (represented as hashes) contained in the sketch.
+Because it favors the best containment,
+larger genomes are also more likely to be chosen first due to their sketches have more elements,
+and further improvements can take the size of the match in consideration too.
+Note that this is not necessarily the _similarity_ $J(A, B)$ (which takes the size of both $A$ and $B$),
+but a different calculation that normalizes the containment considering the size of the match.
 
-- gather assigns hashes to best matches ("winner-takes-all"). Other approaches
-  will be needed to disambiguate matches further
-  -> check species score from centrifuge
-
-- abundance analysis
-  -> EM from centrifuge, based on cufflinks/sailfish
-
-- Because it favors the best containment, larger organisms are more likely to be chosen first
-  (since they have more hashes/k-mers).
-  An additional step could take in consideration the size of the match too?
-  This is not quite the similarity, note: We still want containment, but add match size
-  to the calculation without necessarily using |A union B|
-
-Scaled MinHash sketches don't preserve information about individual sequences,
-and for larger scaled values and short sequences they have increasingly smaller chances of not having any of its $k$-mers (represented as hashes) contained in the final sketch.
--->
+`gather` is also a greedy algorithm,
+choosing the best containment match at each step.
+Situations where multiple matches are equally well contained or many datasets
+are very similar to each other can complicate this approach,
+and additional steps must be taken to disambiguate matches.
+The availability of abundance counts for each element in the _Scaled MinHash_ is not well explored,
+since the process of _removing elements_ from the query doesn't account for them
+(the element is removed even if the count is much higher than the count in the match).
+Both the multiple match as well as the abundance counts issues can benefit from
+existing solutions taken by other methods,
+like the _species score_ (for disambiguation) and _Expectation-Maximization_ (for abundance analysis)
+approaches from Centrifuge [@kim_centrifuge_2016].
 
 ### Future directions
 
@@ -395,7 +461,7 @@ but it can applied to other biological problems too.
 If the query is a genome instead of a metagenome,
 `gather` can be used to detect possible contamination in the assembled genome by
 using a collection of genomes and removing the query genome from it (if it is present).
-This allows finding matches that contain the query genome and evaluating if they agree at specific taxonomic levels,
+This allows finding matches that contain the query genome and evaluating if they agree at specific taxonomic rank,
 and in case of large divergence (two different phyla are found, for example)
 it is likely to indicative that the query genome contains sequences from different organisms.
 This is especially useful for quality control and validation of metagenome-assembled genomes (MAGs),
@@ -419,15 +485,34 @@ but show how `gather` works as a more general method that can leverage character
 
 ### Conclusion
 
-
+`gather` is a new method for decomposing datasets into its components with
+application in biological sequencing data analysis (taxonomic profiling) that
+can scale to hundreds of thousands of reference datasets with computational
+resources requirements that are accessible to a large number of users
+when used in conjunction with _Scaled MinHash_ sketches and efficient indices
+such as _LCA_ and _MHBT_.
+It outperforms current methods in community-develop benchmarks,
+and opens the way for new methods that explore a top-down approach for profiling
+microbial communities,
+including further refinements that can resolve larger evolutionary distances and
+also speed up the method computationally.
 
 ## Methods
 
 ### The gather algorithm
 
+Algorithm [1](\ref{alg:gather}) describes the `gather` method using a generic operation
+`FindBestContainment`.
+An implementation for `FindBestContainment` for a list of datasets is presented in
+Algorithm [2](\ref{alg:list}).
+Appendix [A](#smol-source-code) has a minimal implementation in the Rust programming language [@matsakis_rust_2014] for both algorithms,
+including a _Scaled MinHash_ sketch implementation using a _set_ data structure from the Rust standard library (`HashSet`).
+
+```{=latex}
 \RestyleAlgo{boxruled}
 \LinesNumbered
 \begin{algorithm}[ht]
+   \label{alg:gather}
    \DontPrintSemicolon
    \SetKwInOut{Input}{Input}
    \SetKwInOut{Output}{Output}
@@ -455,6 +540,7 @@ but show how `gather` works as a more general method that can leverage character
 \end{algorithm}
 
 \begin{algorithm}[ht]
+  \label{alg:list}
   \DontPrintSemicolon
   \SetKwInOut{Input}{Input}
   \SetKwInOut{Output}{Output}
@@ -476,8 +562,8 @@ but show how `gather` works as a more general method that can leverage character
   }
   \KwRet{$(b, m)$}
   \caption{a \emph{FindBestContainment} implementation for a list}
-  \label{alg:list}
 \end{algorithm}
+```
 
 ### Implementation
 
@@ -487,7 +573,7 @@ but show how `gather` works as a more general method that can leverage character
 This ABC declares methods that any index in `sourmash` has to implement,
 but each index is allowed to implement it in the most efficient or performant way:
 
-  1. For `Linear` indices, the `FindBestContainment` operation is implemented as a linear scan over the list of signatures (Algorithm \@ref(alg:list));
+  1. For `Linear` indices, the `FindBestContainment` operation is implemented as a linear scan over the list of signatures (Algorithm [2](\ref{alg:list}));
 
   2. For `MHBT` indices, `FindBestContainment` is implemented as a depth-first search that tracks the best containment found,
      and prunes the search if it the current estimated containment in an internal node is lower than the current best containment.

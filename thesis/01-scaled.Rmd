@@ -4,6 +4,13 @@ The {#rmd-basics} text after the chapter declaration will allow us to link throu
 
 # Accurate containment estimation with Scaled MinHash sketches {#chp-scaled}
 
+```{=latex}
+\begin{epigraphs}
+  \qitem{The aim of science is not to open the door to infinite wisdom, but to set a limit to infinite error.}%
+        {Bertolt Brecht}
+\end{epigraphs}
+```
+
 \chaptermark{Scaled MinHash}
 
 ## Introduction
@@ -432,7 +439,7 @@ The Rust version has four direct external dependencies:
 `murmurhash3` for the MurmurHash3 hash function,
 `serde_json` for JSON serialization and `structopt` for command line parsing.
 
-Full source is available in [Appendix A](#smol-source-code).
+Full source is available in Appendix [A](#smol-source-code).
 
 #### exact
 

@@ -314,7 +314,7 @@ including geographical distribution and pangenomics analysis.
 
 Executing the search took 11 hours to run,
 using less than 5GB of RAM and 24 threads.
-The machine used was a workstation with a AMD Ryzen 9 3900X 12-Core CPU running at 3.80 GHz,
+The machine used was a workstation with an AMD Ryzen 9 3900X 12-Core CPU running at 3.80 GHz,
 64 GB DDR4 2133 MHz of RAM and loading data from an external HDD enclosure connected via USB.
 If there is access to additional machines (in a cluster, for example)
 it is also possible to parallelize the search even further by splitting the metagenomes into groups,

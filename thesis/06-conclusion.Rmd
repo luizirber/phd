@@ -1,3 +1,69 @@
 # Conclusion {-}
 
+Biology as a field is being transformed by the increasing availability of data,
+especially genomic sequencing data.
+Computational methods that can adapt and take advantage from this data deluge are essential
+for exploring and providing insights for new hypothesis,
+helping to unveil the biological processes that expensive or even impossible to study before.
 
+<!-- scaled -->
+Data sketches allow scaling data analysis to hundreds of thousands of datasets,
+and the _Scaled MinHash_ sketch is a practical extension of _MinHash_ and
+_ModHash_ sketches allowing containment queries and efficient construction
+coupled with new operations (downsampling).
+Containment and similarity queries in _Scaled MinHash_ sketches depend only on the sketches,
+avoiding the need for the original dataset or other data representations,
+making it easier to maintain collections of sketched datasets.
+
+<!-- indices -->
+_Scaled MinHash_ sketches in genomic contexts are subsets of the $k$-mer composition of datasets,
+and can use indexing data structures aimed at the full composition.
+The $k$-mer aggregative _MinHash Bloom Tree_ (_MHBT_) and the color aggregative _LCA index_ methods
+provide convenient ways to index and maintain collections of _Scaled MinHash_ sketches,
+with different trade-offs for speed, memory consumption and long term archival.
+They serve as building blocks for research and exploration of new methods,
+as well as production-ready usage for developing systems for searching large
+genomic sequencing databases.
+
+<!--gather-->
+`gather` is a new top-down approach for decomposition of datasets that can be
+efficiently implemented using _Scaled MinHash_ sketches and indices.
+When applied to the taxonomic profiling of metagenomes sampled from microbial communities
+it outperforms current bottom-up approaches in precision,
+recall and relative abundance metrics.
+
+<!--wort and search-->
+Since _Scaled MinHash_ sketches are only a small fraction of the original data size,
+calculating them for genomic sequencing databases is a feasible prospect and
+allow making them searchable in an unprecedented scale.
+`wort` is a distributed system for calculating these sketches in a massively parallel scale
+using workers running in heterogeneous systems (laptops, workstations, clusters and cloud instances).
+With more than 3 million datasets processed from the NCBI Sequence Read Archive,
+the JGI Integrated Microbial Genomes and Microbiomes and the NCBI Assemblies
+(GenBank and RefSeq),
+it allows searching for containment across genomes and metagenomes.
+
+<!--decentralizing-->
+All these processed sketches requires systems for storing and sharing it,
+and traditional approaches using centralized systems are fragile for underfunded
+and overworked projects.
+Decentralizing technologies allow spreading the data sharing loads across multiple users,
+and _Scaled MinHash_ sketches and the _MHBT_ index are amenable to such approaches,
+especially content-addressable storages like _IPFS_ (InterPlanetary File System).
+Providing a reduced representation of _MHBT_ indices with _Scaled MinHash_ sketches stored in IPFS
+shows how such systems can be leveraged and made more resilient for data sharing
+and archival.
+
+<!-- the future -->
+The methods and approaches presented in this dissertation open the way for future improvements
+focused on encodings that can span larger evolutionary distances for the $k$-mer composition in _Scaled MinHash_ sketches,
+optimizing and adapting $k$-mer and color aggregative methods for indexing,
+further extending `gather` with more specific and precise strain-resolving and dataset disambiguation techniques,
+expanding distributed sketch calculation to new platforms like web browsers and specialized hardware such as GPUs and TPUs,
+and developing new tools and services that realize more fully the decentralizing promises of current methods.
+
+By providing implementations that are accessible to bioinformaticians and scientists
+in a software package that at the same time supports further research and can evolve from the feedback of its users,
+`sourmash` and derived software using the Python or Rust APIs as well as
+workflows using the command-line interface show how cultivating community input
+and training materials can drive and make research better in the long run.

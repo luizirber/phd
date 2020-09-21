@@ -2,7 +2,7 @@
 
 Biology as a field is being transformed by the increasing availability of data,
 especially genomic sequencing data.
-Computational methods that can adapt and take advantage from this data deluge are essential
+Computational methods that can adapt and take advantage of this data deluge are essential
 for exploring and providing insights for new hypothesis,
 helping to unveil the biological processes that expensive or even impossible to study before.
 
@@ -35,7 +35,7 @@ recall and relative abundance metrics.
 <!--wort and search-->
 Since _Scaled MinHash_ sketches are only a small fraction of the original data size,
 calculating them for genomic sequencing databases is a feasible prospect and
-allow making them searchable in an unprecedented scale.
+enables searching them at unprecedented scale.
 `wort` is a distributed system for calculating these sketches in a massively parallel scale
 using workers running in heterogeneous systems (laptops, workstations, clusters and cloud instances).
 With more than 3 million datasets processed from the NCBI Sequence Read Archive,

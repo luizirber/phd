@@ -31,7 +31,26 @@ acknowledgments: |
   Lab colleagues, present and past (Michael, Likit, Jiarong, ...)
 
 abstract: |
-  "TODO TODO TODO"
+  Biology as a field is being transformed by the increasing availability of data, especially genomic sequencing data.
+  Computational methods that can adapt and take advantage from this data deluge are essential
+  for exploring and providing insights for new hypothesis,
+  helping to unveil the biological processes that expensive or even impossible to study before.
+
+  This dissertation introduces data structures and approaches for scaling data
+  analysis to hundreds of thousands of datasets using _Scaled MinHash_ sketches,
+  a reduced space representation of the original datasets that can lower computational
+  requirements for similarity and containment estimation;
+  _MHBT_ and _LCA_ indices,
+  structures for indexing and searching large collections of _Scaled MinHash_ sketches;
+  `gather`, a new top-down approach for decomposing datasets into a collection of
+  reference components that can be implemented efficiently with _Scaled MinHash_
+  sketches and _MHBT_ and _LCA_ indices;
+  `wort`,
+  a distributed system for large scale sketch computation across heterogeneous systems,
+  from laptops to academic clusters and cloud instances,
+  including prototypes for containment searches across millions of datasets;
+  as well as explorations on how to facilitate sharing and increase the
+  resilience of sketches collections built from public genomic data.
 
 # End of UCD thesis fields
 knit: "bookdown::render_book"

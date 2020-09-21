@@ -37,7 +37,7 @@ abstract: |
   helping to unveil the biological processes that expensive or even impossible to study before.
 
   This dissertation introduces data structures and approaches for scaling data
-  analysis to hundreds of thousands of datasets using _Scaled MinHash_ sketches,
+  analysis to hundreds of thousands of DNA sequencing datasets using _Scaled MinHash_ sketches,
   a reduced space representation of the original datasets that can lower computational
   requirements for similarity and containment estimation;
   _MHBT_ and _LCA_ indices,

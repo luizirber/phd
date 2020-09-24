@@ -1,7 +1,5 @@
 # Compositional analysis with Scaled MinHash and gather {#chp-gather}
 
-\chaptermark{Gather}
-
 ```{=latex}
 \begin{epigraphs}
   \qitem{I seldom end up where I wanted to go, but almost always end up where I need to be.}%

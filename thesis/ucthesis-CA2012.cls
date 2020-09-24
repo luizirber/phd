@@ -120,8 +120,8 @@
   \def\ps@headings{
       \def\@oddfoot{\rm\hfil\thepage\hfil}
       \def\@evenfoot{\rm\hfil\thepage\hfil}     % Page numbers on ALL pages.
-      \def\@evenhead{\hfil\slshape\leftmark}%
-      \def\@oddhead{{\slshape\rightmark}\hfil}%
+      \def\@evenhead{}%
+      \def\@oddhead{}%
       \let\@mkboth\markboth
     \def\chaptermark##1{%
       \markboth {\MakeUppercase{%
@@ -158,8 +158,8 @@
 \def\ps@myheadings{\let\@mkboth\markboth
  \def\@oddfoot{\rm\hfil\thepage\hfil}
  \def\@evenfoot{\rm\hfil\thepage\hfil}     % Page numbers on ALL pages.
- \def\@evenhead{\hfil \slshape \leftmark}  %    Left heading.
- \def\@oddhead{{\slshape \rightmark}\hfil} %   Right heading.
+ \def\@evenhead{}  %    Left heading.
+ \def\@oddhead{} %   Right heading.
  \def\chaptermark##1{\markboth {\uppercase{\ifnum \c@secnumdepth >\m@ne
  \@chapapp\ \thechapter. \ \fi} ##1}{}}%
  \def\sectionmark##1{\markright {\uppercase{\ifnum \c@secnumdepth >\z@
@@ -266,16 +266,16 @@
     \medskip \par
     \bigskip \par
     $\:\overline{~~~~ \mbox{\rule{0in}{0.05in} \hspace{3.25in}}}\:$ \\
-    {(\@chair)}, Chair \\
+    {\@chair}, Chair \\
     \vskip 2em
     $\:\overline{~~~~ \mbox{\rule{0in}{0.05in} \hspace{3.25in}}}\:$ \\
-    {(\@othermemberA}) \\ 
+    {\@othermemberA} \\ 
     \vskip 2em
     $\:\overline{~~~~ \mbox{\rule{0in}{0.05in} \hspace{3.25in}}}\:$ \\
-    {(\@othermemberB}) \\
+    {\@othermemberB} \\
     \vskip 2em
     $\:\overline{~~~~ \mbox{\rule{0in}{0.05in} \hspace{3.25in}}}\:$ \\
-    {(\@othermemberC}) \\
+    {\@othermemberC} \\
     \vskip 2em
     % add additional members as needed
     Committee in Charge \par
@@ -406,14 +406,6 @@
 % \title and \author macros
 \def\abstract{
     \if@openright\cleardoublepage \else\clearpage \fi
-    \begin{flushright}
-    {
-        \ssp
-        \@author\\
-        \@degreemonth\ \@degreeyear\\
-        \@field\\
-      }
-    \end{flushright}
     \begin{center}
       {\fmfont {\bfseries \abstractname}\par}
     \end{center}

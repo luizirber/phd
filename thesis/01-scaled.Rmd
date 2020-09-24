@@ -11,8 +11,6 @@ The {#rmd-basics} text after the chapter declaration will allow us to link throu
 \end{epigraphs}
 ```
 
-\chaptermark{Scaled MinHash}
-
 ## Introduction
 
 New computational methods that can leverage the increasing availability

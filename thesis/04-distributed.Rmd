@@ -1,7 +1,5 @@
 # Distributed signature calculation with wort
 
-\chaptermark {Distributed}
-
 ```{=latex}
 \begin{epigraphs}
 \qitem{You can have a second computer once you've shown you know how to use the first one.}%

@@ -1,7 +1,5 @@
 # Introduction {-}
 
-\chaptermark{Introduction}
-
 ```{=latex}
 \begin{epigraphs}
   \qitem{About ten years ago some computer scientists came by and said they heard we have some really cool problems. They showed that the problems are NP-complete and went away!}%

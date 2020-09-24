@@ -1,7 +1,5 @@
 # Decentralizing indices for public genomic data {#chp-decentralizing}
 
-\chaptermark {Decentralizing}
-
 ```{=latex}
 \begin{epigraphs}
   \qitem{Another flaw in the human character is that everybody wants to build and nobody wants to do maintenance.}%

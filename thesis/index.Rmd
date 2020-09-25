@@ -14,9 +14,17 @@ signature2: "David M Koslicki"
 signature3: "Sam Díaz-Muñoz"
 
 dedication: |
-  Na!
-  Parents.
-  Tio Elói
+  To Stéfanie, who came with me to the frozen lands, drove us through the
+  corn fields, but more importantly made my life complete and this
+  dissertation possible. 42! =]
+
+  To my mom Eliane, dad Luiz and sister Cris,
+  who always supported and cherished me,
+  even when I was stubborn and insisted on outlandish ideas.
+
+  To tio Elói, who always gave me a constant flux of new ideas and information even when I lived so far from the center.
+
+  And especially to Paraíba, a brother who flew away too soon.
 
 acknowledgments: |
   ```{=latex}
@@ -26,15 +34,61 @@ acknowledgments: |
   \end{epigraphs}
   ```
 
-  Taqueria Davis,
-  Phil and Taylor and everyone on #TeamSourmash
-  Lab colleagues, present and past (Michael, Likit, Jiarong, ...)
+  To Titus, who believed in someone that cold e-mailed him and brought me into
+  an environment where I could grow and help others grow together with me,
+  and supported all my weird ideas even when it took some time for us to figure
+  out if they were actually good.
+  Happy that many succeeded and planted seeds for so many more!
+
+  Phil, Taylor, Tessa, the #TeamSourmash in-lab,
+  as well as all 26 (and growing) sourmash contributors on GitHub and everywhere else.
+  It was your feedback and suggestions that made all the work of
+  building and maintaining sourmash worth it.
+
+  Lab colleagues, both present and past,
+  first at the GED and later at the DIB Lab,
+  for creating the awesome environment where we all do science together and for
+  teaching me so much about science but also the world in general.
+
+  My godparents tio Cassol, tio Carlinhos, Beto, tia Môa and tia Lourdes,
+  as well as tias Chica and Ângela and all my family, who raised me to be who I am.
+
+  Ladi, Délio, Janete, Rubens and all the Fares and Sabbag, who brought me into
+  their family and were present even when me and Stéfanie moved so far from
+  home.
+
+  Pacu, Frank, Lacraia, Shaolin, Grechen, Baba, Alphalpha, Marcos, Balboa, and all the
+  friends from college who shared the journey through Computer Engineering and
+  beyond.
+  And stop lying, Alphalpha! =P
+
+  Gabriel (GG), who I met in college and was always close since then,
+  sharing both the ups and downs of life.
+
+  Gui, Léo, Arnaldo, Bia, and all the friends from INPE and oceanography,
+  who showed that doing a PhD was not impossible and helped me figure out how to achieve it.
+
+  Sarah, Tarci, Dario and everyone from Taqueria Davis,
+  who not only fed us with their delicious food but also became our family in Davis.
+
+  André, Osvaldo, Perdido, Tiago, and all the friends in São Carlos,
+  who expanded my world with their views and friendship.
+
+  Petro and César, all our trips to the International Free Software Forum in
+  Porto Alegre, and sharing the discovery that a different world was possible.
+
+  Hélio, Zé and all the great professors during college,
+  who helped grow my love for computer science with their example,
+  attention and support.
+
+  And finally Ada and Runa, who showed me what computers are really for:
+  sleeping on top of them.
 
 abstract: |
   Biology as a field is being transformed by the increasing availability of data, especially genomic sequencing data.
   Computational methods that can adapt and take advantage from this data deluge are essential
   for exploring and providing insights for new hypothesis,
-  helping to unveil the biological processes that expensive or even impossible to study before.
+  helping to unveil the biological processes that were expensive or even impossible to study before.
 
   This dissertation introduces data structures and approaches for scaling data
   analysis to hundreds of thousands of DNA sequencing datasets using _Scaled MinHash_ sketches,

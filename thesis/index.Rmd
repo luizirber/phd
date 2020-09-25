@@ -91,9 +91,9 @@ acknowledgments: |
 
 abstract: |
   Biology as a field is being transformed by the increasing availability of data, especially genomic sequencing data.
-  Computational methods that can adapt and take advantage from this data deluge are essential
-  for exploring and providing insights for new hypothesis,
-  helping to unveil the biological processes that were expensive or even impossible to study before.
+  Computational methods that can adapt and take advantage of this data deluge are essential
+  for exploring and providing insights for new hypotheses,
+  helping to unveil the biological processes that were previously expensive or even impossible to study.
 
   This dissertation introduces data structures and approaches for scaling data
   analysis to hundreds of thousands of DNA sequencing datasets using _Scaled MinHash_ sketches,
@@ -122,7 +122,7 @@ output:
 #  aggiedown::thesis_epub: default
 bibliography: bib/thesis.bib
 # Download your specific bibliography database file and refer to it in the line above.
-csl: csl/pnas.csl
+csl: csl/ecology.csl
 # Download your specific csl file and refer to it in the line above.
 link-citations: yes
 linkcolor: blue

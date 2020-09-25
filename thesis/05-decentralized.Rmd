@@ -200,7 +200,7 @@ Signatures can also change if other parameters for calculating their sketches ar
 but having a default set of "good enough" parameters like the ones defined in `wort`
 allows general queries that can later be refined once a candidate subset of the database is found.
 
-```{r sbtInsert, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="60%", fig.cap="Inserting a dataset in an MHBT"}
+```{r sbtInsert, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, out.width="70%", fig.align="center", fig.cap="Inserting a dataset in an MHBT"}
 knitr::include_graphics('figure/sbtmh_insert.png')
 ```
 Insertion of new signatures to an MHBT trigger changes in the path from new leaf
@@ -314,7 +314,7 @@ and to measure the overhead that IPFS imposes when used in conditions more simil
 when all the data is available.
 
 Table: (\#tab:sbt-ipfs) Performance of MHBT operations with IPFS storage.
-Units in seconds, with fold-difference to the baseline in parenthesis.
+Units in seconds, with fold-difference to the baseline in parentheses.
 
 | Experiment     | takver | datasilo   | rosewater   |
 |:---------------|-------:|-----------:|------------:|

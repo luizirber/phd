@@ -16,7 +16,7 @@ since a signature retains a much smaller subset of the original data
 and once a chunk of the data is processed it is not necessary to keep it or refer to it again.
 The calculation process is frequently I/O bound on reading data,
 unless very fast access to the data is available,
-when it becomes CPU-bound on hashing algorithm.
+when it becomes CPU-bound on the hashing algorithm.
 sourmash signatures are also typically small,
 with input sizes in the order of hundreds of times larger than the final signature.
 This creates opportunities for approaches where distributed workers do all the expensive data access,
@@ -96,7 +96,7 @@ depending on what database is being calculated.
 For IMG the data was available in a shared filesystem,
 so `sourmash compute` could access it directly.
 
-For the SRA the worker uses `fastq-dump` (from the `sra toolkit`) to download the data and stream it through a UNIX pipe into a `sourmash compute` process.
+For the SRA, the worker uses `fastq-dump` (from the `sra toolkit`) to download the data and stream it through a UNIX pipe into a `sourmash compute` process.
 Since the data is being streamed,
 it is not being stored locally by the worker,
 so if a signature need to be recalculated the data needs to be downloaded again.
@@ -160,7 +160,7 @@ but not as appropriate for a system that is frequently updated.
 
 `wort` was created to fix some of the issues with the initial `soursigs` prototype
 and allow more computational systems to participate in the process,
-building an heterogeneous system that doesn't depend on similar resources being available for each worker.
+building a heterogeneous system that doesn't depend on similar resources being available for each worker.
 The two major changes were:
 
 - encapsulate workers in a Docker container [@boettiger_introduction_2015],
@@ -234,7 +234,7 @@ It is worth noting that signatures were calculated with a $\mathbf{scaled}=1000$
 but $332/2.4=138$,
 more than expected if considering only final file size.
 Although each signature is using this scaled value,
-there are 3 Scaled MinHash sketches for each dataset (for $k={21,31,51}$),
+there are 3 Scaled MinHash sketches for each dataset (for $k=\{21,31,51\}$),
 and each sketch is also tracking abundance for each hash,
 which doubles the storage requirements.
 
@@ -268,14 +268,14 @@ knitr::include_graphics('figure/wortMetagSizes.png')
 
 448 thousand datasets from the metagenomic subset were processed from 237 TB of original sequencing data,
 totalling 2.1 TB of signatures.
-Building a sourmash index (either revindex or SBT) with this amount of data is
+Building a sourmash index (either LCA or MHBT) with this amount of data is
 prohibitive at the moment,
 since both indices load all the data in memory before writing the indices to storage.
 This is an implementation detail,
 and can be addressed in future versions of sourmash.
 
 In the same vein,
-executing sourmash operations over that many signatures is not an use case that was previously considered,
+executing sourmash operations over that many signatures is not a use case that was previously considered,
 so even operations over a list of signatures (and which don't strictly require indices)
 like `sourmash search` end up requiring too much memory when using hundreds of
 thousands of metagenome signatures.
@@ -318,7 +318,7 @@ If there is access to additional machines (in a cluster, for example)
 it is also possible to parallelize the search even further by splitting the metagenomes into groups,
 and running each group in a distinct machine.
 
-The search found 1,407 of the original 2,631 MAGs above 50% containment, in 2,938 metagenomes
+The search with $k=31$ found 1,407 of the original 2,631 MAGs above 50% containment, in 2,938 metagenomes
 (after removing the Tara Oceans datasets from the results, since the MAGs were derived from them).
 The 50% threshold was chosen to account for sequencing errors and biological variability,
 since Scaled MinHash sketches use exact k-mer matching when calculating containment.

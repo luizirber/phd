@@ -218,8 +218,8 @@ and doesn't include many required features for working with real biological data
 but its smaller code base makes it a more readable and concise example of the method.
 For _Mash Screen_ the ratio of hashes matched by total hashes is used instead of the _Containment Score_,
 since the latter uses a $k$-mer survival process modeled as a Poisson process
-first introduced in the _Mash distance_ [@ondov_mash:_2016] and later adapted as
-the _Containment score_ [@ondov_mash_2019].
+first introduced in [@fan_assembly_2015] and later used in the _Mash distance_ [@ondov_mash:_2016] and
+_Containment score_ [@ondov_mash_2019] formulations.
 
 Experiments use $k=\{21, 31, 51\}$
 (except for Mash, which only supports $k \le 32$).
@@ -242,7 +242,8 @@ since `Mash` doesn't support $k>32$.
 **B**: Excluding low coverage genomes identified in previous articles.
 
 All methods are within 1\% of the exact containment on average (Figure \ref{fig:minhash1000} A),
-with `CMash` consistently underestimating the containment for all $k$ values.
+with `CMash` consistently underestimating the containment for large $k$ and overestimating for
+small $k$.
 `Mash Screen` with $n=10000$ has the smallest difference to ground truth for $k=\{21, 31\}$,
 followed by `smol` with `scaled=1000` and `Mash Screen` with $n=1000$.
 
@@ -260,7 +261,7 @@ with all methods mostly within 1\% absolute difference to the ground truth.
 ### Scaled MinHash sketch sizes across GenBank domains
 
 In order to compare sketch sizes across assembled genomes and where they are too
-small to be properly estimate containment and similarity,
+small to properly estimate containment and similarity,
 514,209 assembled genomes (
 5,234 Archaea,
 464,485 Bacteria,
@@ -272,7 +273,7 @@ Figure \ref{fig:scaledGenBankSizesBoxen} show letter-value plots [@hofmann_lette
 The mean sketch size ranges from 20 for viruses to 18,115 for protozoans,
 indicating that _Scaled MinHash_ sketches at $scaled=2000$ are too small for accurate containment and similarity estimates
 in most viral genomes,
-but are large enough for archaea ($mean=767$) and larger organisms.
+but are large enough for archaea (mean sketch size = $767$) and larger organisms.
 
 ```{r scaledGenBankSizesBoxen, eval=TRUE, echo=FALSE, message=FALSE, error=FALSE, warning=FALSE, cache=TRUE, fig.cap='(ref:genbank-sizes-boxen)', out.width="100%", fig.show="hold", fig.align="center"}
 knitr::include_graphics('../experiments/sizes/figures/sizes.pdf')
@@ -415,7 +416,7 @@ including taxonomic classification in metagenomes and large scale indexing and s
 There are two compatible versions,
 one in Python and another in Rust,
 due to performance requirements when processing large datasets (like metagenomes).
-Both versions of the Scaled MinHash implementations use each language standard library sets
+Both versions of the Scaled MinHash implementations use each language's standard library sets
 (`set` for Python, `HashSet` for Rust)
 for storing hashes and efficient set operations (intersection and difference).
 Experiments used the Rust version for calculating Scaled MinHash sketches,

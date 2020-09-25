@@ -38,8 +38,8 @@ to whit: large scaled works well with LCA (small DB, ~tolerable memory, load all
 but low scaled may work (much) better with SBT.
 -->
 
-[@marchet_data_2019] classifies indexing strategies for querying large collections of
-sequencing datasets into _$k$-mer aggregative_ methods and _color aggregative_ methods.
+Indexing strategies for querying large collections of sequencing datasets
+can be classified as _$k$-mer aggregative_ methods and _color aggregative_ methods [@marchet_data_2019].
 _$k$-mer aggregative_ methods index the $k$-mer composition for each individual dataset,
 and then build structures for retrieving the datasets where the query $k$-mers are present.
 _Color aggregative_ methods index the $k$-mer composition for all datasets,
@@ -83,7 +83,7 @@ with network nodes containing a subtree of the original tree and only being
 accessed if the search requires it.
 
 For genomic contexts,
-an hierarchical index is a _$k$-mer aggregative_ method,
+a hierarchical index is a _$k$-mer aggregative_ method,
 with datasets represented by the $k$-mer composition of the dataset and stored in a data structure that allows querying for $k$-mer presence.
 The Sequence Bloom Tree [@solomon_fast_2016] adapts Bloofi for genomics and rephrases the search problem as _experiment discovery_:
 given a query sequence $Q$ and a threshold $\theta$,
@@ -93,7 +93,7 @@ and queries are transcripts.
 
 Further developments of the SBT approach focuses on clustering similar datasets to prune search
 early [@sun_allsome_2017] and developing more efficient representations for the
-internal nodes [@solomon_improved_2017] [@harris_improved_2018] to use less storage space and memory.
+internal nodes [@solomon_improved_2017] and clustering [@harris_improved_2018] to use less storage space and memory.
 
 <!--
 example figure for SBT:
@@ -121,11 +121,11 @@ For efficiency,
 $k$-mers are typically hashed and its integer representation (_hash_) is used
 instead.
 
-kraken [@wood_kraken:_2014] has a special case of this structure,
+`Kraken` [@wood_kraken:_2014] has a special case of this structure,
 using a taxonomic ID (taxon) for representing dataset identity.
 Datasets share the same ID if they belong to the same taxon,
 and if a hash is present in more than one dataset
-kraken reduces the list of taxons to the lowest common ancestor (LCA),
+Kraken reduces the list of taxons to the lowest common ancestor (LCA),
 which lowers memory requirements for storing the index.
 This LCA approach leads to decreased precision and sensitivity over time [@nasko_refseq_2018],
 since new datasets are frequently added to reference databases and the chance of a k-mer being present in multiple datasets increases.
@@ -139,7 +139,7 @@ an alternative to Bloom Filters that also support counting and resizing.
 
 ## Specialized indices for Scaled MinHash sketches
 
-sourmash [@brown_sourmash:_2016] is a software for large-scale sequence data comparisons based on MinHash sketches.
+`sourmash` [@brown_sourmash:_2016] is a software for large-scale sequence data comparisons based on MinHash sketches.
 Initially implementing operations for computing,
 comparing and plotting distance matrices for _MinHash_ sketches,
 version 2 [@pierce_large-scale_2019] introduces _Scaled MinHash_ sketches
@@ -153,7 +153,8 @@ The simplest index is the `LinearIndex`,
 a list of signatures.
 Search operations are executed sequentially,
 and insertions append new signatures to the end of the list.
-Internally sourmash uses LinearIndex as the default index for lists of
+Internally,
+`sourmash` uses LinearIndex as the default index for lists of
 signatures provided in the command-line.
 
 #### MinHash Bloom Tree
@@ -163,8 +164,8 @@ signatures provided in the command-line.
 The _MinHash Bloom Tree_ (_MHBT_) is a variation of the _Sequence Bloom Tree_ (_SBT_)
 that uses Scaled MinHash sketches as leaf nodes instead of Bloom Filters as in
 the SBT.
-The search operation in SBTs is defined as a breadth-first search starting in the root of the tree,
-using a threshold of the original k-mers in the query to decide when to prune the search.
+The search operation in SBTs is defined as a breadth-first search starting at the root of the tree,
+using a threshold of the original $k$-mers in the query to decide when to prune the search.
 MHBTs use a query Scaled MinHash sketch instead,
 but keep the same search approach.
 The threshold of a query $Q$ approach introduced in [@solomon_fast_2016] is
@@ -211,7 +212,7 @@ with containment or similarity to the query calculated against the rebuilt signa
 
 mash screen [@ondov_mash_2019] has a similar index,
 but it is constructed on-the-fly using the distinct hashes in a sketch collection as keys,
-and values are counters initialized set to zero.
+and values are counters initially set to zero.
 As the query is processed,
 matching hashes have their counts incremented,
 and after all hashes in the query are processed then all the sketches in the collection are
@@ -311,7 +312,7 @@ using appropriate queries for each domain.
 All queries were selected from the relevant domain and queried against both MHBT ($scaled=1000$) and LCA ($scaled=10000$),
 for $k=21$.
 
-Table: (\#tab:search-runtime) Running time for similarity search
+Table: (\#tab:search-runtime) Running time in seconds for similarity search
 using LCA ($scaled=10000$) and MHBT ($scaled=1000$) indices.
 
 |           | Viral      | Archaea    | Protozoa   | Fungi        | Bacteria      |
@@ -319,13 +320,13 @@ using LCA ($scaled=10000$) and MHBT ($scaled=1000$) indices.
 | LCA       | 1.06       | 1.42       | 5.40       | 26.92        | 231.26        |
 | SBT       | 1.32       | 3.77       | 43.51      | 244.77       | 3,185.88      |
 
-Table: (\#tab:search-memory) Memory consumption for similarity search
+Table: (\#tab:search-memory) Memory consumption in megabytes for similarity search
 using LCA ($scaled=10000$) and MHBT ($scaled=1000$) indices.
 
 |           | Viral   | Archaea | Protozoa | Fungi     | Bacteria      |
 |:----------|--------:|--------:|---------:|----------:|--------------:|
-| LCA       | 223,484 | 240,088 | 797,816  | 3,274,388 | 20,925,984    |
-| SBT       | 162,628 | 125,280 | 332,080  | 1,655,788 | 2,289,904     |
+| LCA       |     223 |     240 |     798  |     3,274 | 20,926        |
+| SBT       |     163 |     125 |     332  |     1,656 | 2,290         |
 
 Table \@ref(tab:search-runtime) shows running time for both indices.
 For small indices (Viral and Archaea) the LCA running time is dominated by loading the index in memory,
@@ -376,7 +377,7 @@ especially for operations that need to summarize $k$-mer assignments or require 
 
 Due to these characteristics,
 and if memory usage is not a concern,
-then the LCA index is the most appropriate choice since it's faster.
+then the LCA index is the most appropriate choice since it is faster.
 The MHBT index is currently recommended for situations where memory is limited,
 such as with smaller scaled values ($s\le2000$)
 that increase the size of signatures,

@@ -29,10 +29,11 @@ $k$-mer assignments matching multiple taxons from a reference database
 with an option to reduce it further to the LCA [@kim_centrifuge_2016].
 
 Once each sequence (from raw reads or assembled contigs) has a taxonomic assignment,
+<!-- David comment: "Not all profiles classify sequences. See Focus, Quikr, Metalign, Metapalette, etc" -->
 these methods resolve the final identity and abundance for each member of the community by summarizing the assignments to a specific taxonomic rank,
 Taxonomic profiling is fundamentally limited by the availability of reference datasets to be used for assignments,
 and reporting what percentage of the sample is unassigned is important to assess results,
-especially in under characterized environments such as oceans and soil.
+especially in undercharacterized environments such as oceans and soil.
 
 ### Decomposition of queries with gather
 
@@ -41,8 +42,12 @@ Methods summarizing taxonomic assignments from sequences in the query metagenome
 starting from the $k$-mer composition of the query,
 it iteratively finds a match in a collection of datasets with the largest _containment_ of the query (most elements in common),
 and create a new query by _removing elements_ in the match from the original query.
-The process stop when the new query doesn't have any more matches in the collection,
+The process stops when the new query doesn't have any more matches in the collection,
 or a user-provided minimum detection threshold is reached.
+<!-- David comment: "I'm surprised this works, since back in 2015 (Metapalette
+days) I found removing elements like this caused the approach to fall apart when
+closely-related organisms are in the metagenome.)
+-->
 This approach differs from previous methods because the co-occurrence of $k$-mers
 in a match is considered a strong signal that they are coming from the same organism in the original sample,
 and is used instead of the LCA-based methods to resolve ambiguities in the taxonomic assignment of a sequence (or its $k$-mers).
@@ -103,8 +108,6 @@ and based on that assignment the extra step associates a taxonomic ID
 and a taxonomic lineage (a path from root to taxonomic ID) derived from a specific taxonomy.
 After a lineage is available,
 each taxonomic rank is summarized based on the abundances under it.
-This information is used to build a profile in the CAMI profiling format,
-but can also be adapted for other uses and tools.
 
 <!-- TODO expand a bit -->
 
@@ -360,6 +363,10 @@ to existing methods.
 Other containment estimation methods described in Chapter [1](#chp-scaled),
 _CMash_ [@koslicki_improving_2019] and _mash screen_ [@ondov_mash_2019],
 can also implement `gather`.
+<!-- David comment: "CMash does kinda, but uses unique k-mers instead of
+removing matches like gather does. CMash commit
+https://github.com/dkoslicki/CMash/commit/de7bdd6fa
+-->
 Running a search requires access to the original dataset (_mash screen_) for the query,
 or a Bloom Filter derived from the original dataset (_CMash_),
 and when the collection of reference sketches is updated the Bloom Filter from _CMash_ can be reused,
@@ -446,6 +453,15 @@ and additional steps must be taken to disambiguate matches.
 The availability of abundance counts for each element in the _Scaled MinHash_ is not well explored,
 since the process of _removing elements_ from the query doesn't account for them
 (the element is removed even if the count is much higher than the count in the match).
+<!-- David comment: could use a compressive sensing approach here:
+
+$ min \norm{x}^2_1 + \lambda \norm{Ax - y}^2_2, x \ge 0$
+
+Y_i = count of hash i in sample
+A_ij = count of hash i in genome j
+
+convert to least squares and use Lawson and Hanson for blistering speed!
+-->
 Both the multiple match as well as the abundance counts issues can benefit from
 existing solutions taken by other methods,
 like the _species score_ (for disambiguation) and _Expectation-Maximization_ (for abundance analysis)

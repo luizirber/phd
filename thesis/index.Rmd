@@ -81,8 +81,13 @@ acknowledgments: |
   who helped grow my love for computer science with their example,
   attention and support.
 
+  Professors Cindy, Sam, and Dave at UC Davis,
+  Charles at Michigan State,
+  David at Penn State and Rob at UMD,
+  who shed light on my path through this PhD.
+
   And finally Ada and Runa, who showed me what computers are really for:
-  sleeping on top of them.
+  sleeping.
 
 abstract: |
   Biology as a field is being transformed by the increasing availability of data, especially genomic sequencing data.

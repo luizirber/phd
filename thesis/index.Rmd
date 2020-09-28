@@ -51,13 +51,13 @@ acknowledgments: |
   teaching me so much about science but also the world in general.
 
   My godparents tio Cassol, tio Carlinhos, Beto, tia Môa and tia Lourdes,
-  as well as tias Nita, Chica and Ângela, and all my family, who raised me to be who I am.
+  as well as tias Nita, Chica and Ângela, tata Ana, and all my family, who raised me to be who I am.
 
   Ladi, Délio, Janete, Rubens and all the Fares and Sabbag, who brought me into
   their family and were present even when me and Stéfanie moved so far from
   home.
 
-  Pacu, Frank, Lacraia, Shaolin, Gretchen, Baba, Alphalpha, Marcos, Balboa, and all the
+  Pacu, Frank, Lacraia, Shaolin, Gretchen, Baba, Alphalpha, Sinfa, Marcos, Balboa, and all the
   friends from college who shared the journey through Computer Engineering and
   beyond.
   And stop lying, Alphalpha! =P
@@ -80,6 +80,10 @@ acknowledgments: |
   Hélio, Zé and all the great professors during college,
   who helped grow my love for computer science with their example,
   attention and support.
+
+  Luciano Ramalho and everyone from the Brazilian Python community,
+  who showed me that programming was more fun when done together,
+  sharing each other's problems and solutions.
 
   Professors Cindy, Sam, and Dave at UC Davis,
   Charles at Michigan State,

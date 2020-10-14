@@ -1,182 +1,59 @@
-from pathlib import Path
-from itertools import chain
+configfile: "config.yml"
+
 
 rule all:
   input:
-    "outputs/minimap/summary.csv",
-    "outputs/minimap/overlap/summary.csv",
-    "outputs/minimap/depth/summary.csv"
+    f"outputs/results/{config['query_name']}.csv"
 
-rule download_sra_dataset:
-  output:
-     "outputs/01_RAW_FASTQ/{sra_id}.fastq.gz",
-  conda: "env/sra.yml"
-  shell: '''
-    fastq-dump --skip-technical  \
-               --readids \
-               --read-filter pass \
-               --dumpbase \
-               --split-spot \
-               --clip \
-               -Z \
-               {wildcards.sra_id} | \
-               perl -ne 's/\.([12]) /\/$1 /; print $_' | \
-               gzip > {output}
-  '''
 
-rule download_TOBG:
-  output: "outputs/01_FASTA/TOBG.fa.gz"
-  shell: """
-    wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/002/731/465/GCA_002731465.1_ASM273146v1/GCA_002731465.1_ASM273146v1_genomic.fna.gz \
-           -O outputs/01_FASTA/TOBG.fa.gz
-  """
+rule catalog_all:
+  output: "catalogs/all_wort_sigs"
+  shell: "find {config[wort_sigs]} -type f -iname '*.sig' > {output}"
 
-#####################
-# Minimap
-#####################
-
-rule minimap:
-  output:
-    bam="outputs/minimap/{sra_id}.bam",
-  input:
-    query = "outputs/01_FASTA/TOBG.fa.gz",
-    metagenome = "outputs/01_RAW_FASTQ/{sra_id}.fastq.gz",
-  conda: "env/minimap2.yml"
-  threads: 4
-  shell: """
-    minimap2 -ax sr -t {threads} {input.query} {input.metagenome} | \
-        samtools view -b -F 4 - | samtools sort - > {output.bam}
-  """
-
-rule samtools_stats:
-  output:
-    stats="outputs/minimap/{sra_id}.stats",
-  input:
-    bam="outputs/minimap/{sra_id}.bam",
-  conda: "env/minimap2.yml"
-  threads: 4
-  shell: """
-    samtools stats -F 4 {input.bam} | grep ^SN | cut -f 2- > {output.stats}
-  """
-
-rule samtools_fastq:
-  output:
-    mapped="outputs/minimap/{sra_id}.mapped.fastq",
-  input:
-    bam="outputs/minimap/{sra_id}.bam",
-  conda: "env/minimap2.yml"
-  threads: 4
-  shell: """
-    samtools bam2fq {input.bam} > {output.mapped}
-  """
-
-rule samtools_depth:
-  output:
-    depth="outputs/minimap/depth/{sra_id}.txt",
-  input:
-    bam="outputs/minimap/{sra_id}.bam",
-  conda: "env/minimap2.yml"
-  threads: 4
-  shell: """
-    samtools depth -aa {input.bam} > {output.depth}
-  """
-
-rule summarize_mapping:
-  output: "outputs/minimap/summary.csv"
-  input:
-    expand("outputs/minimap/{sra_id}.stats",
-           sra_id=("SRR1509798", "SRR1509792", "SRR1509799",
-                   "SRR1509793", "SRR1509794", "ERR3256923", 
-                   "SRR070081", "SRR070083", "SRR070084",
-                   "SRR5868539", "SRR5868540", "SRR304680"))
+rule catalog_metagenomes:
+  output: "catalogs/metagenomes"
   run:
-    import pandas as pd
+    import csv
+    from pathlib import Path
 
-    runs = {}
-    for sra_stat in input:
-      data = Path(sra_stat).read_text().split("\n")
-      sra_id = sra_stat.split("/")[-1].split(".")[0]
-      d = {}
-      for line in data:
-        line = line.strip()
-        if not line:
-          continue
-        k, v = line.split("\t")[:2]
-        k = k[:-1]
-        d[k] = v
-      runs[sra_id] = d
+    sraids = set(Path("inputs/mash_sraids.txt").read_text().split('\n'))
 
-    pd.DataFrame(runs).T.to_csv(output[0])
+    with open("../metagenomes_source-20200905.csv") as fp:
+      data = csv.DictReader(fp, delimiter=',')
+      for dataset in data:
+        sraids.add(dataset['Run'])
 
-rule compute_sigs:
-  output: "outputs/minimap/sigs/{sra_id}.sig"
-  input: "outputs/minimap/{sra_id}.mapped.fastq"
-  conda: "env/sourmash.yml"
-  shell: "sourmash compute -k 21,31,51 --scaled 1000 --track-abundance -o {output} {input}"
+    with open(output[0], 'w') as fout:
+      for sraid in sraids:
+        sig_path = Path(config['wort_sigs']) / f"{sraid}.sig"
+        if sig_path.exists():
+          fout.write(f"{sig_path}\n")
 
-rule compute_sig_mag:
-  output: "outputs/sigs/TOBG.sig"
-  input: "outputs/01_FASTA/TOBG.fa.gz"
-  conda: "env/sourmash.yml"
-  shell: "sourmash compute -k 21,31,51 --scaled 1000 --track-abundance -o {output} {input}"
 
-rule sig_overlaps:
-  output: "outputs/minimap/overlap/{sra_id}.txt"
+rule build_rust_bin:
+  output: "bin/sra_search",
+  conda: "env/rust.yml"
+  shell: "cargo install --git https://github.com/luizirber/phd.git --rev 600dee0d812189abb6521b1c7f4f7c0a29b8fdf6 sra_search --root ."
+
+rule search:
+  output: f"outputs/results/{config['query_name']}.csv"
   input:
-    mag="outputs/sigs/TOBG.sig",
-    metagenome="outputs/minimap/sigs/{sra_id}.sig"
-  conda: "env/sourmash.yml"
-  shell: "sourmash sig overlap -k 31 {input.mag} {input.metagenome} > {output}"
+    queries = config["query_sigs"],
+    catalog = "catalogs/metagenomes",
+    bin = "bin/sra_search"
+  params:
+    threshold = config.get("threshold", 0.01),
+    ksize = config.get("ksize", 31)
+  threads: 32
+  shell: """
+    export RAYON_NUM_THREADS={threads}
+    set +e
+    {input.bin} --threshold {params.threshold} -k {params.ksize} -o {output} {input.queries} {input.catalog}
+    exit 0
+  """
 
-rule summarize_sigs:
-  output: "outputs/minimap/overlap/summary.csv"
-  input:
-    expand("outputs/minimap/overlap/{sra_id}.txt",
-           sra_id=("SRR1509798", "SRR1509792", "SRR1509799",
-                   "SRR1509793", "SRR1509794", "ERR3256923", 
-                   "SRR070081", "SRR070083", "SRR070084",
-                   "SRR5868539", "SRR5868540", "SRR304680"))
-  run:
-    import pandas as pd
-
-    runs = {}
-    for sra_stat in input:
-      data = Path(sra_stat).read_text().split("\n")
-      sra_id = sra_stat.split("/")[-1].split(".")[0]
-
-      d = {}
-      for line in data:
-        line = line.strip()
-        if not line:
-          continue
-        if line.startswith("first contained"):
-          d["containment"] = line.split(":")[-1].strip()
-      runs[sra_id] = d
-
-    pd.DataFrame(runs).T.to_csv(output[0])
-
-rule summarize_depth:
-  output: "outputs/minimap/depth/summary.csv"
-  input:
-    expand("outputs/minimap/depth/{sra_id}.txt",
-           sra_id=("SRR1509798", "SRR1509792", "SRR1509799",
-                   "SRR1509793", "SRR1509794", "ERR3256923", 
-                   "SRR070081", "SRR070083", "SRR070084",
-                   "SRR5868539", "SRR5868540", "SRR304680"))
-  run:
-    import pandas as pd
-
-    runs = {}
-    for sra_stat in input:
-      data = pd.read_table(sra_stat, names=["contig", "pos", "coverage"])
-      sra_id = sra_stat.split("/")[-1].split(".")[0]
-
-      d = {}
-      value_counts = data['coverage'].value_counts()
-      d['genome bp'] = int(len(data))
-      d['missed'] = int(value_counts.get(0, 0))
-      d['percent missed'] = 100 * d['missed'] / d['genome bp']
-      d['coverage'] = data['coverage'].sum() / len(data)
-      runs[sra_id] = d
-
-    pd.DataFrame(runs).T.to_csv(output[0])
+rule download_signatures_from_wort:
+  conda: "env/aws.yml"
+  shell: """
+    aws s3 sync s3://wort-sra/ {params.s3_dir} --request-payer=requester
+  """

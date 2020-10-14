@@ -1,0 +1,8 @@
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - anvio==6.2
+  - anvio-minimal==6.2=py_1
+  - h5py

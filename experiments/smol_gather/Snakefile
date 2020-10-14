@@ -2,7 +2,7 @@ from glob import glob
 
 ALL_K = [21, 31, 51]
 MASH_K = [21, 31]
-NUM = [1000, 100000]
+NUM = [1000, 5000, 10000, 100000]
 
 rule all:
   input:
